@@ -1,12 +1,15 @@
 {
-    "name": "laravel/installer",
-    "description": "Laravel application installer.",
-    "keywords": ["laravel"],
+    "name": "leafs/cli",
+    "description": "Leaf CLI tool.",
+    "homepage": "https://leafphp.netlify.com/#/",
+    "keywords": ["leaf", "php", "installer"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Taylor Otwell",
-            "email": "taylorotwell@gmail.com"
+            "name": "Michael Darko",
+            "email": "mickdd22@gmail.com",
+            "homepage": "https://mychi.netlify.com",
+            "role": "Developer"
         }
     ],
     "require": {
@@ -21,21 +24,11 @@
         "phpunit/phpunit": "^8.0"
     },
     "bin": [
-        "bin/laravel"
+        "bin/leaf"
     ],
     "autoload": {
         "psr-4": {
-            "Laravel\\Installer\\Console\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Laravel\\Installer\\Console\\Tests\\": "tests/"
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "3.x-dev"
+            "Leaf\\Console\\": "src/"
         }
     },
     "config": {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Laravel\Installer\Console;
+namespace Leaf\Console;
 
 use GuzzleHttp\Client;
 use RuntimeException;
@@ -9,12 +9,10 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use ZipArchive;
 
-class NewCommand extends Command
+class CreateCommand extends Command
 {
     /**
      * Configure the command options.
@@ -24,11 +22,11 @@ class NewCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('new')
-            ->setDescription('Create a new Laravel application')
-            ->addArgument('name', InputArgument::OPTIONAL)
-            ->addOption('dev', null, InputOption::VALUE_NONE, 'Installs the latest "development" release')
-            ->addOption('auth', null, InputOption::VALUE_NONE, 'Installs the Laravel authentication scaffolding')
+            ->setName('create')
+            ->setDescription('Create a new Leaf PHP project')
+            ->addArgument('project-name', InputArgument::OPTIONAL)
+            ->addOption('api', 'a', InputOption::VALUE_NONE, 'Create a new Leaf API project')
+            ->addOption('mvc', 'm', InputOption::VALUE_NONE, 'Create a new Leaf MVC project')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
     }
 
@@ -41,11 +39,11 @@ class NewCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (! extension_loaded('zip')) {
+        if (!extension_loaded('zip')) {
             throw new RuntimeException('The Zip PHP extension is not installed. Please install it and try again.');
         }
 
-        $name = $input->getArgument('name');
+        $name = $input->getArgument('project-name');
 
         $directory = $name && $name !== '.' ? getcwd().'/'.$name : getcwd();
 
@@ -53,21 +51,26 @@ class NewCommand extends Command
             $this->verifyApplicationDoesntExist($directory);
         }
 
-        $output->writeln('<info>Crafting application...</info>');
+        $output->writeln('<info>Building your leaf app...</info>');
 
         $this->download($zipFile = $this->makeFilename(), $this->getVersion($input))
              ->extract($zipFile, $directory)
-             ->prepareWritableDirectories($directory, $output)
              ->cleanUp($zipFile);
 
         $composer = $this->findComposer();
-
+        
         $commands = [
-            $composer.' install --no-scripts',
-            $composer.' run-script post-root-package-install',
-            $composer.' run-script post-create-project-cmd',
-            $composer.' run-script post-autoload-dump',
+            $composer.' install --no-scripts'
         ];
+
+        if ($this->getVersion($input) != "leaf") {
+            $commands[] = $composer.' run-script post-root-package-install';
+            // [
+            //     ,
+            //     $composer.' run-script post-create-project-cmd',
+            //     $composer.' run-script post-autoload-dump',
+            // ];
+        }
 
         if ($input->getOption('no-ansi')) {
             $commands = array_map(function ($value) {
@@ -92,7 +95,7 @@ class NewCommand extends Command
         });
 
         if ($process->isSuccessful()) {
-            $output->writeln('<comment>Application ready! Build something amazing.</comment>');
+            $output->writeln('<comment>Leaf app ready! Let\'s build something amazing!</comment>');
         }
 
         return 0;
@@ -118,7 +121,7 @@ class NewCommand extends Command
      */
     protected function makeFilename()
     {
-        return getcwd().'/laravel_'.md5(time().uniqid()).'.zip';
+        return getcwd().'/leaf_'.md5(time().uniqid()).'.zip';
     }
 
     /**
@@ -128,21 +131,21 @@ class NewCommand extends Command
      * @param  string  $version
      * @return $this
      */
-    protected function download($zipFile, $version = 'master')
+    protected function download($zipFile, $version = 'leaf')
     {
         switch ($version) {
-            case 'develop':
-                $filename = 'latest-develop.zip';
+            case 'api':
+                $filename = 'leafapi.zip';
                 break;
-            case 'auth':
-                $filename = 'latest-auth.zip';
+            case 'mvc':
+                $filename = 'leafmvc.zip';
                 break;
-            case 'master':
-                $filename = 'latest.zip';
+            case 'leaf':
+                $filename = 'leaf.zip';
                 break;
         }
 
-        $response = (new Client)->get('http://cabinet.laravel.com/'.$filename);
+        $response = (new Client)->get("https://leafphp.netlify.app/downloads/$filename");
 
         file_put_contents($zipFile, $response->getBody());
 
@@ -163,7 +166,7 @@ class NewCommand extends Command
         $response = $archive->open($zipFile, ZipArchive::CHECKCONS);
 
         if ($response === ZipArchive::ER_NOZIP) {
-            throw new RuntimeException('The zip file could not download. Verify that you are able to access: http://cabinet.laravel.com/latest.zip');
+            throw new RuntimeException('The zip file could not download. Verify that you are able to access: https://leafphp.netlify.app/downloads');
         }
 
         $archive->extractTo($directory);
@@ -189,27 +192,6 @@ class NewCommand extends Command
     }
 
     /**
-     * Make sure the storage and bootstrap cache directories are writable.
-     *
-     * @param  string  $appDirectory
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
-     * @return $this
-     */
-    protected function prepareWritableDirectories($appDirectory, OutputInterface $output)
-    {
-        $filesystem = new Filesystem;
-
-        try {
-            $filesystem->chmod($appDirectory.DIRECTORY_SEPARATOR.'bootstrap/cache', 0755, 0000, true);
-            $filesystem->chmod($appDirectory.DIRECTORY_SEPARATOR.'storage', 0755, 0000, true);
-        } catch (IOExceptionInterface $e) {
-            $output->writeln('<comment>You should verify that the "storage" and "bootstrap/cache" directories are writable.</comment>');
-        }
-
-        return $this;
-    }
-
-    /**
      * Get the version that should be downloaded.
      *
      * @param  \Symfony\Component\Console\Input\InputInterface  $input
@@ -217,15 +199,15 @@ class NewCommand extends Command
      */
     protected function getVersion(InputInterface $input)
     {
-        if ($input->getOption('dev')) {
-            return 'develop';
+        if ($input->getOption('api')) {
+            return 'api';
         }
 
-        if ($input->getOption('auth')) {
-            return 'auth';
+        if ($input->getOption('mvc')) {
+            return 'mvc';
         }
 
-        return 'master';
+        return 'leaf';
     }
 
     /**
