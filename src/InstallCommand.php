@@ -27,7 +27,6 @@ class InstallCommand extends Command
 		$version = $input->getArgument("version") ?? null;
 
 		$output->writeln("<info>Installing $package...</info>");
-		// $output->write(shell_exec("composer require $package"));
 		$composer = $this->findComposer();
 		$process = Process::fromShellCommandline("$composer require $package $version", null, null, null, null);
 
