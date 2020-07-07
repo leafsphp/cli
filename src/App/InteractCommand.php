@@ -18,11 +18,16 @@ class InteractCommand extends Command {
 
 
     protected function execute(InputInterface $input, OutputInterface $output) {
+        $output->writeln("<info>Leaf interactive shell activated</info>");
+
         if (file_exists("vendor/autoload.php")) require "vendor/autoload.php";
         if (file_exists("Config/bootstrap.php")) require "Config/bootstrap.php";
         if (file_exists("index.php") && !file_exists("leaf")) require "index.php";
+
+        if (!file_exists("vendor/autoload.php") && !file_exists("Config/bootstrap.php") && (file_exists("index.php") && file_exists("leaf"))) {
+            $output->writeln("<info>Required files not found, starting shell running in retard mode...</info>");
+        }
         
-        $output->writeln("<info>Leaf interactive shell activated</info>");
         $shell = new Shell();
         $output->write($shell->run());
     }
