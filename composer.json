@@ -1,6 +1,6 @@
 {
     "name": "leafs/cli",
-    "description": "Leaf CLI tool.",
+    "description": "A simple command line tool for installing and interacting with your leaf apps",
     "homepage": "https://leafphp.netlify.com/#/",
     "keywords": ["leaf", "php", "installer"],
     "license": "MIT",
