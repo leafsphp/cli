@@ -9,6 +9,7 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
 $app = new Symfony\Component\Console\Application('Leaf CLI', '1.0.0');
 
 $app->add(new Leaf\Console\CreateCommand);
+$app->add(new Leaf\Console\InstallCommand);
 $app->add(new Leaf\Console\App\ServeCommand);
 $app->add(new Leaf\Console\App\InteractCommand);
 
