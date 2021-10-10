@@ -20,7 +20,8 @@
 		"php": "^7.2",
 		"leafs/fs": "^1.0",
 		"psy/psysh": "^0.9.9",
-		"symfony/console": "^5.0"
+		"symfony/console": "^5.0",
+		"symfony/process": "5.4.x-dev"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^8.0"
