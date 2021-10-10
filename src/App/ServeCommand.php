@@ -16,7 +16,7 @@ class ServeCommand extends Command
 		$this
 			->setHelp("Start the leaf app server")
 			->setDescription("Run your Leaf app")
-			->addOption('port', 'p', InputOption::VALUE_NONE, 'Port to run app on');
+			->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output)
