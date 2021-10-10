@@ -9,220 +9,273 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Process\Process;
 use ZipArchive;
 
 class CreateCommand extends Command
 {
-    /**
-     * Configure the command options.
-     *
-     * @return void
-     */
-    protected function configure()
-    {
-        $this
-            ->setName('create')
-            ->setDescription('Create a new Leaf PHP project')
-            ->addArgument('project-name', InputArgument::OPTIONAL)
-            ->addOption('api', 'a', InputOption::VALUE_NONE, 'Create a new Leaf API project')
-            ->addOption('mvc', 'm', InputOption::VALUE_NONE, 'Create a new Leaf MVC project')
-            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
-    }
+	/**
+	 * Configure the command options.
+	 *
+	 * @return void
+	 */
+	protected function configure()
+	{
+		$this
+			->setName('create')
+			->setDescription('Create a new Leaf PHP project')
+			->addArgument('project-name', InputArgument::REQUIRED)
+			->addOption('basic', null, InputOption::VALUE_NONE, 'Create a raw leaf project')
+			->addOption('api', null, InputOption::VALUE_NONE, 'Create a new Leaf API project')
+			->addOption('mvc', null, InputOption::VALUE_NONE, 'Create a new Leaf MVC project')
+			->addOption('skeleton', null, InputOption::VALUE_NONE, 'Create a new leaf project with skeleton')
+			->addOption('v3', null, InputOption::VALUE_NONE, 'Use leaf 3 instead of leaf 2')
+			->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
+	}
 
-    /**
-     * Execute the command.
-     *
-     * @param  \Symfony\Component\Console\Input\InputInterface  $input
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
-     * @return int
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        if (!extension_loaded('zip')) {
-            throw new RuntimeException('The Zip PHP extension is not installed. Please install it and try again.');
-        }
+	protected function scaffold($input, $output)
+	{
+		$helper = $this->getHelper("question");
+		$question = new ChoiceQuestion("Please pick a preset ", ["leaf", "leaf mvc", "leaf api", "skeleton"], "leaf");
 
-        $name = $input->getArgument('project-name');
+		$question->setMultiselect(false);
+		$question->setErrorMessage("Please select a valid option");
 
-        $directory = $name && $name !== '.' ? getcwd().'/'.$name : getcwd();
+		return $helper->ask($input, $output, $question);
+	}
 
-        if (! $input->getOption('force')) {
-            $this->verifyApplicationDoesntExist($directory);
-        }
+	protected function leaf($input, $output, $directory)
+	{
+		if ($input->getOption("v3")) {
+			$output->writeln("<comment>Using leaf v3</comment>\n");
+			\Leaf\FS::superCopy(__DIR__ . "/themes/leaf3", $directory);
+		} else {
+			$output->writeln("<comment>Using leaf v2 LTS</comment>\n");
+			\Leaf\FS::superCopy(__DIR__ . "/themes/leaf2", $directory);
+		}
 
-        $output->writeln('<info>Building your leaf app...</info>');
+		$output->writeln(basename($directory) . " created successfully\n");
 
-        $this->download($zipFile = $this->makeFilename(), $this->getVersion($input))
-             ->extract($zipFile, $directory)
-             ->cleanUp($zipFile);
+		$composer = $this->findComposer();
 
-        $composer = $this->findComposer();
-        
-        $commands = [
-            $composer.' install --no-scripts'
-        ];
+		$commands = [
+			$composer . ' install'
+		];
 
-        if ($this->getVersion($input) != "leaf") {
-            $commands[] = $composer.' run-script post-root-package-install';
-            // [
-            //     ,
-            //     $composer.' run-script post-create-project-cmd',
-            //     $composer.' run-script post-autoload-dump',
-            // ];
-        }
+		if ($input->getOption('no-ansi')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --no-ansi';
+			}, $commands);
+		}
 
-        if ($input->getOption('no-ansi')) {
-            $commands = array_map(function ($value) {
-                return $value.' --no-ansi';
-            }, $commands);
-        }
+		if ($input->getOption('quiet')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --quiet';
+			}, $commands);
+		}
 
-        if ($input->getOption('quiet')) {
-            $commands = array_map(function ($value) {
-                return $value.' --quiet';
-            }, $commands);
-        }
+		$process = Process::fromShellCommandline(
+			implode(' && ', $commands), $directory, null, null, null
+		);
 
-        $process = Process::fromShellCommandline(implode(' && ', $commands), $directory, null, null, null);
+		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+			$process->setTty(true);
+		}
 
-        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-            $process->setTty(true);
-        }
+		$process->run(function ($type, $line) use ($output) {
+			$output->write($line);
+		});
 
-        $process->run(function ($type, $line) use ($output) {
-            $output->write($line);
-        });
+		if ($process->isSuccessful()) {
+			$output->writeln("\nYou can start with:");
+			$output->writeln("\n  <info>cd</info> " . basename($directory));
+			$output->writeln("  <info>leaf app:serve</info>");
+			$output->writeln("\nHappy gardening!");
+		}
 
-        if ($process->isSuccessful()) {
-            $output->writeln('<comment>Leaf app ready! Let\'s build something amazing!</comment>');
-        }
+		return 0;
+	}
+	
+	protected function skeleton3($input, $output, $directory)
+	{
+		$output->writeln("<comment>Using leaf v3</comment>\n");
+		\Leaf\FS::superCopy(__DIR__ . "/themes/skeleton3", $directory);
 
-        return 0;
-    }
+		$output->writeln(basename($directory) . " created successfully\n");
 
-    /**
-     * Verify that the application does not already exist.
-     *
-     * @param  string  $directory
-     * @return void
-     */
-    protected function verifyApplicationDoesntExist($directory)
-    {
-        if ((is_dir($directory) || is_file($directory)) && $directory != getcwd()) {
-            throw new RuntimeException('Application already exists!');
-        }
-    }
+		$composer = $this->findComposer();
 
-    /**
-     * Generate a random temporary filename.
-     *
-     * @return string
-     */
-    protected function makeFilename()
-    {
-        return getcwd().'/leaf_'.md5(time().uniqid()).'.zip';
-    }
+		$commands = [
+			$composer . ' install'
+		];
 
-    /**
-     * Download the temporary Zip to the given file.
-     *
-     * @param  string  $zipFile
-     * @param  string  $version
-     * @return $this
-     */
-    protected function download($zipFile, $version = 'leaf')
-    {
-        switch ($version) {
-            case 'api':
-                $filename = 'leafapi.zip';
-                break;
-            case 'mvc':
-                $filename = 'leafmvc.zip';
-                break;
-            case 'leaf':
-                $filename = 'leaf.zip';
-                break;
-        }
+		if ($input->getOption('no-ansi')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --no-ansi';
+			}, $commands);
+		}
 
-        $response = (new Client)->get("https://leafphp.netlify.app/downloads/$filename");
+		if ($input->getOption('quiet')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --quiet';
+			}, $commands);
+		}
 
-        file_put_contents($zipFile, $response->getBody());
+		$process = Process::fromShellCommandline(
+			implode(' && ', $commands), $directory, null, null, null
+		);
 
-        return $this;
-    }
+		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+			$process->setTty(true);
+		}
 
-    /**
-     * Extract the Zip file into the given directory.
-     *
-     * @param  string  $zipFile
-     * @param  string  $directory
-     * @return $this
-     */
-    protected function extract($zipFile, $directory)
-    {
-        $archive = new ZipArchive;
+		$process->run(function ($type, $line) use ($output) {
+			$output->write($line);
+		});
 
-        $response = $archive->open($zipFile, ZipArchive::CHECKCONS);
+		if ($process->isSuccessful()) {
+			$output->writeln("\nYou can start with:");
+			$output->writeln("\n  <info>cd</info> " . basename($directory));
+			$output->writeln("  <info>leaf app:serve</info>");
+			$output->writeln("\nHappy gardening!");
+		}
 
-        if ($response === ZipArchive::ER_NOZIP) {
-            throw new RuntimeException('The zip file could not download. Verify that you are able to access: https://leafphp.netlify.app/downloads');
-        }
+		return 0;
+	}
 
-        $archive->extractTo($directory);
+	/**
+	 * Execute the command.
+	 *
+	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
+	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+	 * @return int
+	 */
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
+		$name = $input->getArgument('project-name');
 
-        $archive->close();
+		$directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
 
-        return $this;
-    }
+		if (!$input->getOption('force')) {
+			$this->verifyApplicationDoesntExist($directory);
+		}
 
-    /**
-     * Clean-up the Zip file.
-     *
-     * @param  string  $zipFile
-     * @return $this
-     */
-    protected function cleanUp($zipFile)
-    {
-        @chmod($zipFile, 0777);
+		$output->writeln("Creating a new Leaf app \"" . basename($directory) . "\" in <info>./" . basename(dirname($directory)) . "</info>.\n");
 
-        @unlink($zipFile);
+		$preset = $this->getVersion($input, $output);
 
-        return $this;
-    }
+		if ($preset === "leaf") {
+			return $this->leaf($input, $output, $directory);
+		}
 
-    /**
-     * Get the version that should be downloaded.
-     *
-     * @param  \Symfony\Component\Console\Input\InputInterface  $input
-     * @return string
-     */
-    protected function getVersion(InputInterface $input)
-    {
-        if ($input->getOption('api')) {
-            return 'api';
-        }
+		if ($preset === "skeleton" && $input->getOption("v3")) {
+			return $this->skeleton3($input, $output, $directory);
+		}
 
-        if ($input->getOption('mvc')) {
-            return 'mvc';
-        }
+		$composer = $this->findComposer();
 
-        return 'leaf';
-    }
+		$commands = [
+			$composer . " create-project leafs/$preset " . basename($directory)
+		];
 
-    /**
-     * Get the composer command for the environment.
-     *
-     * @return string
-     */
-    protected function findComposer()
-    {
-        $composerPath = getcwd().'/composer.phar';
+		if ($input->getOption('no-ansi')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --no-ansi';
+			}, $commands);
+		}
 
-        if (file_exists($composerPath)) {
-            return '"'.PHP_BINARY.'" '.$composerPath;
-        }
+		if ($input->getOption('quiet')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --quiet';
+			}, $commands);
+		}
 
-        return 'composer';
-    }
+		$process = Process::fromShellCommandline(
+			implode(' && ', $commands), dirname($directory), null, null, null
+		);
+
+		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+			$process->setTty(true);
+		}
+
+		$process->run(function ($type, $line) use ($output) {
+			$output->write($line);
+		});
+
+		if ($process->isSuccessful()) {
+			$output->writeln("\nYou can start with:");
+			$output->writeln("\n  <info>cd</info> " . basename($directory));
+			$output->writeln("  <info>leaf app:serve</info>");
+			$output->writeln("\nHappy gardening!");
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Verify that the application does not already exist.
+	 *
+	 * @param  string  $directory
+	 * @return void
+	 */
+	protected function verifyApplicationDoesntExist($directory)
+	{
+		if ((is_dir($directory) || is_file($directory)) && $directory != getcwd()) {
+			throw new RuntimeException('Application already exists!');
+		}
+	}
+
+	/**
+	 * Get the version that should be downloaded.
+	 *
+	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
+	 * @return string
+	 */
+	protected function getVersion(InputInterface $input, $output)
+	{
+		if ($input->getOption("basic")) {
+			return "leaf";
+		}
+		
+		if ($input->getOption("api")) {
+			return "api";
+		}
+		
+		if ($input->getOption("mvc")) {
+			return "mvc";
+		}
+		
+		if ($input->getOption("skeleton")) {
+			return "skeleton";
+		}
+		
+		$preset = $this->scaffold($input, $output);
+
+		if ($preset == "leaf api") {
+			return "api";
+		}
+
+		if ($preset == "leaf mvc") {
+			return "mvc";
+		}
+
+		return $preset;
+	}
+
+	/**
+	 * Get the composer command for the environment.
+	 *
+	 * @return string
+	 */
+	protected function findComposer()
+	{
+		$composerPath = getcwd() . '/composer.phar';
+
+		if (file_exists($composerPath)) {
+			return '"' . PHP_BINARY . '" ' . $composerPath;
+		}
+
+		return 'composer';
+	}
 }
