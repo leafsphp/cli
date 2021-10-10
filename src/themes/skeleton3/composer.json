@@ -1,0 +1,39 @@
+{
+    "name": "leafs/skeleton",
+    "description": "A boiler-plate application for rapid development with Leaf PHP.",
+    "type": "library",
+    "keywords": [
+        "framework",
+        "leaf",
+        "leafPHP",
+        "leaf api"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Darko",
+            "email": "mickdd22@gmail.com",
+            "homepage": "https://mychi.netlify.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^3.6",
+        "leafs/leaf": "dev-v3.x-dev",
+        "leafs/logger": "^1.0",
+        "leafs/cors": "^1.0",
+        "leafs/mvc-core": "dev-main",
+        "leafs/form": "^1.0",
+        "leafs/bareui": "^1.0"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": false
+    },
+    "scripts": {
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php -r \"unlink('README.MD'); rename('README2.MD', 'README.MD');\""
+        ]
+    }
+}
