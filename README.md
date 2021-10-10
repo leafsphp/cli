@@ -1,8 +1,8 @@
 # Leaf CLI
 
-[![Latest Stable Version](https://poser.pugx.org/leafs/leaf/v/stable)](https://packagist.org/packages/leafs/leaf)
-[![Total Downloads](https://poser.pugx.org/leafs/leaf/downloads)](https://packagist.org/packages/leafs/leaf)
-[![License](https://poser.pugx.org/leafs/leaf/license)](https://packagist.org/packages/leafs/leaf)
+[![Latest Stable Version](https://poser.pugx.org/leafs/cli/v/stable)](https://packagist.org/packages/leafs/cli)
+[![Total Downloads](https://poser.pugx.org/leafs/cli/downloads)](https://packagist.org/packages/leafs/cli)
+[![License](https://poser.pugx.org/leafs/cli/license)](https://packagist.org/packages/leafs/cli)
 
 A simple command line tool for creating  and interacting with your leaf projects. You can do stuff like installing packages, interacting with your app, previewing your app...
 
@@ -18,9 +18,22 @@ Make sure to place Composer's system-wide vendor bin directory in your `$PATH` s
 
 - Windows: `%USERPROFILE%\AppData\Roaming\Composer\vendor\bin`
 - macOS: `$HOME/.composer/vendor/bin`
-- GNU / Linux Distributions: `$HOME/.config/composer/vendor/bin or $HOME/.composer/vendor/bin`
+- GNU / Linux Distributions: `$HOME/.config/composer/vendor/bin` or `$HOME/.composer/vendor/bin`
 
 You could also find the composer's global installation path by running `composer global about` and looking up from the first line.
+
+Eg (Adding composer bin to path linux):
+
+```sh
+export PATH=$PATH:$HOME/.config/composer/vendor/bin
+```
+
+Eg (Adding composer bin to path mac):
+
+```sh
+export PATH=$PATH:$HOME/.composer/vendor/bin
+echo $PATH
+```
 
 ## Usage Guide
 
