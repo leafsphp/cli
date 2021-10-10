@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
-if (file_exists(__DIR__.'/../../../autoload.php')) {
-    require __DIR__.'/../../../autoload.php';
+if (file_exists(__DIR__ . "/../../../autoload.php")) {
+	require __DIR__ . "/../../../autoload.php";
 } else {
-    require __DIR__.'/../vendor/autoload.php';
+	require __DIR__ . "/../vendor/autoload.php";
 }
 
-$app = new Symfony\Component\Console\Application('Leaf CLI', '1.0.0');
+$app = new Symfony\Component\Console\Application("Leaf CLI", "2.0.0");
 
 $app->add(new Leaf\Console\CreateCommand);
 $app->add(new Leaf\Console\InstallCommand);
