@@ -2,6 +2,7 @@
 	"name": "leafs/cli",
 	"description": "A simple command line tool for installing and interacting with your leaf apps",
 	"homepage": "https://leafphp.netlify.com/#/",
+	"version": "v2.0.1",
 	"keywords": [
 		"leaf",
 		"php",
@@ -18,6 +19,7 @@
 	],
 	"require": {
 		"php": "^7.2",
+		"leafs/fetch": "dev-main",
 		"leafs/fs": "^1.0",
 		"psy/psysh": "^0.9.9",
 		"symfony/console": "^5.0",
