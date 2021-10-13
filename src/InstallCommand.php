@@ -28,7 +28,7 @@ class InstallCommand extends Command
 
 		$output->writeln("<info>Installing $package...</info>");
 		$composer = $this->findComposer();
-		$process = Process::fromShellCommandline("$composer require $package $version", null, null, null, null);
+		$process = Process::fromShellCommandline("$composer require leafs/$package $version", null, null, null, null);
 
 		$process->run(function ($type, $line) use ($output) {
 			$output->write($line);
