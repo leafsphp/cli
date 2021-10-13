@@ -6,7 +6,10 @@ if (file_exists(__DIR__ . "/../../../autoload.php")) {
 	require __DIR__ . "/../vendor/autoload.php";
 }
 
-$app = new Symfony\Component\Console\Application("Leaf CLI", "2.0.0");
+$leafCli = json_decode(file_get_contents(dirname(__DIR__) . "/composer.json"));
+$currentVersion = $leafCli->version;
+
+$app = new Symfony\Component\Console\Application("Leaf CLI", $currentVersion);
 
 $app->add(new Leaf\Console\CreateCommand);
 $app->add(new Leaf\Console\UpdateCommand);
