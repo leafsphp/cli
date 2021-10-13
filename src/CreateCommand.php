@@ -153,6 +153,21 @@ class CreateCommand extends Command
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
+		$composer = $this->findComposer();
+
+		$needsUpdate = \Leaf\Console\Utils\Package::updateAvailable();
+
+		if ($needsUpdate) {
+			$output->writeln("<comment>Update found, updating to latest stable version...</comment>");
+			$updateProcess = Process::fromShellCommandline("php " . dirname(__DIR__) . "/bin/leaf update");
+
+			$updateProcess->run();
+			
+			if ($updateProcess->isSuccessful()) {
+				$output->writeln("<info>Leaf CLI updated successfully, building your app...</info>");
+			}
+		}
+
 		$name = $input->getArgument('project-name');
 
 		$directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
@@ -172,8 +187,6 @@ class CreateCommand extends Command
 		if ($preset === "skeleton" && $input->getOption("v3")) {
 			return $this->skeleton3($input, $output, $directory);
 		}
-
-		$composer = $this->findComposer();
 
 		$commands = [
 			$composer . " create-project leafs/$preset " . basename($directory)
