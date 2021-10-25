@@ -1,6 +1,6 @@
 <?php
 
-namespace Leaf\Console\App;
+namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -8,7 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Psy\Shell;
 
 class InteractCommand extends Command {
-    protected static $defaultName = "app:interact";
+    protected static $defaultName = "interact";
 
     protected function configure()  {
         $this

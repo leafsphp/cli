@@ -14,7 +14,7 @@ $app = new Symfony\Component\Console\Application("Leaf CLI", $currentVersion);
 $app->add(new Leaf\Console\CreateCommand);
 $app->add(new Leaf\Console\UpdateCommand);
 $app->add(new Leaf\Console\InstallCommand);
-$app->add(new Leaf\Console\App\ServeCommand);
-$app->add(new Leaf\Console\App\InteractCommand);
+$app->add(new Leaf\Console\ServeCommand);
+$app->add(new Leaf\Console\InteractCommand);
 
 $app->run();

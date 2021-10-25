@@ -10,17 +10,55 @@ namespace Leaf\Console\Utils;
 class Package
 {
 	/**
+	 * Check current version
+	 */
+	public static function info()
+	{
+		return json_decode(file_get_contents(
+			dirname(dirname(__DIR__)) . "/composer.json"
+		));
+	}
+
+	/**
+	 * Check current version
+	 */
+	public static function version()
+	{
+		$meta = static::info();
+
+		return $meta->version;
+	}
+
+	/**
+	 * Find latest stable version
+	 */
+	public static function ltsInfo()
+	{
+		$package = json_decode(
+			file_get_contents("https://repo.packagist.org/p2/leafs/cli.json")
+		);
+
+		return $package->packages->{"leafs/cli"}[0];
+	}
+
+	/**
+	 * Find latest stable version
+	 */
+	public static function ltsVersion()
+	{
+		$package = static::ltsInfo();
+
+		return $package->version;
+	}
+
+	/**
 	 * Check if there is an update available
 	 */
 	public static function updateAvailable()
 	{
-		$leafCli = json_decode(file_get_contents(dirname(dirname(__DIR__)) . "/composer.json"));
-		$latestLeafCli = json_decode(file_get_contents("https://repo.packagist.org/p2/leafs/cli.json"));
-
-		$currentVersion = $leafCli->version;
-		$latestVersion = $latestLeafCli->packages->{"leafs/cli"}[0]->version;
+		$currentVersion = static::version();
+		$latestVersion = static::ltsVersion();
 
 		return ($currentVersion !== $latestVersion);
 	}
 }
-

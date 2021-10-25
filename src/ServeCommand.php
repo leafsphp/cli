@@ -1,6 +1,6 @@
 <?php
 
-namespace Leaf\Console\App;
+namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ServeCommand extends Command
 {
-	protected static $defaultName = 'app:serve';
+	protected static $defaultName = 'serve';
 
 	protected function configure()
 	{
