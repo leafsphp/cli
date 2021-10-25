@@ -36,7 +36,10 @@ class InstallCommand extends Command
 
 		if ($process->isSuccessful()) {
 			$output->writeln("<comment>$package installed successfully!</comment>");
+			return 0;
 		}
+
+		return 1;
 	}
 
 	/**
