@@ -34,9 +34,13 @@ class Package
 	 */
 	public static function ltsInfo()
 	{
-		$package = json_decode(
-			file_get_contents("https://repo.packagist.org/p2/leafs/cli.json")
-		);
+		$data = file_get_contents("https://repo.packagist.org/p2/leafs/cli.json");
+
+		if (!$data) {
+			return static::info();
+		}
+
+		$package = json_decode($data);
 
 		return $package->packages->{"leafs/cli"}[0];
 	}
