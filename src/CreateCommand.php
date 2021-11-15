@@ -184,12 +184,14 @@ class CreateCommand extends Command
 			return $this->leaf($input, $output, $directory);
 		}
 
-		if ($preset === "skeleton" && $input->getOption("v3")) {
-			return $this->skeleton3($input, $output, $directory);
+		$installCommand = $composer . " create-project leafs/$preset " . basename($directory);
+
+		if ($input->getOption("v3")) {
+			$installCommand .= " v3.x-dev";
 		}
 
 		$commands = [
-			$composer . " create-project leafs/$preset " . basename($directory)
+			$installCommand,
 		];
 
 		if ($input->getOption('no-ansi')) {
