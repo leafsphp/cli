@@ -54,18 +54,46 @@ for projects and enter:
 leaf create <project-name>
 ```
 
-This will generate a new Leaf PHP app in the `<project-name>` directory. You can also create [Leaf API](https://github.com/leafsphp/leafAPI) and [Leaf MVC](https://github.com/leafsphp/leafmvc) apps from the cli.
+or with leaf 3:
+
+```sh
+leaf create <project-name> --v3
+```
+
+> Note that the leaf 3 has not yet been released. This is why the default installation uses leaf 2. After the main v3 is released, leaf cli will switch to leaf 3 for its default installations.
+
+This will now prompt you to select a preset
+
+```sh
+Creating a new Leaf app "<project-name>" in ./projects-directory.
+
+Please pick a preset 
+  [0] leaf
+  [1] leaf mvc
+  [2] leaf api
+  [3] skeleton
+ > 
+```
+
+Selecting a number will generate a leaf app based on the associated preset. As you can see, there are 4 presets:
+
+- **Leaf**: a bare leaf project
+- **Leaf MVC**: a leaf MVC project with leaf 2
+- **Leaf API**: a leaf API project with leaf 2
+- **Skeleton**: a leaf skeleton project
+
+You can also pick a preset directly without going through the interactive installer.
+
+**Leaf:**
+
+```bash
+leaf create <project-name> --basic
+```
 
 **Leaf API:**
 
 ```bash
 leaf create <project-name> --api
-```
-
-or
-
-```bash
-leaf create <project-name> -a
 ```
 
 **Leaf MVC:**
@@ -74,26 +102,28 @@ leaf create <project-name> -a
 leaf create <project-name> --mvc
 ```
 
-or
+**Leaf Skeleton:**
 
 ```bash
-leaf create <project-name> -m
+leaf create <project-name> --skeleton
 ```
 
 ### Installing packages
 
-This cli tool also adds a feature to install packages from composer
+This cli tool also adds a feature to install modules from composer
 
 ```bash
-leaf install leafs/ui
+leaf install ui
 ```
+
+This installs the `leafs/ui` package.
 
 ### Interactive Shell
 
 You can also use the interactive shell to interact with your app.
 
 ```bash
-$ leaf app:interact
+$ leaf interact
 ...
 >>> $user = new User;
 ...
@@ -107,13 +137,13 @@ $ leaf app:interact
 This opens up your app on the PHP local server.
 
 ```bash
-leaf app:serve
+leaf serve
 ```
 
 You can also specify the port
 
 ```bash
-leaf app:serve -p 8000
+leaf serve -p 8000
 ```
 
 ## License
