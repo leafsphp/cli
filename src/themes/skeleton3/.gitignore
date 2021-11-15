@@ -1,8 +1,0 @@
-vendor
-# .env
-node_modules
-build
-dist
-compiled
-.idea
-composer.lock
