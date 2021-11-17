@@ -28,6 +28,7 @@ class InteractCommand extends Command {
         }
 
         $shell = new Shell();
-        $output->write($shell->run());
+
+		return $output->write($shell->run()) ? 0 : 1;
     }
 }
