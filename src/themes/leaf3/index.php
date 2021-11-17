@@ -3,7 +3,7 @@
 require __DIR__ . "/vendor/autoload.php";
 
 app()->get("/", function () {
-	response()->json(["message" => "Hello World!"]);
+	response()->page("./welcome.html");
 });
 
 app()->run();
