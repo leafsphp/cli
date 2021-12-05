@@ -1,11 +1,9 @@
 <p align="center">
     <br><br>
     <img src="https://leafphp.dev/logo-circle.png" height="100"/>
-    <h1 align="center">Leaf CLI</h1>
+    <h1 align="center">Leaf CLI 2</h1>
     <br><br>
 </p>
-
-# Leaf CLI 2
 
 [![Latest Stable Version](https://poser.pugx.org/leafs/cli/v/stable)](https://packagist.org/packages/leafs/cli)
 [![Total Downloads](https://poser.pugx.org/leafs/cli/downloads)](https://packagist.org/packages/leafs/cli)
