@@ -1,18 +1,17 @@
 <p align="center">
     <br><br>
-    <img src="https://leafphp.dev/logo.png" height="100"/>
+    <img src="https://leafphp.dev/logo-circle.png" height="100"/>
     <h1 align="center">Leaf CLI</h1>
-    <br>
-    <br><br><br>
+    <br><br>
 </p>
 
-# Leaf CLI 2.0
+# Leaf CLI 2
 
 [![Latest Stable Version](https://poser.pugx.org/leafs/cli/v/stable)](https://packagist.org/packages/leafs/cli)
 [![Total Downloads](https://poser.pugx.org/leafs/cli/downloads)](https://packagist.org/packages/leafs/cli)
 [![License](https://poser.pugx.org/leafs/cli/license)](https://packagist.org/packages/leafs/cli)
 
-A simple command line tool for creating  and interacting with your leaf projects. You can do stuff like installing packages, interacting with your app, previewing your app...
+A simple command line tool for creating and interacting with your leaf projects. You can do stuff like installing packages, interacting with your app, previewing your app, ...
 
 ## Installation
 
@@ -50,24 +49,37 @@ echo $PATH
 To start a new project, simply open up your console or terminal in your directory
 for projects and enter:
 
-```bash
-leaf create <project-name>
-```
-
-or with leaf 3:
+With leaf 3:
 
 ```sh
 leaf create <project-name> --v3
 ```
 
-> Note that the leaf 3 has not yet been released. This is why the default installation uses leaf 2. After the main v3 is released, leaf cli will switch to leaf 3 for its default installations.
+With leaf 2:
+
+```sh
+leaf create <project-name> --v2
+```
+
+If no version is passed in, leaf CLI will prompt you to select a version to use in your leaf app.
+
+```bash
+leaf create <project-name>
+```
+
+```sh
+* Select a version to use 
+  [0] v3
+  [1] v2
+ >
+```
 
 This will now prompt you to select a preset
 
 ```sh
 Creating a new Leaf app "<project-name>" in ./projects-directory.
 
-Please pick a preset 
+* Please pick a preset 
   [0] leaf
   [1] leaf mvc
   [2] leaf api
@@ -112,11 +124,17 @@ leaf create <project-name> --skeleton
 
 This cli tool also adds a feature to install modules from composer
 
-```bash
+```sh
 leaf install ui
 ```
 
 This installs the `leafs/ui` package.
+
+You can also install third party packages from packagist
+
+```sh
+leaf install psr/log
+```
 
 ### Interactive Shell
 
@@ -149,3 +167,25 @@ leaf serve -p 8000
 ## License
 
 Leaf CLI is open-sourced software licensed under the [MIT license](LICENSE.md).
+
+## 😇 Contributing
+
+We are glad to have you. All contributions are welcome! To get started, familiarize yourself with our [contribution guide](https://leafphp.dev/community/contributing.html) and you'll be ready to make your first pull request 🚀.
+
+To report a security vulnerability, you can reach out to [@mychidarko](https://twitter.com/mychidarko) or [@leafphp](https://twitter.com/leafphp) on twitter. We will coordinate the fix and eventually commit the solution in this project.
+
+## 🤩 Sponsoring Leaf
+
+Your cash contributions go a long way to help us make Leaf even better for you. You can sponsor Leaf and any of our packages on [open collective](https://opencollective.com/leaf) or check the [contribution page](https://leafphp.dev/support/) for a list of ways to contribute.
+
+And to all our existing cash/code contributors, we love you all ❤️
+
+<a href="https://github.com/leafsphp/leaf/graphs/contributors" target="_blank"><img src="https://opencollective.com/leafphp/contributors.svg?width=890" /></a>
+
+## 🤯 Links/Projects
+
+- [Leaf Docs](https://leafphp.dev)
+- [Leaf MVC](https://mvc.leafphp.dev)
+- [Leaf API](https://api.leafphp.dev)
+- [Leaf CLI](https://cli.leafphp.dev)
+- [Aloe CLI](https://leafphp.dev/aloe-cli/)
