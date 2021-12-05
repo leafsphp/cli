@@ -24,11 +24,15 @@ class InstallCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
 		$package = $input->getArgument("package");
+		if (strpos($package, '/') == false) $package = "leafs/$package";
+
 		$version = $input->getArgument("version") ?? null;
 
 		$output->writeln("<info>Installing $package...</info>");
 		$composer = $this->findComposer();
-		$process = Process::fromShellCommandline("$composer require leafs/$package $version", null, null, null, null);
+		$process = Process::fromShellCommandline(
+			"$composer require $package $version", null, null, null, null
+		);
 
 		$process->run(function ($type, $line) use ($output) {
 			$output->write($line);
