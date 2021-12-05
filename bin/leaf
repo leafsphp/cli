@@ -1,9 +1,10 @@
 #!/usr/bin/env php
 <?php
-if (file_exists(__DIR__ . "/../../../autoload.php")) {
-	require __DIR__ . "/../../../autoload.php";
+
+if (file_exists(dirname(__DIR__, 3) . "/autoload.php")) {
+	require dirname(__DIR__, 3) . "/autoload.php";
 } else {
-	require __DIR__ . "/../vendor/autoload.php";
+	require dirname(__DIR__) . "/vendor/autoload.php";
 }
 
 $leafCli = json_decode(file_get_contents(dirname(__DIR__) . "/composer.json"));
