@@ -41,7 +41,7 @@ class CreateCommand extends Command
 	protected function scaffold($input, $output)
 	{
 		$helper = $this->getHelper("question");
-		$question = new ChoiceQuestion("Please pick a preset ", ["leaf", "leaf mvc", "leaf api", "skeleton"], "leaf");
+		$question = new ChoiceQuestion("<info>* Please pick a preset</info> ", ["leaf", "leaf mvc", "leaf api", "skeleton"], "leaf");
 
 		$question->setMultiselect(false);
 		$question->setErrorMessage("Please select a valid option");
@@ -52,7 +52,7 @@ class CreateCommand extends Command
 	protected function scaffoldVersion($input, $output)
 	{
 		$helper = $this->getHelper("question");
-		$question = new ChoiceQuestion("Select a version to use ", ["v3", "v2"], "v3");
+		$question = new ChoiceQuestion("<info>* Select a version to use</info> ", ["v3", "v2"], "v3");
 
 		$question->setMultiselect(false);
 		$question->setErrorMessage("Please select a valid option");
@@ -63,14 +63,12 @@ class CreateCommand extends Command
 	protected function leaf($input, $output, $directory)
 	{
 		if ($this->version === "v3") {
-			$output->writeln("<comment>Using leaf v3</comment>\n");
 			\Leaf\FS::superCopy(__DIR__ . "/themes/leaf3", $directory);
 		} else {
-			$output->writeln("<comment>Using leaf v2 LTS</comment>\n");
 			\Leaf\FS::superCopy(__DIR__ . "/themes/leaf2", $directory);
 		}
 
-		$output->writeln(basename($directory) . " created successfully\n");
+		$output->writeln("<comment> - </comment>" . basename($directory) . " created successfully\n");
 
 		$composer = $this->findComposer();
 
@@ -136,7 +134,6 @@ class CreateCommand extends Command
 		}
 
 		$name = $input->getArgument('project-name');
-
 		$directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
 
 		if (!$input->getOption('force')) {
@@ -147,10 +144,10 @@ class CreateCommand extends Command
 		$this->getVersion($input, $output);
 
 		$output->writeln(
-			"Creating \""
+			"\n<comment> - </comment>Creating \""
 			. basename($directory) . "\" in <info>./"
 			. basename(dirname($directory)) .
-			"</info> using <info>$preset@" . $this->version .  "</info>.\n"
+			"</info> using <info>$preset@" . $this->version .  "</info>."
 		);
 
 		if ($preset === "leaf") {
@@ -246,20 +243,21 @@ class CreateCommand extends Command
 		if ($input->getOption("basic")) {
 			return "leaf";
 		}
-		
+
 		if ($input->getOption("api")) {
 			return "api";
 		}
-		
+
 		if ($input->getOption("mvc")) {
 			return "mvc";
 		}
-		
+
 		if ($input->getOption("skeleton")) {
 			return "skeleton";
 		}
-		
+
 		$preset = $this->scaffold($input, $output);
+		$output->writeln("\n<comment> - </comment>Using preset $preset\n");
 
 		if ($preset == "leaf api") {
 			return "api";
