@@ -13,7 +13,7 @@
 		{
 			"name": "Michael Darko",
 			"email": "mickdd22@gmail.com",
-			"homepage": "https://mychi.netlify.com",
+			"homepage": "https://mychi.netlify.app",
 			"role": "Developer"
 		}
 	],
@@ -21,8 +21,9 @@
 		"leafs/fs": "^1.0",
 		"psy/psysh": "^0.9.9",
 		"symfony/console": "^5.0",
-		"symfony/process": "^5.0"
-	},
+		"symfony/process": "^5.0",
+      	"ext-json": "*"
+    },
 	"require-dev": {
 		"phpunit/phpunit": "^8.0"
 	},
