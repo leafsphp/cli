@@ -21,7 +21,7 @@ class InstallCommand extends Command
 			->addArgument("version", InputArgument::OPTIONAL, "version to install");
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$package = $input->getArgument("package");
 		if (strpos($package, '/') == false) $package = "leafs/$package";
@@ -51,7 +51,7 @@ class InstallCommand extends Command
 	 *
 	 * @return string
 	 */
-	protected function findComposer()
+	protected function findComposer(): string
 	{
 		$composerPath = getcwd() . '/composer.phar';
 

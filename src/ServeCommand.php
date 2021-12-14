@@ -20,7 +20,7 @@ class ServeCommand extends Command
 			->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$port = $input->getOption("port") ? (int) $input->getOption("port") : 5500;
 		$process = Process::fromShellCommandline("php -S localhost:$port", null, null, null, null);

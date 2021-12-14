@@ -3,7 +3,6 @@
 namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
@@ -19,7 +18,7 @@ class UpdateCommand extends Command
 			->setDescription("Update leaf cli to the latest version");
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$composer = $this->findComposer();
 		$uninstall = Process::fromShellCommandline("$composer global remove leafs/cli --no-update --no-install");
@@ -50,7 +49,7 @@ class UpdateCommand extends Command
 	 *
 	 * @return string
 	 */
-	protected function findComposer()
+	protected function findComposer(): string
 	{
 		$composerPath = getcwd() . '/composer.phar';
 

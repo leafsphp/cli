@@ -2,6 +2,8 @@
 
 namespace Leaf\Console;
 
+use Leaf\Console\Utils\Package;
+use Leaf\FS;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -60,12 +62,12 @@ class CreateCommand extends Command
 		return $helper->ask($input, $output, $question);
 	}
 
-	protected function leaf($input, $output, $directory)
+	protected function leaf($input, $output, $directory): int
 	{
 		if ($this->version === "v3") {
-			\Leaf\FS::superCopy(__DIR__ . "/themes/leaf3", $directory);
+			FS::superCopy(__DIR__ . "/themes/leaf3", $directory);
 		} else {
-			\Leaf\FS::superCopy(__DIR__ . "/themes/leaf2", $directory);
+			FS::superCopy(__DIR__ . "/themes/leaf2", $directory);
 		}
 
 		$output->writeln("<comment> - </comment>" . basename($directory) . " created successfully\n");
@@ -113,17 +115,17 @@ class CreateCommand extends Command
 	/**
 	 * Execute the command.
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
-	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
 	 * @return int
 	 */
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$composer = $this->findComposer();
-		$needsUpdate = \Leaf\Console\Utils\Package::updateAvailable();
+		$needsUpdate = Package::updateAvailable();
 
 		if ($needsUpdate) {
-			$output->writeln("<comment>Update found, updating to latest stable version...</comment>");
+			$output->writeln("<comment>Update found, updating to the latest stable version...</comment>");
 			$updateProcess = Process::fromShellCommandline("php " . dirname(__DIR__) . "/bin/leaf update");
 
 			$updateProcess->run();
@@ -201,10 +203,10 @@ class CreateCommand extends Command
 	/**
 	 * Verify that the application does not already exist.
 	 *
-	 * @param  string  $directory
+	 * @param string $directory
 	 * @return void
 	 */
-	protected function verifyApplicationDoesntExist($directory)
+	protected function verifyApplicationDoesntExist(string $directory)
 	{
 		if ((is_dir($directory) || is_file($directory)) && $directory != getcwd()) {
 			throw new RuntimeException('Application already exists!');
@@ -214,8 +216,9 @@ class CreateCommand extends Command
 	/**
 	 * Get the version that should be downloaded.
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
-	 * @return string
+	 * @param InputInterface $input
+	 * @param $output
+	 * @return void
 	 */
 	protected function getVersion(InputInterface $input, $output)
 	{
@@ -235,10 +238,11 @@ class CreateCommand extends Command
 	/**
 	 * Get the preset that should be downloaded.
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
+	 * @param InputInterface $input
+	 * @param $output
 	 * @return string
 	 */
-	protected function getPreset(InputInterface $input, $output)
+	protected function getPreset(InputInterface $input, $output): string
 	{
 		if ($input->getOption("basic")) {
 			return "leaf";
@@ -275,7 +279,7 @@ class CreateCommand extends Command
 	 *
 	 * @return string
 	 */
-	protected function findComposer()
+	protected function findComposer(): string
 	{
 		$composerPath = getcwd() . '/composer.phar';
 

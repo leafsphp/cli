@@ -16,7 +16,8 @@ class InteractCommand extends Command {
             ->setHelp("Interact with your application");
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+	{
         $output->writeln("<info>Leaf interactive shell activated</info>");
 
         if (file_exists("vendor/autoload.php")) require "vendor/autoload.php";

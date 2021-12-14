@@ -15,7 +15,7 @@ class Package
 	public static function info()
 	{
 		return json_decode(file_get_contents(
-			dirname(dirname(__DIR__)) . "/composer.json"
+			dirname(__DIR__, 2) . "/composer.json"
 		));
 	}
 
