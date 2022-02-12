@@ -156,7 +156,7 @@ class CreateCommand extends Command
 			return $this->leaf($input, $output, $directory);
 		}
 
-		$installCommand = $composer . " create-project leafs/$preset " . basename($directory);
+		$installCommand = "$composer create-project leafs/$preset " . basename($directory);
 
 		if ($this->version === "v3") {
 			$installCommand .= " v3.x-dev";
@@ -193,7 +193,7 @@ class CreateCommand extends Command
 		if ($process->isSuccessful()) {
 			$output->writeln("\nYou can start with:");
 			$output->writeln("\n  <info>cd</info> " . basename($directory));
-			$output->writeln("  <info>leaf app:serve</info>");
+			$output->writeln("  <info>leaf serve</info>");
 			$output->writeln("\nHappy gardening!");
 		}
 
