@@ -105,7 +105,7 @@ class CreateCommand extends Command
 		if ($process->isSuccessful()) {
 			$output->writeln("\nYou can start with:");
 			$output->writeln("\n  <info>cd</info> " . basename($directory));
-			$output->writeln("  <info>leaf app:serve</info>");
+			$output->writeln("  <info>leaf serve</info>");
 			$output->writeln("\nHappy gardening!");
 		}
 
