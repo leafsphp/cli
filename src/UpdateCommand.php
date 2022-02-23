@@ -14,8 +14,8 @@ class UpdateCommand extends Command
 	protected function configure()
 	{
 		$this
-			->setHelp("Update leaf cli")
-			->setDescription("Update leaf cli to the latest version");
+			->setHelp('Update leaf cli')
+			->setDescription('Update leaf cli to the latest version');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
@@ -36,7 +36,7 @@ class UpdateCommand extends Command
 			});
 
 			if ($install->isSuccessful()) {
-				$output->writeln("<info>Leaf CLI installed successfully!</info>");
+				$output->writeln('<info>Leaf CLI installed successfully!</info>');
 				return 0;
 			}
 		}
