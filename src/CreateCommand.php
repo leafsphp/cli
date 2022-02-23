@@ -72,7 +72,7 @@ class CreateCommand extends Command
 
 		$output->writeln("<comment> - </comment>" . basename($directory) . " created successfully\n");
 
-		$composer = $this->findComposer();
+		$composer = Core::findComposer();
 
 		$commands = [
 			$composer . ' install'
@@ -121,7 +121,7 @@ class CreateCommand extends Command
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$composer = $this->findComposer();
+		$composer = Core::findComposer();
 		$needsUpdate = Package::updateAvailable();
 
 		if ($needsUpdate) {
@@ -272,21 +272,5 @@ class CreateCommand extends Command
 		}
 
 		return $preset;
-	}
-
-	/**
-	 * Get the composer command for the environment.
-	 *
-	 * @return string
-	 */
-	protected function findComposer(): string
-	{
-		$composerPath = getcwd() . '/composer.phar';
-
-		if (file_exists($composerPath)) {
-			return '"' . PHP_BINARY . '" ' . $composerPath;
-		}
-
-		return 'composer';
 	}
 }

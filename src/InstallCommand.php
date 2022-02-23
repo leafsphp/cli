@@ -41,7 +41,7 @@ class InstallCommand extends Command
 			return 1;
 		}
 
-		$composer = $this->findComposer();
+		$composer = Core::findComposer();
 		$process = Process::fromShellCommandline(
 			file_exists($composerLockPath) ? "$composer install" : "$composer update",
 			null,
@@ -73,7 +73,7 @@ class InstallCommand extends Command
 			$package = str_replace('@', ':', $package);
 
 			$output->writeln("<info>Installing $package...</info>");
-			$composer = $this->findComposer();
+			$composer = Core::findComposer();
 			$process = Process::fromShellCommandline(
 				"$composer require $package",
 				null,
@@ -96,21 +96,5 @@ class InstallCommand extends Command
 		}
 
 		return 0;
-	}
-
-	/**
-	 * Get the composer command for the environment.
-	 *
-	 * @return string
-	 */
-	protected function findComposer(): string
-	{
-		$composerPath = getcwd() . '/composer.phar';
-
-		if (file_exists($composerPath)) {
-			return '"' . PHP_BINARY . '" ' . $composerPath;
-		}
-
-		return 'composer';
 	}
 }

@@ -20,7 +20,7 @@ class UpdateCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$composer = $this->findComposer();
+		$composer = Core::findComposer();
 		$uninstall = Process::fromShellCommandline("$composer global remove leafs/cli --no-update --no-install");
 		$install = Process::fromShellCommandline("$composer global require leafs/cli", null, null, null, null);
 
@@ -42,21 +42,5 @@ class UpdateCommand extends Command
 		}
 
 		return 1;
-	}
-
-	/**
-	 * Get the composer command for the environment.
-	 *
-	 * @return string
-	 */
-	protected function findComposer(): string
-	{
-		$composerPath = getcwd() . '/composer.phar';
-
-		if (file_exists($composerPath)) {
-			return '"' . PHP_BINARY . '" ' . $composerPath;
-		}
-
-		return 'composer';
 	}
 }

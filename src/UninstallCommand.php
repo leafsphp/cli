@@ -32,7 +32,7 @@ class UninstallCommand extends Command
 			return 1;
 		}
 
-		$composer = $this->findComposer();
+		$composer = Core::findComposer();
 
 		foreach ($packages as $package) {
 			if (strpos($package, '/') == false) {
@@ -57,21 +57,5 @@ class UninstallCommand extends Command
 		$output->writeln('<comment>packages uninstalled successfully!</comment>');
 
 		return 0;
-	}
-
-	/**
-	 * Get the composer command for the environment.
-	 *
-	 * @return string
-	 */
-	protected function findComposer(): string
-	{
-		$composerPath = getcwd() . '/composer.phar';
-
-		if (file_exists($composerPath)) {
-			return '"' . PHP_BINARY . '" ' . $composerPath;
-		}
-
-		return 'composer';
 	}
 }
