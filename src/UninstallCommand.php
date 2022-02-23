@@ -32,7 +32,7 @@ class UninstallCommand extends Command
 			return 1;
 		}
 
-		$composer = Core::findComposer();
+		$composer = Utils\Core::findComposer();
 
 		foreach ($packages as $package) {
 			if (strpos($package, '/') == false) {

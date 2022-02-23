@@ -41,7 +41,7 @@ class InstallCommand extends Command
 			return 1;
 		}
 
-		$composer = Core::findComposer();
+		$composer = Utils\Core::findComposer();
 		$process = Process::fromShellCommandline(
 			file_exists($composerLockPath) ? "$composer install" : "$composer update",
 			null,
@@ -73,7 +73,7 @@ class InstallCommand extends Command
 			$package = str_replace('@', ':', $package);
 
 			$output->writeln("<info>Installing $package...</info>");
-			$composer = Core::findComposer();
+			$composer = Utils\Core::findComposer();
 			$process = Process::fromShellCommandline(
 				"$composer require $package",
 				null,

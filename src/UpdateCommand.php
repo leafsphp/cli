@@ -20,7 +20,7 @@ class UpdateCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$composer = Core::findComposer();
+		$composer = Utils\Core::findComposer();
 		$uninstall = Process::fromShellCommandline("$composer global remove leafs/cli --no-update --no-install");
 		$install = Process::fromShellCommandline("$composer global require leafs/cli", null, null, null, null);
 

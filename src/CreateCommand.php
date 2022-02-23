@@ -72,7 +72,7 @@ class CreateCommand extends Command
 
 		$output->writeln('<comment> - </comment>' . basename($directory) . " created successfully\n");
 
-		$composer = Core::findComposer();
+		$composer = Utils\Core::findComposer();
 
 		$commands = [
 			$composer . ' install'
@@ -121,7 +121,7 @@ class CreateCommand extends Command
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$composer = Core::findComposer();
+		$composer = Utils\Core::findComposer();
 		$needsUpdate = Package::updateAvailable();
 
 		if ($needsUpdate) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Leaf\Console;
+namespace Leaf\Console\Utils;
 
 class Core {
 	/**
