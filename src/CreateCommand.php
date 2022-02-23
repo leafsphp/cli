@@ -18,7 +18,7 @@ class CreateCommand extends Command
 	/**
 	 * Leaf version to use
 	 */
-	protected $version = "v3";
+	protected $version = 'v3';
 
 	/**
 	 * Configure the command options.
@@ -42,35 +42,35 @@ class CreateCommand extends Command
 
 	protected function scaffold($input, $output)
 	{
-		$helper = $this->getHelper("question");
-		$question = new ChoiceQuestion("<info>* Please pick a preset</info> ", ["leaf", "leaf mvc", "leaf api", "skeleton"], "leaf");
+		$helper = $this->getHelper('question');
+		$question = new ChoiceQuestion('<info>* Please pick a preset</info> ', ['leaf', 'leaf mvc', 'leaf api', 'skeleton'], 'leaf');
 
 		$question->setMultiselect(false);
-		$question->setErrorMessage("Please select a valid option");
+		$question->setErrorMessage('Please select a valid option');
 
 		return $helper->ask($input, $output, $question);
 	}
 
 	protected function scaffoldVersion($input, $output)
 	{
-		$helper = $this->getHelper("question");
-		$question = new ChoiceQuestion("<info>* Select a version to use</info> ", ["v3", "v2"], "v3");
+		$helper = $this->getHelper('question');
+		$question = new ChoiceQuestion('<info>* Select a version to use</info> ', ['v3', 'v2'], 'v3');
 
 		$question->setMultiselect(false);
-		$question->setErrorMessage("Please select a valid option");
+		$question->setErrorMessage('Please select a valid option');
 
 		return $helper->ask($input, $output, $question);
 	}
 
 	protected function leaf($input, $output, $directory): int
 	{
-		if ($this->version === "v3") {
-			FS::superCopy(__DIR__ . "/themes/leaf3", $directory);
+		if ($this->version === 'v3') {
+			FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
 		} else {
-			FS::superCopy(__DIR__ . "/themes/leaf2", $directory);
+			FS::superCopy(__DIR__ . '/themes/leaf2', $directory);
 		}
 
-		$output->writeln("<comment> - </comment>" . basename($directory) . " created successfully\n");
+		$output->writeln('<comment> - </comment>' . basename($directory) . " created successfully\n");
 
 		$composer = Core::findComposer();
 
@@ -125,8 +125,8 @@ class CreateCommand extends Command
 		$needsUpdate = Package::updateAvailable();
 
 		if ($needsUpdate) {
-			$output->writeln("<comment>Update found, updating to the latest stable version...</comment>");
-			$updateProcess = Process::fromShellCommandline("php " . dirname(__DIR__) . "/bin/leaf update");
+			$output->writeln('<comment>Update found, updating to the latest stable version...</comment>');
+			$updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
 
 			$updateProcess->run();
 
@@ -152,14 +152,14 @@ class CreateCommand extends Command
 			"</info> using <info>$preset@" . $this->version .  "</info>."
 		);
 
-		if ($preset === "leaf") {
+		if ($preset === 'leaf') {
 			return $this->leaf($input, $output, $directory);
 		}
 
 		$installCommand = "$composer create-project leafs/$preset " . basename($directory);
 
-		if ($this->version === "v3") {
-			$installCommand .= " v3.x-dev";
+		if ($this->version === 'v3') {
+			$installCommand .= ' v3.x-dev';
 		}
 
 		$commands = [
@@ -222,13 +222,13 @@ class CreateCommand extends Command
 	 */
 	protected function getVersion(InputInterface $input, $output)
 	{
-		if ($input->getOption("v3")) {
-			$this->version = "v3";
+		if ($input->getOption('v3')) {
+			$this->version = 'v3';
 			return;
 		}
 
-		if ($input->getOption("v2")) {
-			$this->version = "v2";
+		if ($input->getOption('v2')) {
+			$this->version = 'v2';
 			return;
 		}
 
@@ -244,31 +244,31 @@ class CreateCommand extends Command
 	 */
 	protected function getPreset(InputInterface $input, $output): string
 	{
-		if ($input->getOption("basic")) {
-			return "leaf";
+		if ($input->getOption('basic')) {
+			return 'leaf';
 		}
 
-		if ($input->getOption("api")) {
-			return "api";
+		if ($input->getOption('api')) {
+			return 'api';
 		}
 
-		if ($input->getOption("mvc")) {
-			return "mvc";
+		if ($input->getOption('mvc')) {
+			return 'mvc';
 		}
 
-		if ($input->getOption("skeleton")) {
-			return "skeleton";
+		if ($input->getOption('skeleton')) {
+			return 'skeleton';
 		}
 
 		$preset = $this->scaffold($input, $output);
 		$output->writeln("\n<comment> - </comment>Using preset $preset\n");
 
-		if ($preset == "leaf api") {
-			return "api";
+		if ($preset == 'leaf api') {
+			return 'api';
 		}
 
-		if ($preset == "leaf mvc") {
-			return "mvc";
+		if ($preset == 'leaf mvc') {
+			return 'mvc';
 		}
 
 		return $preset;
