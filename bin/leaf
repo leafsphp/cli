@@ -10,7 +10,14 @@ if (file_exists(dirname(__DIR__, 3) . "/autoload.php")) {
 $leafCli = json_decode(file_get_contents(dirname(__DIR__) . "/composer.json"));
 $currentVersion = $leafCli->version;
 
-$app = new Symfony\Component\Console\Application("Leaf CLI", $currentVersion);
+$app = new Symfony\Component\Console\Application("
+<info>.____                  _____  _________ .____    .___ 
+|    |    ____ _____ _/ ____\ \_   ___ \|    |   | <comment>$currentVersion</comment>
+|    |  _/ __ \\\__  \\\   __\  /    \  \/|    |   |   |
+|    |__\  ___/ / __ \|  |    \     \___|    |___|   |
+|_______ \___  >____  /__|     \______  /_______ \___|
+        \/   \/     \/                \/        \/</info>    
+");
 
 $app->add(new Leaf\Console\CreateCommand);
 $app->add(new Leaf\Console\UpdateCommand);
