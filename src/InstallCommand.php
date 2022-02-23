@@ -67,7 +67,7 @@ class InstallCommand extends Command
 	protected function install($packages, $output)
 	{
 		foreach ($packages as $package) {
-			if (strpos($package, '/') == false || strpos($package, '.') == false) {
+			if (strpos($package, '/') == false) {
 				$package = "leafs/$package";
 			}
 			$package = str_replace('@', ':', $package);
