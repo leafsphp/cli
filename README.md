@@ -13,8 +13,6 @@ A simple command line tool for creating and interacting with your leaf projects.
 
 ## Installation
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/yb3LUYHtopQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 You can get this tool up and running on your system using composer:
 
 ```bash
