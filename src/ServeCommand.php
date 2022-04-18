@@ -25,9 +25,7 @@ class ServeCommand extends Command
 		$port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
 		$process = Process::fromShellCommandline("php -S localhost:$port", null, null, null, null);
 
-		// Print welcome message just once
-		$output->writeln("<info>Leaf development server started: http://localhost:$port</info>");
-		$output->writeln('<comment>Happy coding!</comment>');
+		$output->writeln("<info>Starting Leaf development server on <href=http://localhost:$port>http://localhost:$port</></info>");
 
 		return $process->run(function ($type, $line) use ($output, $port) {
 			if (is_string($line) && !strpos($line, 'Failed')) {
