@@ -152,7 +152,7 @@ $ leaf interact
 
 This opens up your app on the PHP local server.
 
-```bash
+```sh
 leaf serve
 ```
 
@@ -219,6 +219,17 @@ And to all our existing cash/code contributors, we love you all ❤️
 				<sub><b>Vano</b></sub>
 			</a>
 		</td>
+		<td align="center">
+          <a href="#">
+            <img
+              src="https://images.opencollective.com/guest-c72a498e/avatar.png"
+              width="120px"
+              alt=""
+            />
+            <br />
+            <sub><b>Casprine</b></sub>
+          </a>
+        </td>
 	</tr>
 </table>
 
