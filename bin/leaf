@@ -32,5 +32,6 @@ $app->add(new Leaf\Console\InstallCommand);
 $app->add(new Leaf\Console\UninstallCommand);
 $app->add(new Leaf\Console\ServeCommand);
 $app->add(new Leaf\Console\InteractCommand);
+$app->add(new Leaf\Console\RunCommand);
 
 $app->run();
