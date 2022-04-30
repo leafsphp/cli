@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Leaf\Console;
 
 use Leaf\Console\Utils\Package;
