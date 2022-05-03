@@ -24,6 +24,23 @@ class ServeCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
+		$vendorPath = getcwd() . '/vendor';
+		$composerJsonPath = getcwd() . '/composer.json';
+
+		if (!is_dir($vendorPath) && file_exists($composerJsonPath)) {
+			$output->writeln('<info>Installing dependencies...</info>');
+			$leaf = Utils\Core::findLeaf();
+			$installProcess = Process::fromShellCommandline("$leaf install");
+
+			$installProcess->run(function ($type, $line) use ($output) {
+				$output->write($line);
+			});
+
+			if (!$installProcess->isSuccessful()) {
+				$output->writeln('<error>Failed to install dependencies</error>');
+			}
+		}
+
 		$port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
 		$process = Process::fromShellCommandline("php -S localhost:$port", null, null, null, null);
 

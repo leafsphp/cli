@@ -20,4 +20,20 @@ class Core {
 
 		return 'composer';
 	}
+	
+	/**
+	 * Get the leaf CLI bin.
+	 *
+	 * @return string
+	 */
+	public static function findLeaf(): string
+	{
+		$leafPath = __DIR__ . '/../../bin/leaf';
+
+		if (file_exists($leafPath)) {
+			return '"' . PHP_BINARY . '" ' . $leafPath;
+		}
+
+		return 'leaf';
+	}
 }
