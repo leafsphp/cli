@@ -31,6 +31,7 @@ class CreateCommand extends Command
 	{
 		$this
 			->setName('create')
+			->setAliases(['init'])
 			->setDescription('Create a new Leaf PHP project')
 			->addArgument('project-name', InputArgument::REQUIRED)
 			->addOption('basic', null, InputOption::VALUE_NONE, 'Create a raw leaf project')
