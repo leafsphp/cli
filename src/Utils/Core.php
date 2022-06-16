@@ -22,6 +22,22 @@ class Core {
 	}
 	
 	/**
+	 * Get the node command for the environment.
+	 *
+	 * @return string
+	 */
+	public static function findNodeJS(): string
+	{
+		$nodePath = getcwd() . '/node';
+
+		if (file_exists($nodePath)) {
+			return '"' . PHP_BINARY . '" ' . $nodePath;
+		}
+
+		return 'node';
+	}
+	
+	/**
 	 * Get the leaf CLI bin.
 	 *
 	 * @return string
@@ -35,5 +51,15 @@ class Core {
 		}
 
 		return 'leaf';
+	}
+
+	/**
+	 * Check if a system command exists
+	 * 
+	 * @return bool
+	 */
+	public static function commandExists(string $cmd)
+	{
+		return !empty(shell_exec(sprintf("which %s", escapeshellarg($cmd))));
 	}
 }
