@@ -31,10 +31,26 @@ class Core {
 		$nodePath = getcwd() . '/node';
 
 		if (file_exists($nodePath)) {
-			return '"' . PHP_BINARY . '" ' . $nodePath;
+			return $nodePath;
 		}
 
 		return 'node';
+	}
+
+	/**
+	 * Get the node command for the environment.
+	 *
+	 * @return string
+	 */
+	public static function findNpm(): string
+	{
+		$npmPath = getcwd() . '/npm';
+
+		if (file_exists($npmPath)) {
+			return $npmPath;
+		}
+
+		return 'npm';
 	}
 	
 	/**
