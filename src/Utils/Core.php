@@ -68,6 +68,22 @@ class Core {
 
 		return 'leaf';
 	}
+	
+	/**
+	 * Get the leaf watcher bin.
+	 *
+	 * @return string
+	 */
+	public static function findWatcher(): string
+	{
+		$watcherPath = getcwd() . '/watcher/bin/watcher.js';
+
+		if (file_exists($watcherPath)) {
+			return $watcherPath;
+		}
+
+		return 'leaf-watcher';
+	}
 
 	/**
 	 * Check if a system command exists
