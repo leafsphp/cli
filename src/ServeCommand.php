@@ -8,6 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Process\Process;
 
 class ServeCommand extends Command
@@ -19,7 +20,8 @@ class ServeCommand extends Command
 		$this
 			->setHelp('Start the leaf app server')
 			->setDescription('Run your Leaf app')
-			->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on');
+			->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on')
+			->addOption('watch', 'w', InputOption::VALUE_NONE, 'Run your leaf app with hot reloading [experimental]');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
@@ -41,6 +43,60 @@ class ServeCommand extends Command
 			}
 		}
 
+		if ($input->getOption('watch')) {
+			$leafWatcherInstalled = Utils\Core::commandExists('leaf-watcher');
+			$node = Utils\Core::findNodeJS();
+			$npm = Utils\Core::findNpm();
+			$watcher = Utils\Core::findWatcher();
+			$leaf = Utils\Core::findLeaf();
+
+			if (!$node || !$npm) {
+				$output->writeln('<error>Can\'t find NodeJS on the system. Watching will be disabled.</error>');
+				return $this->startServer($input, $output);
+			}
+
+			if (!$leafWatcherInstalled) {
+				$installWatcher = $this->askToInstallWatcher($input, $output);
+
+				if (!$installWatcher && !file_exists($watcher)) {
+					$output->writeln('<error>Watcher install cancelled. Watching will be disabled.</error>');
+					return $this->startServer($input, $output);
+				}
+
+				$output->writeln('<info>Installing leaf watcher...</info>');
+				$installProcess = Process::fromShellCommandline("$npm install -g @leafphp/watcher");
+
+				$installProcess->run(function ($type, $line) use ($output) {
+					$output->write($line);
+				});
+
+				if (!$installProcess->isSuccessful()) {
+					$output->writeln('<error>Failed to install leaf watcher. Watching will be disabled.</error>');
+					return $this->startServer($input, $output);
+				}
+			}
+
+			$port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
+			$process = Process::fromShellCommandline("$watcher --exec $leaf serve --port $port", null, null, null, null);
+
+			return $process->run(function ($type, $line) use ($output) {
+				$output->write($line);
+			});
+		}
+
+		return $this->startServer($input, $output);
+	}
+
+	protected function askToInstallWatcher($input, $output)
+	{
+		$helper = $this->getHelper('question');
+		$question = new ConfirmationQuestion('<info>* Leaf Watcher is required to enable monitoring. Install package?</info> ', true);
+
+		return $helper->ask($input, $output, $question);
+	}
+
+	protected function startServer(InputInterface $input, OutputInterface $output): int
+	{
 		$port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
 		$process = Process::fromShellCommandline("php -S localhost:$port", null, null, null, null);
 
