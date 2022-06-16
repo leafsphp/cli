@@ -162,6 +162,12 @@ You can also specify the port
 leaf serve -p 8000
 ```
 
+In v2.1, you can also start the leaf server with hot module watching. This reloads your application anytime a change is made to your application code. To get started, simply start the leaf server with the `--watch` flag.
+
+```sh
+leaf serve --port 8000 --watch
+```
+
 ## License
 
 Leaf CLI is open-sourced software licensed under the [MIT license](LICENSE.md).
