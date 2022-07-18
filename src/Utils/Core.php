@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Leaf\Console\Utils;
 
-class Core {
+class Core
+{
 	/**
 	 * Get the composer command for the environment.
 	 *
@@ -20,7 +21,23 @@ class Core {
 
 		return 'composer';
 	}
-	
+
+	/**
+	 * Get the git command for the environment.
+	 *
+	 * @return string
+	 */
+	public static function findGit(): string
+	{
+		$gitPath = getcwd() . '/git';
+
+		if (file_exists($gitPath)) {
+			return $gitPath;
+		}
+
+		return 'git';
+	}
+
 	/**
 	 * Get the node command for the environment.
 	 *
@@ -52,7 +69,7 @@ class Core {
 
 		return 'npm';
 	}
-	
+
 	/**
 	 * Get the leaf CLI bin.
 	 *
@@ -68,7 +85,7 @@ class Core {
 
 		return 'leaf';
 	}
-	
+
 	/**
 	 * Get the leaf watcher bin.
 	 *
