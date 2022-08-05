@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Process\Process;
 
 class CreateCommand extends Command
@@ -21,6 +22,11 @@ class CreateCommand extends Command
 	 * Leaf version to use
 	 */
 	protected $version = 'v3';
+
+	/**
+	 * Add testing to app?
+	 */
+	protected $testing = false;
 
 	/**
 	 * Configure the command options.
@@ -40,6 +46,7 @@ class CreateCommand extends Command
 			->addOption('skeleton', null, InputOption::VALUE_NONE, 'Create a new leaf project with skeleton')
 			->addOption('v3', null, InputOption::VALUE_NONE, 'Use leaf v3')
 			->addOption('v2', null, InputOption::VALUE_NONE, 'Use leaf v2')
+			->addOption('with-tests', 't', InputOption::VALUE_NONE, 'Add testing with alchemy')
 			->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
 	}
 
@@ -52,6 +59,20 @@ class CreateCommand extends Command
 		$question->setErrorMessage('Please select a valid option');
 
 		return $helper->ask($input, $output, $question);
+	}
+
+	protected function scaffoldTesting($input, $output)
+	{
+		$helper = $this->getHelper('question');
+		$question = new ConfirmationQuestion('<info>* Add testing with Leaf Alchemy? <comment>[y, n]</comment></info> ');
+
+		$addTests = $helper->ask($input, $output, $question);
+		
+		if ($addTests) {
+			$output->writeln("\n<comment> - </comment>Adding alchemy for tests\n");
+		}
+
+		return $addTests;
 	}
 
 	protected function scaffoldVersion($input, $output)
@@ -78,8 +99,13 @@ class CreateCommand extends Command
 		$composer = Utils\Core::findComposer();
 
 		$commands = [
-			$composer . ' install'
+			$composer . ' install' 
 		];
+
+		if ($this->testing) {
+			$commands[] = "composer require leafs/alchemy";
+			$commands[] = "./vendor/bin/alchemy setup";
+		}
 
 		if ($input->getOption('no-ansi')) {
 			$commands = array_map(function ($value) {
@@ -109,6 +135,12 @@ class CreateCommand extends Command
 			$output->writeln("\nYou can start with:");
 			$output->writeln("\n  <info>cd</info> " . basename($directory));
 			$output->writeln("  <info>leaf serve</info>");
+			
+			if ($this->testing) {
+				$output->writeln("\nYou can run tests with:");
+				$output->writeln("  <info>leaf test</info>");
+			}
+
 			$output->writeln("\nHappy gardening!");
 		}
 
@@ -148,6 +180,12 @@ class CreateCommand extends Command
 		$preset = $this->getPreset($input, $output);
 		$this->getVersion($input, $output);
 
+		if (!$input->getOption('with-tests')) {
+			$this->testing = $this->scaffoldTesting($input, $output);
+		} else {
+			$this->testing = true;
+		}
+
 		$output->writeln(
 			"\n<comment> - </comment>Creating \""
 			. basename($directory) . "\" in <info>./"
@@ -181,6 +219,12 @@ class CreateCommand extends Command
 			}, $commands);
 		}
 
+		if ($this->testing) {
+			$commands[] = "cd " . basename($directory);
+			$commands[] = "composer require leafs/alchemy";
+			$commands[] = "./vendor/bin/alchemy setup";
+		}
+
 		$process = Process::fromShellCommandline(
 			implode(' && ', $commands), dirname($directory), null, null, null
 		);
@@ -197,6 +241,12 @@ class CreateCommand extends Command
 			$output->writeln("\nYou can start with:");
 			$output->writeln("\n  <info>cd</info> " . basename($directory));
 			$output->writeln("  <info>leaf serve</info>");
+
+			if ($this->testing) {
+				$output->writeln("\nYou can run tests with:");
+				$output->writeln("  <info>leaf test</info>");
+			}
+
 			$output->writeln("\nHappy gardening!");
 		}
 
@@ -236,6 +286,7 @@ class CreateCommand extends Command
 		}
 
 		$this->version = $this->scaffoldVersion($input, $output);
+		$output->writeln("\n<comment> - </comment>Using version: $this->version\n");
 	}
 
 	/**
