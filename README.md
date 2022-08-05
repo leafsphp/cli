@@ -1,13 +1,31 @@
+<!-- markdownlint-disable no-inline-html -->
 <p align="center">
-    <br><br>
-    <img src="https://leafphp.dev/logo-circle.png" height="100"/>
-    <h1 align="center">Leaf CLI 2</h1>
-    <br><br>
+  <br><br>
+  <img src="https://leafphp.dev/logo-circle.png" height="100"/>
+  <br>
 </p>
 
-[![Latest Stable Version](https://poser.pugx.org/leafs/cli/v/stable)](https://packagist.org/packages/leafs/cli)
-[![Total Downloads](https://poser.pugx.org/leafs/cli/downloads)](https://packagist.org/packages/leafs/cli)
-[![License](https://poser.pugx.org/leafs/cli/license)](https://packagist.org/packages/leafs/cli)
+<h1 align="center">Leaf CLI 2</h1>
+
+<p align="center">
+	<a href="https://packagist.org/packages/leafs/cli"
+		><img
+			src="https://poser.pugx.org/leafs/cli/v/stable"
+			alt="Latest Stable Version"
+	/></a>
+	<a href="https://packagist.org/packages/leafs/cli"
+		><img
+			src="https://poser.pugx.org/leafs/cli/downloads"
+			alt="Total Downloads"
+	/></a>
+	<a href="https://packagist.org/packages/leafs/cli"
+		><img
+			src="https://poser.pugx.org/leafs/cli/license"
+			alt="License"
+	/></a>
+</p>
+<br />
+<br />
 
 A simple command line tool for creating and interacting with your leaf projects. You can do stuff like installing packages, interacting with your app, previewing your app, ...
 
