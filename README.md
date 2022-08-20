@@ -209,6 +209,15 @@ To report a security vulnerability, you can reach out to [@mychidarko](https://t
 				</sub>
 			</a>
 		</td>
+		<td align="center">
+			<a href="https://github.com/tedtop">
+				<img src="https://avatars.githubusercontent.com/u/5151307?v=4" width="120px" alt=""/>
+				<br />
+				<sub>
+					<b>tedtop</b>
+				</sub>
+			</a>
+		</td>
 	</tr>
 </table>
 
