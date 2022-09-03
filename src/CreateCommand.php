@@ -47,6 +47,7 @@ class CreateCommand extends Command
 			->addOption('v3', null, InputOption::VALUE_NONE, 'Use leaf v3')
 			->addOption('v2', null, InputOption::VALUE_NONE, 'Use leaf v2')
 			->addOption('with-tests', 't', InputOption::VALUE_NONE, 'Add testing with alchemy')
+			->addOption('no-tests', 't', InputOption::VALUE_NONE, 'Create app without tests')
 			->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
 	}
 
@@ -183,7 +184,7 @@ class CreateCommand extends Command
 		if (!$input->getOption('with-tests')) {
 			$this->testing = $this->scaffoldTesting($input, $output);
 		} else {
-			$this->testing = true;
+			$this->testing = !$input->getOption('no-tests');
 		}
 
 		$output->writeln(
