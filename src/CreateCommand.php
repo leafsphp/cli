@@ -181,10 +181,10 @@ class CreateCommand extends Command
 		$preset = $this->getPreset($input, $output);
 		$this->getVersion($input, $output);
 
-		if (!$input->getOption('with-tests')) {
+		if ($input->getOption('with-tests')) {
+			$this->testing = true;
+		} else if (!$input->getOption('no-tests') && !$input->getOption('with-tests')) {
 			$this->testing = $this->scaffoldTesting($input, $output);
-		} else {
-			$this->testing = !$input->getOption('no-tests');
 		}
 
 		$output->writeln(
