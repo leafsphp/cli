@@ -2,7 +2,7 @@
 	"name": "leafs/cli",
 	"description": "A simple command line tool for installing and interacting with your leaf apps",
 	"homepage": "https://cli.leafphp.dev",
-	"version": "v2.4.2",
+	"version": "v2.4.3",
 	"keywords": [
 		"leaf",
 		"php",
@@ -20,7 +20,7 @@
 	"require": {
 		"ext-json": "*",
 		"leafs/fs": "^1.0",
-		"psy/psysh": "^0.11.1",
+		"psy/psysh": "*",
 		"symfony/console": "^5.0",
 		"symfony/process": "^5.0"
 	},
