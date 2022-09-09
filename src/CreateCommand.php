@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace Leaf\Console;
 
@@ -13,319 +13,326 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Process\Process;
 
 class CreateCommand extends Command
 {
-	/**
-	 * Leaf version to use
-	 */
-	protected $version = 'v3';
+    /**
+     * Leaf version to use
+     */
+    protected $version = 'v3';
 
-	/**
-	 * Add testing to app?
-	 */
-	protected $testing = false;
+    /**
+     * Add testing to app?
+     */
+    protected $testing = false;
 
-	/**
-	 * Configure the command options.
-	 *
-	 * @return void
-	 */
-	protected function configure()
-	{
-		$this
-			->setName('create')
-			->setAliases(['init'])
-			->setDescription('Create a new Leaf PHP project')
-			->addArgument('project-name', InputArgument::REQUIRED)
-			->addOption('basic', null, InputOption::VALUE_NONE, 'Create a raw leaf project')
-			->addOption('api', null, InputOption::VALUE_NONE, 'Create a new Leaf API project')
-			->addOption('mvc', null, InputOption::VALUE_NONE, 'Create a new Leaf MVC project')
-			->addOption('skeleton', null, InputOption::VALUE_NONE, 'Create a new leaf project with skeleton')
-			->addOption('v3', null, InputOption::VALUE_NONE, 'Use leaf v3')
-			->addOption('v2', null, InputOption::VALUE_NONE, 'Use leaf v2')
-			->addOption('with-tests', 't', InputOption::VALUE_NONE, 'Add testing with alchemy')
-			->addOption('no-tests', 'nt', InputOption::VALUE_NONE, 'Create app without tests')
-			->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
-	}
+    /**
+     * Configure the command options.
+     *
+     * @return void
+     */
+    protected function configure()
+    {
+        $this
+            ->setName('create')
+            ->setAliases(['init'])
+            ->setDescription('Create a new Leaf PHP project')
+            ->addArgument('project-name', InputArgument::REQUIRED)
+            ->addOption('basic', null, InputOption::VALUE_NONE, 'Create a raw leaf project')
+            ->addOption('api', null, InputOption::VALUE_NONE, 'Create a new Leaf API project')
+            ->addOption('mvc', null, InputOption::VALUE_NONE, 'Create a new Leaf MVC project')
+            ->addOption('skeleton', null, InputOption::VALUE_NONE, 'Create a new leaf project with skeleton')
+            ->addOption('v3', null, InputOption::VALUE_NONE, 'Use leaf v3')
+            ->addOption('v2', null, InputOption::VALUE_NONE, 'Use leaf v2')
+            ->addOption('phpunit', null, InputOption::VALUE_NONE, 'Add testing with phpunit')
+            ->addOption('pestphp', null, InputOption::VALUE_NONE, 'Add testing with pest')
+            ->addOption('no-tests', 'nt', InputOption::VALUE_NONE, 'Create app without tests')
+            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
+    }
 
-	protected function scaffold($input, $output)
-	{
-		$helper = $this->getHelper('question');
-		$question = new ChoiceQuestion('<info>* Please pick a preset</info> ', ['leaf', 'leaf mvc', 'leaf api', 'skeleton'], 'leaf');
+    /**
+     * Get the preset that should be downloaded.
+     *
+     * @param InputInterface $input
+     * @param $output
+     * @return string
+     */
+    protected function getAppPreset(InputInterface $input, $output): string
+    {
+        if ($input->getOption('basic')) {
+            return 'leaf';
+        }
 
-		$question->setMultiselect(false);
-		$question->setErrorMessage('Please select a valid option');
+        if ($input->getOption('api')) {
+            return 'api';
+        }
 
-		return $helper->ask($input, $output, $question);
-	}
+        if ($input->getOption('mvc')) {
+            return 'mvc';
+        }
 
-	protected function scaffoldTesting($input, $output)
-	{
-		$helper = $this->getHelper('question');
-		$question = new ConfirmationQuestion('<info>* Add testing with Leaf Alchemy? <comment>[y, n]</comment></info> ');
+        if ($input->getOption('skeleton')) {
+            return 'skeleton';
+        }
 
-		$addTests = $helper->ask($input, $output, $question);
-		
-		if ($addTests) {
-			$output->writeln("\n<comment> - </comment>Adding alchemy for tests\n");
-		}
+        $helper = $this->getHelper('question');
+        $question = new ChoiceQuestion('<info>? What preset would you like to use?</info> (leaf) ', ['leaf', 'leaf mvc', 'leaf api', 'skeleton'], 'leaf');
 
-		return $addTests;
-	}
+        $question->setMultiselect(false);
+        $question->setErrorMessage('Invalid option selected!');
 
-	protected function scaffoldVersion($input, $output)
-	{
-		$helper = $this->getHelper('question');
-		$question = new ChoiceQuestion('<info>* Select a version to use</info> ', ['v3', 'v2'], 'v3');
+        $preset = $helper->ask($input, $output, $question);
+        $output->writeln("\n<comment> - </comment>Using preset $preset\n");
 
-		$question->setMultiselect(false);
-		$question->setErrorMessage('Please select a valid option');
+        if ($preset == 'leaf api') {
+            return 'api';
+        }
 
-		return $helper->ask($input, $output, $question);
-	}
+        if ($preset == 'leaf mvc') {
+            return 'mvc';
+        }
 
-	protected function leaf($input, $output, $directory): int
-	{
-		if ($this->version === 'v3') {
-			FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
-		} else {
-			FS::superCopy(__DIR__ . '/themes/leaf2', $directory);
-		}
+        return $preset;
+    }
 
-		$output->writeln('<comment> - </comment>' . basename($directory) . " created successfully\n");
+    protected function getAppVersion($input, $output)
+    {
+        $helper = $this->getHelper('question');
+        $question = new ChoiceQuestion('<info>? Select a version to use</info> (v3) ', ['v3', 'v2'], 'v3');
 
-		$composer = Utils\Core::findComposer();
+        $question->setMultiselect(false);
+        $question->setErrorMessage('Please select a valid option');
 
-		$commands = [
-			$composer . ' install' 
-		];
+        return $helper->ask($input, $output, $question);
+    }
 
-		if ($this->testing) {
-			$commands[] = "composer require leafs/alchemy";
-			$commands[] = "./vendor/bin/alchemy setup";
-		}
+    protected function getAppTestPreset($input, $output)
+    {
+		if ($input->getOption('no-tests')) {
+            return false;
+        }
 
-		if ($input->getOption('no-ansi')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --no-ansi';
-			}, $commands);
-		}
+        if ($input->getOption('pestphp')) {
+            return 'pest';
+        }
 
-		if ($input->getOption('quiet')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --quiet';
-			}, $commands);
-		}
+        if ($input->getOption('phpunit')) {
+            return 'phpunit';
+        }
 
-		$process = Process::fromShellCommandline(
-			implode(' && ', $commands), $directory, null, null, null
-		);
+        $helper = $this->getHelper('question');
+        $question = new ChoiceQuestion('<info>? Would you like to add tests?</info> (No tests) ', ['No tests', 'Pest PHP via Alchemy', 'PHPUnit via Alchemy'], 'No tests');
 
-		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-			$process->setTty(true);
-		}
+        $preset = $helper->ask($input, $output, $question);
 
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
+		if ($preset == 'Pest PHP via Alchemy') {
+            return 'pest';
+        }
 
-		if ($process->isSuccessful()) {
-			$output->writeln("\nYou can start with:");
-			$output->writeln("\n  <info>cd</info> " . basename($directory));
-			$output->writeln("  <info>leaf serve</info>");
-			
-			if ($this->testing) {
-				$output->writeln("\nYou can run tests with:");
-				$output->writeln("  <info>leaf test</info>");
-			}
+        if ($preset == 'PHPUnit via Alchemy') {
+            return 'phpunit';
+        }
 
-			$output->writeln("\nHappy gardening!");
-		}
+        return false;
+    }
 
-		return 0;
-	}
+    protected function buildLeafApp($input, $output, $directory): int
+    {
+        if ($this->version === 'v3') {
+            FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
+        } else {
+            FS::superCopy(__DIR__ . '/themes/leaf2', $directory);
+        }
 
-	/**
-	 * Execute the command.
-	 *
-	 * @param InputInterface $input
-	 * @param OutputInterface $output
-	 * @return int
-	 */
-	protected function execute(InputInterface $input, OutputInterface $output): int
-	{
-		$composer = Utils\Core::findComposer();
-		$needsUpdate = Package::updateAvailable();
+        $output->writeln('<comment> - </comment>' . basename($directory) . " scaffolded successfully\n");
 
-		if ($needsUpdate) {
-			$output->writeln('<comment>Update found, updating to the latest stable version...</comment>');
-			$updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
+        $composer = Utils\Core::findComposer();
 
-			$updateProcess->run();
+        $commands = [
+            $composer . ' install',
+        ];
 
-			if ($updateProcess->isSuccessful()) {
-				$output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
-			}
-		}
+        if ($this->testing) {
+            $commands[] = "composer require leafs/alchemy --dev";
+            $commands[] = "./vendor/bin/alchemy setup --{$this->testing}";
+        }
 
-		$name = $input->getArgument('project-name');
-		$directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
+        if ($input->getOption('no-ansi')) {
+            $commands = array_map(function ($value) {
+                return $value . ' --no-ansi';
+            }, $commands);
+        }
 
-		if (!$input->getOption('force')) {
-			$this->verifyApplicationDoesntExist($directory);
-		}
+        if ($input->getOption('quiet')) {
+            $commands = array_map(function ($value) {
+                return $value . ' --quiet';
+            }, $commands);
+        }
 
-		$preset = $this->getPreset($input, $output);
-		$this->getVersion($input, $output);
+        $process = Process::fromShellCommandline(
+            implode(' && ', $commands), $directory, null, null, null
+        );
 
-		if ($input->getOption('with-tests')) {
-			$this->testing = true;
-		} else if (!$input->getOption('no-tests') && !$input->getOption('with-tests')) {
-			$this->testing = $this->scaffoldTesting($input, $output);
-		}
+        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+            $process->setTty(true);
+        }
 
-		$output->writeln(
-			"\n<comment> - </comment>Creating \""
-			. basename($directory) . "\" in <info>./"
-			. basename(dirname($directory)) .
-			"</info> using <info>$preset@" . $this->version .  "</info>."
-		);
+        $process->run(function ($type, $line) use ($output) {
+            $output->write($line);
+        });
 
-		if ($preset === 'leaf') {
-			return $this->leaf($input, $output, $directory);
-		}
+        if ($process->isSuccessful()) {
+            $output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
+            $output->writeln("👉  Get started with the following commands:");
+            $output->writeln("\n    <info>cd</info> " . basename($directory));
+            $output->writeln("    <info>leaf serve</info>");
 
-		$installCommand = "$composer create-project leafs/$preset " . basename($directory);
+            if ($this->testing) {
+                $output->writeln("\n👉  You can run tests with:");
+                $output->writeln("\n    <info>leaf test</info>");
+            }
 
-		if ($this->version === 'v3') {
-			$installCommand .= ' v3.x-dev';
-		}
+            $output->writeln("\n🍁  Happy gardening!");
+        }
 
-		$commands = [
-			$installCommand,
-		];
+        return 0;
+    }
 
-		if ($input->getOption('no-ansi')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --no-ansi';
-			}, $commands);
-		}
+    /**
+     * Execute the command.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $composer = Utils\Core::findComposer();
+        $needsUpdate = Package::updateAvailable();
 
-		if ($input->getOption('quiet')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --quiet';
-			}, $commands);
-		}
+        if ($needsUpdate) {
+            $output->writeln('<comment>Update found, updating to the latest stable version...</comment>');
+            $updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
 
-		if ($this->testing) {
-			$commands[] = "cd " . basename($directory);
-			$commands[] = "composer require leafs/alchemy";
-			$commands[] = "./vendor/bin/alchemy setup";
-		}
+            $updateProcess->run();
 
-		$process = Process::fromShellCommandline(
-			implode(' && ', $commands), dirname($directory), null, null, null
-		);
+            if ($updateProcess->isSuccessful()) {
+                $output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
+            }
+        }
 
-		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-			$process->setTty(true);
-		}
+        $name = $input->getArgument('project-name');
+        $directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
 
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
+        if (!$input->getOption('force')) {
+            $this->verifyApplicationDoesntExist($directory);
+        }
 
-		if ($process->isSuccessful()) {
-			$output->writeln("\nYou can start with:");
-			$output->writeln("\n  <info>cd</info> " . basename($directory));
-			$output->writeln("  <info>leaf serve</info>");
+        $preset = $this->getAppPreset($input, $output);
+        $this->getVersion($input, $output);
+		$this->testing = $this->getAppTestPreset($input, $output);
 
-			if ($this->testing) {
-				$output->writeln("\nYou can run tests with:");
-				$output->writeln("  <info>leaf test</info>");
-			}
+        $output->writeln(
+            "\n<comment> - </comment>Creating \""
+            . basename($directory) . "\" in <info>./"
+            . basename(dirname($directory)) .
+            "</info> using <info>$preset@" . $this->version . "</info>."
+        );
 
-			$output->writeln("\nHappy gardening!");
-		}
+        if ($preset === 'leaf') {
+            return $this->buildLeafApp($input, $output, $directory);
+        }
 
-		return 0;
-	}
+        $installCommand = "$composer create-project leafs/$preset " . basename($directory);
 
-	/**
-	 * Verify that the application does not already exist.
-	 *
-	 * @param string $directory
-	 * @return void
-	 */
-	protected function verifyApplicationDoesntExist(string $directory)
-	{
-		if ((is_dir($directory) || is_file($directory)) && $directory != getcwd()) {
-			throw new RuntimeException('Application already exists!');
-		}
-	}
+        if ($this->version === 'v3') {
+            $installCommand .= ' v3.x-dev';
+        }
 
-	/**
-	 * Get the version that should be downloaded.
-	 *
-	 * @param InputInterface $input
-	 * @param $output
-	 * @return void
-	 */
-	protected function getVersion(InputInterface $input, $output)
-	{
-		if ($input->getOption('v3')) {
-			$this->version = 'v3';
-			return;
-		}
+        $commands = [
+            $installCommand,
+        ];
 
-		if ($input->getOption('v2')) {
-			$this->version = 'v2';
-			return;
-		}
+        if ($input->getOption('no-ansi')) {
+            $commands = array_map(function ($value) {
+                return $value . ' --no-ansi';
+            }, $commands);
+        }
 
-		$this->version = $this->scaffoldVersion($input, $output);
-		$output->writeln("\n<comment> - </comment>Using version: $this->version\n");
-	}
+        if ($input->getOption('quiet')) {
+            $commands = array_map(function ($value) {
+                return $value . ' --quiet';
+            }, $commands);
+        }
 
-	/**
-	 * Get the preset that should be downloaded.
-	 *
-	 * @param InputInterface $input
-	 * @param $output
-	 * @return string
-	 */
-	protected function getPreset(InputInterface $input, $output): string
-	{
-		if ($input->getOption('basic')) {
-			return 'leaf';
-		}
+        if ($this->testing) {
+            $commands[] = "cd " . basename($directory);
+            $commands[] = "composer require leafs/alchemy --dev";
+            $commands[] = "./vendor/bin/alchemy setup --{$this->testing}";
+        }
 
-		if ($input->getOption('api')) {
-			return 'api';
-		}
+        $process = Process::fromShellCommandline(
+            implode(' && ', $commands), dirname($directory), null, null, null
+        );
 
-		if ($input->getOption('mvc')) {
-			return 'mvc';
-		}
+        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+            $process->setTty(true);
+        }
 
-		if ($input->getOption('skeleton')) {
-			return 'skeleton';
-		}
+        $process->run(function ($type, $line) use ($output) {
+            $output->write($line);
+        });
 
-		$preset = $this->scaffold($input, $output);
-		$output->writeln("\n<comment> - </comment>Using preset $preset\n");
+        if ($process->isSuccessful()) {
+            $output->writeln("\nYou can start with:");
+            $output->writeln("\n  <info>cd</info> " . basename($directory));
+            $output->writeln("  <info>leaf serve</info>");
 
-		if ($preset == 'leaf api') {
-			return 'api';
-		}
+            if ($this->testing) {
+                $output->writeln("\nYou can run tests with:");
+                $output->writeln("  <info>leaf test</info>");
+            }
 
-		if ($preset == 'leaf mvc') {
-			return 'mvc';
-		}
+            $output->writeln("\nHappy gardening!");
+        }
 
-		return $preset;
-	}
+        return 0;
+    }
+
+    /**
+     * Verify that the application does not already exist.
+     *
+     * @param string $directory
+     * @return void
+     */
+    protected function verifyApplicationDoesntExist(string $directory)
+    {
+        if ((is_dir($directory) || is_file($directory)) && $directory != getcwd()) {
+            throw new RuntimeException('Application already exists!');
+        }
+    }
+
+    /**
+     * Get the version that should be downloaded.
+     *
+     * @param InputInterface $input
+     * @param $output
+     * @return void
+     */
+    protected function getVersion(InputInterface $input, $output)
+    {
+        if ($input->getOption('v3')) {
+            $this->version = 'v3';
+            return;
+        }
+
+        if ($input->getOption('v2')) {
+            $this->version = 'v2';
+            return;
+        }
+
+        $this->version = $this->getAppVersion($input, $output);
+        $output->writeln("\n<comment> - </comment>Using version: $this->version\n");
+    }
 }
