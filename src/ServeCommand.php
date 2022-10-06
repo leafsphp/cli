@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,6 +21,7 @@ class ServeCommand extends Command
 		$this
 			->setHelp('Start the leaf app server')
 			->setDescription('Run your Leaf app')
+			->addArgument('filename', InputArgument::OPTIONAL, 'The PHP script to run')
 			->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on')
 			->addOption('watch', 'w', InputOption::VALUE_NONE, 'Run your leaf app with hot reloading [experimental]');
 	}
@@ -41,6 +43,10 @@ class ServeCommand extends Command
 			if (!$installProcess->isSuccessful()) {
 				$output->writeln('<error>Failed to install dependencies</error>');
 			}
+		}
+
+		if ($input->getArgument('filename')) {
+			$input->setOption('watch', true);
 		}
 
 		if ($input->getOption('watch')) {
@@ -78,6 +84,11 @@ class ServeCommand extends Command
 
 			$port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
 			$process = Process::fromShellCommandline("$watcher --exec $leaf serve --port $port", null, null, null, null);
+
+			if ($input->getArgument('filename')) {
+				$filename = $input->getArgument('filename');
+				$process = Process::fromShellCommandline("$watcher --exec " . PHP_BINARY . " $filename", null, null, null, null);
+			}
 
 			return $process->run(function ($type, $line) use ($output) {
 				$output->write($line);
