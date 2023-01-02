@@ -3,7 +3,6 @@ services:
   application:
     build: ./docker
     image: leafphp/docker
-    container_name: main-app
     ports:
       - '8080:80'
     volumes:
