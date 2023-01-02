@@ -291,16 +291,22 @@ class CreateCommand extends Command
         });
 
         if ($process->isSuccessful()) {
-            $output->writeln("\nYou can start with:");
-            $output->writeln("\n  <info>cd</info> " . basename($directory));
-            $output->writeln("  <info>leaf serve</info>");
+			if ($input->getOption('docker')) {
+				FS::superCopy(__DIR__ . '/themes/docker', $directory);
+				$output->write("\n🚀  Docker environment scaffolded successfully");
+			}
 
-            if ($this->testing) {
-                $output->writeln("\nYou can run tests with:");
-                $output->writeln("  <info>leaf test</info>");
-            }
+			$output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
+			$output->writeln("👉  Get started with the following commands:");
+			$output->writeln("\n    <info>cd</info> " . basename($directory));
+			$output->writeln("    <info>leaf serve</info>");
 
-            $output->writeln("\nHappy gardening!");
+			if ($this->testing) {
+				$output->writeln("\n👉  You can run tests with:");
+				$output->writeln("\n    <info>leaf test</info>");
+			}
+
+			$output->writeln("\n🍁  Happy gardening!");
         }
 
         return 0;
