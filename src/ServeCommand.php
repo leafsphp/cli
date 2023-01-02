@@ -109,11 +109,22 @@ class ServeCommand extends Command
 	protected function startServer(InputInterface $input, OutputInterface $output): int
 	{
 		$port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
-		$process = Process::fromShellCommandline("php -S localhost:$port", null, null, null, null);
+		$isDockerProject = file_exists(getcwd() . '/docker-compose.yml');
+		$process = Process::fromShellCommandline(
+			$isDockerProject ? 'docker-compose up' : "php -S localhost:$port",
+			null,
+			null,
+			null,
+			null
+		);
 
-		$output->writeln("<info>Starting Leaf development server on <href=http://localhost:$port>http://localhost:$port</></info>");
+		$output->writeln(
+			$isDockerProject ?
+				'<info>Serving Leaf application using docker-compose...</info>' :
+				"<info>Starting Leaf development server on <href=http://localhost:$port>http://localhost:$port</></info>"
+		);
 
-		return $process->run(function ($type, $line) use ($output, $port) {
+		return $process->run(function ($type, $line) use ($output, $process) {
 			if (is_string($line) && !strpos($line, 'Failed')) {
 				$output->write($line);
 			} else {
