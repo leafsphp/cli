@@ -45,6 +45,7 @@ class CreateCommand extends Command
             ->addOption('skeleton', null, InputOption::VALUE_NONE, 'Create a new leaf project with skeleton')
             ->addOption('v3', null, InputOption::VALUE_NONE, 'Use leaf v3')
             ->addOption('v2', null, InputOption::VALUE_NONE, 'Use leaf v2')
+            ->addOption('docker', null, InputOption::VALUE_NONE, 'Scaffold a docker environment')
             ->addOption('phpunit', null, InputOption::VALUE_NONE, 'Add testing with phpunit')
             ->addOption('pestphp', null, InputOption::VALUE_NONE, 'Add testing with pest')
             ->addOption('no-tests', 'nt', InputOption::VALUE_NONE, 'Create app without tests')
@@ -157,6 +158,11 @@ class CreateCommand extends Command
             $commands[] = "composer require leafs/alchemy --dev";
             $commands[] = "./vendor/bin/alchemy setup --{$this->testing}";
         }
+
+		if ($input->getOption('docker')) {
+			FS::superCopy(__DIR__ . '/themes/docker', $directory);
+			$output->writeln("<comment> - </comment>Docker environment scaffolded successfully\n");
+		}
 
         if ($input->getOption('no-ansi')) {
             $commands = array_map(function ($value) {
