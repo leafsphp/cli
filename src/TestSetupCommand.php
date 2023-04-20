@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -28,6 +27,7 @@ class TestSetupCommand extends Command
 	{
 		$engine = 'pest';
 		$composerJsonPath = getcwd() . '/composer.json';
+		$alchemyInstalled = file_exists(getcwd() . '/vendor/bin/alchemy');
 
 		if ($input->getOption('phpunit')) {
 			$engine = 'phpunit';
@@ -36,6 +36,27 @@ class TestSetupCommand extends Command
 		if (!file_exists($composerJsonPath)) {
 			$output->writeln('<error>No composer.json found in the current directory.</error>');
 			return 1;
+		}
+
+		if (!$alchemyInstalled) {
+			$output->writeln('<info>Alchemy is not installed. Attempting to install alchemy.</info>');
+
+			$installProcess = Process::fromShellCommandline(
+				'composer require leafs/alchemy --dev -W',
+				null,
+				null,
+				null,
+				null
+			);
+
+			$installProcess->run(function ($type, $line) use ($output) {
+				$output->write($line);
+			});
+
+			if (!$installProcess->isSuccessful()) {
+				$output->writeln('<error>Failed to install Alchemy. Please run composer require leafs/alchemy and try again.</error>');
+				return 1;
+			}
 		}
 
 		$process = Process::fromShellCommandline(
