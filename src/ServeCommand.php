@@ -111,7 +111,7 @@ class ServeCommand extends Command
 		$port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
 		$isDockerProject = file_exists(getcwd() . '/docker-compose.yml');
 		$process = Process::fromShellCommandline(
-			$isDockerProject ? 'docker-compose up' : "php -S localhost:$port",
+			$isDockerProject ? 'docker compose up' : "php -S localhost:$port",
 			null,
 			null,
 			null,
