@@ -244,8 +244,8 @@ class CreateCommand extends Command
 
 		$installCommand = "$composer create-project leafs/$preset " . basename($directory);
 
-		if ($this->version === 'v3') {
-			$installCommand .= ' v3.x-dev';
+		if ($this->version === 'v2') {
+			$installCommand .= ' v2.x';
 		}
 
 		$commands = [
