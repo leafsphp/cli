@@ -222,6 +222,8 @@ class CreateCommand extends Command
 				$createProcess->run(function ($type, $line) use ($output) {
 					$output->write($line);
 				});
+
+				return 0;
 			} else {
 				$output->writeln("<error>Leaf CLI update failed, please try again later</error>\n");
 				$output->writeln("<comment> - </comment>Creating app with current version...\n");
