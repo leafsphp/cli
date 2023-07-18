@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Leaf\Console;
 
 use Leaf\Console\Utils\Package;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

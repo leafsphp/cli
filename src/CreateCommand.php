@@ -217,6 +217,14 @@ class CreateCommand extends Command
 
 			if ($updateProcess->isSuccessful()) {
 				$output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
+
+				$createProcess = Process::fromShellCommandline('php ' . implode(' ', $_SERVER['argv']));
+				$createProcess->run(function ($type, $line) use ($output) {
+					$output->write($line);
+				});
+			} else {
+				$output->writeln("<error>Leaf CLI update failed, please try again later</error>\n");
+				$output->writeln("<comment> - </comment>Creating app with current version...\n");
 			}
 		}
 
