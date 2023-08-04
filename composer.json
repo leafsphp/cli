@@ -24,11 +24,8 @@
 		"ext-json": "*",
 		"leafs/fs": "^1.0",
 		"psy/psysh": "*",
-		"symfony/console": "^5.0",
-		"symfony/process": "^5.0"
-	},
-	"require-dev": {
-		"phpunit/phpunit": "^8.0"
+		"symfony/console": "^5.0|^6.0",
+		"symfony/process": "^5.0|^6.0"
 	},
 	"bin": [
 		"bin/leaf"
