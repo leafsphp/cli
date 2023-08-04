@@ -19,11 +19,6 @@ use Symfony\Component\Process\Process;
 class CreateCommand extends Command
 {
 	/**
-	 * Leaf version to use
-	 */
-	protected $version = 'v3';
-
-	/**
 	 * Add testing to app?
 	 */
 	protected $testing = false;
@@ -40,12 +35,10 @@ class CreateCommand extends Command
 			->setAliases(['init', 'new'])
 			->setDescription('Create a new Leaf PHP project')
 			->addArgument('project-name', InputArgument::OPTIONAL, 'The name of the project')
+			->addOption('custom', 'c', InputOption::VALUE_NONE, 'Add custom options to your project')
 			->addOption('basic', null, InputOption::VALUE_NONE, 'Create a raw leaf project')
 			->addOption('api', null, InputOption::VALUE_NONE, 'Create a new Leaf API project')
 			->addOption('mvc', null, InputOption::VALUE_NONE, 'Create a new Leaf MVC project')
-			->addOption('skeleton', null, InputOption::VALUE_NONE, 'Create a new leaf project with skeleton')
-			->addOption('v3', null, InputOption::VALUE_NONE, 'Use leaf v3')
-			->addOption('v2', null, InputOption::VALUE_NONE, 'Use leaf v2')
 			->addOption('docker', null, InputOption::VALUE_NONE, 'Scaffold a docker environment')
 			->addOption('phpunit', null, InputOption::VALUE_NONE, 'Add testing with phpunit')
 			->addOption('pestphp', null, InputOption::VALUE_NONE, 'Add testing with pest')
@@ -89,12 +82,8 @@ class CreateCommand extends Command
 			return 'mvc';
 		}
 
-		if ($input->getOption('skeleton')) {
-			return 'skeleton';
-		}
-
 		$helper = $this->getHelper('question');
-		$question = new ChoiceQuestion('<info>? What preset would you like to use?</info> (leaf) ', ['leaf', 'leaf mvc', 'leaf api', 'skeleton'], 'leaf');
+		$question = new ChoiceQuestion('<info>? What preset would you like to use?</info> (0) ', ['leaf', 'leaf mvc', 'leaf api'], 'leaf');
 
 		$question->setMultiselect(false);
 		$question->setErrorMessage('Invalid option selected!');
@@ -102,15 +91,7 @@ class CreateCommand extends Command
 		$preset = $helper->ask($input, $output, $question);
 		$output->writeln("\n<comment> - </comment>Using preset $preset\n");
 
-		if ($preset == 'leaf api') {
-			return 'api';
-		}
-
-		if ($preset == 'leaf mvc') {
-			return 'mvc';
-		}
-
-		return $preset;
+		return str_replace('leaf ', '', $preset);
 	}
 
 	protected function getAppTestPreset($input, $output)
@@ -128,12 +109,7 @@ class CreateCommand extends Command
 
 	protected function buildLeafApp($input, $output, $directory): int
 	{
-		if ($this->version === 'v3') {
-			FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
-		} else {
-			FS::superCopy(__DIR__ . '/themes/leaf2', $directory);
-		}
-
+		FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
 		$output->writeln('<comment> - </comment>' . basename($directory) . " scaffolded successfully\n");
 
 		$composer = Utils\Core::findComposer();
@@ -238,14 +214,13 @@ class CreateCommand extends Command
 		}
 
 		$preset = $this->getAppPreset($input, $output);
-		$this->getVersion($input, $output);
 		$this->testing = $this->getAppTestPreset($input, $output);
 
 		$output->writeln(
 			"\n<comment> - </comment>Creating \""
 				. basename($directory) . "\" in <info>./"
 				. basename(dirname($directory)) .
-				"</info> using <info>$preset@" . $this->version . "</info>."
+				"</info> using <info>$preset@v3</info>."
 		);
 
 		if ($preset === 'leaf') {
@@ -253,10 +228,6 @@ class CreateCommand extends Command
 		}
 
 		$installCommand = "$composer create-project leafs/$preset " . basename($directory);
-
-		if ($this->version === 'v2') {
-			$installCommand .= ' v2.x';
-		}
 
 		$commands = [
 			$installCommand,
@@ -329,23 +300,5 @@ class CreateCommand extends Command
 		if ((is_dir($directory) || is_file($directory)) && $directory != getcwd()) {
 			throw new RuntimeException('Application already exists!');
 		}
-	}
-
-	/**
-	 * Get the version that should be downloaded.
-	 *
-	 * @param InputInterface $input
-	 * @param $output
-	 * @return void
-	 */
-	protected function getVersion(InputInterface $input, $output)
-	{
-		if ($input->getOption('v2')) {
-			$this->version = 'v2';
-			return;
-		}
-
-		$this->version = 'v3';
-		$output->writeln("\n<comment> - </comment>Using version: $this->version\n");
 	}
 }
