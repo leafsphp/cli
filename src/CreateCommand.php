@@ -127,11 +127,11 @@ class CreateCommand extends Command
 			$testing = $helper->ask($input, $output, $question);
 
 			if ($testing === 'none') {
-				$output->writeln("\n💪 No tests, hope you know what you're doing\n");
+				$output->writeln("\n💪  No tests, hope you know what you're doing\n");
 				return false;
 			}
 
-			$output->writeln("\n🧪 Using $testing\n");
+			$output->writeln("\n🧪  Using $testing\n");
 
 			return $testing;
 		}
@@ -169,7 +169,7 @@ class CreateCommand extends Command
 			$modules = [];
 		}
 
-		$output->writeln(count($modules) > 0 ? "🛠️ Using modules\n" : "🥲  No modules selected\n");
+		$output->writeln(count($modules) > 0 ? "🛠️  Selected modules will be installed\n" : "🥲  No modules selected\n");
 
 		return $modules;
 	}
@@ -178,7 +178,7 @@ class CreateCommand extends Command
 	{
 		FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
 
-		$output->writeln('⚡️' . basename($directory) . " scaffolded successfully\n");
+		$output->writeln('⚡️  ' . basename($directory) . " scaffolded successfully\n");
 		$composer = Utils\Core::findComposer();
 
 		$modules = array_map(function ($module) {
@@ -279,7 +279,7 @@ class CreateCommand extends Command
 				return 0;
 			} else {
 				$output->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
-				$output->writeln("⚙️ Creating app with current version...\n");
+				$output->writeln("⚙️  Creating app with current version...\n");
 			}
 		}
 
@@ -293,7 +293,7 @@ class CreateCommand extends Command
 		$preset = $this->getAppPreset($input, $output);
 
 		$output->writeln(
-			"\n⚙️ Creating \""
+			"\n⚙️  Creating \""
 				. basename($directory) . "\" in <info>./"
 				. basename(dirname($directory)) .
 				"</info> using <info>$preset@v3</info>."
