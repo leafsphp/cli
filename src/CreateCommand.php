@@ -56,6 +56,226 @@ class CreateCommand extends Command
 			->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
 	}
 
+	/**
+	 * Execute the command.
+	 *
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
+	 * @return int
+	 */
+	protected function execute(InputInterface $input, OutputInterface $output): int
+	{
+		$composer = Utils\Core::findComposer();
+		$leaf = Utils\Core::findLeaf();
+		$needsUpdate = Package::updateAvailable();
+
+		if ($needsUpdate) {
+			$output->writeln('<comment>Update found, updating to the latest stable version...</comment>');
+			$updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
+
+			$updateProcess->run();
+
+			if ($updateProcess->isSuccessful()) {
+				$output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
+
+				$createProcess = Process::fromShellCommandline('php ' . implode(' ', $_SERVER['argv']));
+				$createProcess->run(function ($type, $line) use ($output) {
+					$output->write($line);
+				});
+
+				return 0;
+			} else {
+				$output->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
+				$output->writeln("⚙️  Creating app with current version...\n");
+			}
+		}
+
+		$name = $this->getAppName($input, $output);
+		$directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
+
+		if (!$input->getOption('force')) {
+			$this->verifyApplicationDoesntExist($directory);
+		}
+
+		$preset = $this->getAppPreset($input, $output);
+
+		$output->writeln(
+			"\n⚙️  Creating \""
+				. basename($directory) . "\" in <info>./"
+				. basename(dirname($directory)) .
+				"</info> using <info>$preset@v3</info>."
+		);
+
+		if ($preset === 'leaf') {
+			return $this->buildLeafApp($input, $output, $directory);
+		}
+
+		$commands = [
+			"$composer create-project leafs/$preset " . basename($directory),
+			'cd ' . basename($directory),
+		];
+
+		if ($input->getOption('no-ansi')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --no-ansi';
+			}, $commands);
+		}
+
+		if ($input->getOption('quiet')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --quiet';
+			}, $commands);
+		}
+
+		if ($input->getOption('custom')) {
+			if ($preset === 'mvc') {
+				$viewEngine = $this->viewEngineSelection($input, $output);
+
+				if ($viewEngine === 'react/vue') {
+					$frontendFramework = $this->frontendFrameworkSelection($input, $output);
+
+					if ($frontendFramework === 'react') {
+						$commands[] = "$leaf view:install --react";
+					} else {
+						$commands[] = "$leaf view:install --vue";
+					}
+				} else {
+					$installVite = $this->installVite($input, $output);
+
+					if (!$installVite) {
+						FS::deleteFile($directory . '/vite.config.js');
+						FS::deleteFile($directory . '/package.json');
+						FS::deleteFile($directory . '/package-lock.json');
+					}
+				}
+			}
+		}
+
+		$testing = $this->getAppTestPreset($input, $output);
+
+		if ($testing) {
+			$commands[] = "$composer require leafs/alchemy --dev";
+			$commands[] = "./vendor/bin/alchemy setup --$testing";
+		}
+
+		$process = Process::fromShellCommandline(
+			implode(' && ', $commands),
+			dirname($directory),
+			null,
+			null,
+			null
+		);
+
+		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+			$process->setTty(true);
+		}
+
+		echo "\n";
+
+		$process->run(function ($type, $line) use ($output) {
+			$output->write($line);
+		});
+
+		if ($process->isSuccessful()) {
+			if ($this->getAppDockPreset($input, $output)) {
+				FS::superCopy(__DIR__ . '/themes/docker', $directory);
+				$output->write("\n🚀  Docker environment scaffolded successfully");
+			}
+
+			$output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
+			$output->writeln("👉  Get started with the following commands:");
+			$output->writeln("\n    <info>cd</info> " . basename($directory));
+			$output->writeln("    <info>leaf serve</info>");
+
+			if ($testing) {
+				$output->writeln("\n👉  You can run tests with:");
+				$output->writeln("\n    <info>leaf test</info>");
+			}
+
+			$output->writeln("\n🍁  Happy gardening!");
+		}
+
+		return 0;
+	}
+
+	protected function buildLeafApp($input, $output, $directory): int
+	{
+		FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
+
+		$output->writeln('⚡️ ' . basename($directory) . " scaffolded successfully");
+		$composer = Utils\Core::findComposer();
+
+		$modules = array_map(function ($module) {
+			return $this->modules[$module];
+		}, $this->moduleSelection($input, $output));
+
+		$commands = [
+			"$composer install",
+		];
+
+		if ($input->getOption('custom') && count($modules) > 0) {
+			$commands[] = "$composer require " . implode(' ', $modules);
+		}
+
+		$testing = $this->getAppTestPreset($input, $output);
+
+		if ($testing) {
+			$commands[] = "$composer require leafs/alchemy --dev";
+			$commands[] = "./vendor/bin/alchemy setup --$testing";
+		}
+
+		if ($this->getAppDockPreset($input, $output)) {
+			FS::superCopy(__DIR__ . '/themes/docker', $directory);
+			$output->write("\n🚀  Docker environment scaffolded successfully");
+		}
+
+		if ($input->getOption('no-ansi')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --no-ansi';
+			}, $commands);
+		}
+
+		if ($input->getOption('quiet')) {
+			$commands = array_map(function ($value) {
+				return $value . ' --quiet';
+			}, $commands);
+		}
+
+		$process = Process::fromShellCommandline(
+			implode(' && ', $commands),
+			$directory,
+			null,
+			null,
+			null
+		);
+
+		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+			$process->setTty(true);
+		}
+
+		echo "\n";
+
+		$process->run(function ($type, $line) use ($output) {
+			$output->write($line);
+		});
+
+		if ($process->isSuccessful()) {
+			$output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
+			$output->writeln("👉  Get started with the following commands:");
+			$output->writeln("\n    <info>cd</info> " . basename($directory));
+			$output->writeln("    <info>leaf serve</info>");
+
+			if ($testing) {
+				$output->writeln("\n👉  You can run tests with:");
+				$output->writeln("\n    <info>leaf test</info>");
+			}
+
+			$output->writeln("\n🍁  Happy gardening!");
+		}
+
+		return 0;
+	}
+
 	protected function getAppName($input, $output): string
 	{
 		$name = $input->getArgument('project-name');
@@ -114,7 +334,7 @@ class CreateCommand extends Command
 
 		if ($input->getOption('custom')) {
 			$helper = $this->getHelper('question');
-			$question = new ChoiceQuestion('<info>? What testing framework would you like to use?</info> <comment>[none]</comment>', ['none', 'pest', 'phpunit'], 'none');
+			$question = new ChoiceQuestion("\n<info>? What testing framework would you like to use?</info> <comment>[none]</comment>", ['none', 'pest', 'phpunit'], 'none');
 
 			$question->setMultiselect(false);
 			$question->setErrorMessage('Invalid option selected!');
@@ -122,11 +342,11 @@ class CreateCommand extends Command
 			$testing = $helper->ask($input, $output, $question);
 
 			if ($testing === 'none') {
-				$output->writeln("\n💪  No tests, hope you know what you're doing\n");
+				$output->writeln("\n💪  No tests, hope you know what you're doing");
 				return false;
 			}
 
-			$output->writeln("\n🧪  Using $testing\n");
+			$output->writeln("\n🧪  Using $testing");
 
 			return $testing;
 		}
@@ -142,7 +362,7 @@ class CreateCommand extends Command
 
 		if ($input->getOption('custom')) {
 			$helper = $this->getHelper('question');
-			$question = new ConfirmationQuestion('<info>? Would you like to scaffold a docker environment?</info> (No) ', false);
+			$question = new ConfirmationQuestion("\n<info>? Would you like to scaffold a docker environment?</info> (No)", false);
 
 			return $helper->ask($input, $output, $question);
 		}
@@ -153,7 +373,7 @@ class CreateCommand extends Command
 	protected function moduleSelection($input, $output)
 	{
 		$helper = $this->getHelper('question');
-		$question = new ChoiceQuestion('<info>? What modules would you like to add?</info> <comment>[none]</comment> eg: 1,2,7', array_merge(['None'], array_keys($this->modules)), '0');
+		$question = new ChoiceQuestion("\n<info>? What modules would you like to add?</info> <comment>[none]</comment> eg: 1,2,7", array_merge(['None'], array_keys($this->modules)), '0');
 
 		$question->setMultiselect(true);
 		$question->setErrorMessage('Invalid option selected!');
@@ -164,200 +384,43 @@ class CreateCommand extends Command
 			$modules = [];
 		}
 
-		$output->writeln(count($modules) > 0 ? "🛠️  Selected modules will be installed\n" : "🥲  No modules selected\n");
+		$output->writeln(count($modules) > 0 ? "\n🛠️  Selected modules will be installed" : "\n🥲  No modules selected");
 
 		return $modules;
 	}
 
-	protected function buildLeafApp($input, $output, $directory): int
+	protected function viewEngineSelection($input, $output)
 	{
-		FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
+		$helper = $this->getHelper('question');
+		$question = new ChoiceQuestion("\n<info>? What view engine would you like to use?</info> <comment>[Blade]</comment>", ['Blade', 'Bare UI', 'React/Vue'], 'Blade');
 
-		$output->writeln('⚡️  ' . basename($directory) . " scaffolded successfully\n");
-		$composer = Utils\Core::findComposer();
+		$question->setMultiselect(false);
+		$question->setErrorMessage('Invalid option selected!');
 
-		$modules = array_map(function ($module) {
-			return $this->modules[$module];
-		}, $this->moduleSelection($input, $output));
+		$viewEngine = $helper->ask($input, $output, $question);
 
-		$commands = [
-			"$composer install",
-		];
-
-		if ($input->getOption('custom') && count($modules) > 0) {
-			$commands[] = "$composer require " . implode(' ', $modules);
-		}
-
-		$testing = $this->getAppTestPreset($input, $output);
-
-		if ($testing) {
-			$commands[] = "$composer require leafs/alchemy --dev";
-			$commands[] = "./vendor/bin/alchemy setup --$testing";
-		}
-
-		if ($this->getAppDockPreset($input, $output)) {
-			FS::superCopy(__DIR__ . '/themes/docker', $directory);
-			$output->write("🚀  Docker environment scaffolded successfully\n");
-		}
-
-		if ($input->getOption('no-ansi')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --no-ansi';
-			}, $commands);
-		}
-
-		if ($input->getOption('quiet')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --quiet';
-			}, $commands);
-		}
-
-		$process = Process::fromShellCommandline(
-			implode(' && ', $commands),
-			$directory,
-			null,
-			null,
-			null
-		);
-
-		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-			$process->setTty(true);
-		}
-
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
-
-		if ($process->isSuccessful()) {
-			$output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
-			$output->writeln("👉  Get started with the following commands:");
-			$output->writeln("\n    <info>cd</info> " . basename($directory));
-			$output->writeln("    <info>leaf serve</info>");
-
-			if ($testing) {
-				$output->writeln("\n👉  You can run tests with:");
-				$output->writeln("\n    <info>leaf test</info>");
-			}
-
-			$output->writeln("\n🍁  Happy gardening!");
-		}
-
-		return 0;
+		return str_replace(' ', '-', strtolower($viewEngine));
 	}
 
-	/**
-	 * Execute the command.
-	 *
-	 * @param InputInterface $input
-	 * @param OutputInterface $output
-	 * @return int
-	 */
-	protected function execute(InputInterface $input, OutputInterface $output): int
+	protected function frontendFrameworkSelection($input, $output)
 	{
-		$composer = Utils\Core::findComposer();
-		$needsUpdate = Package::updateAvailable();
+		$helper = $this->getHelper('question');
+		$question = new ChoiceQuestion("\n<info>? What frontend framework would you like to use?</info>", ['React', 'Vue']);
 
-		if ($needsUpdate) {
-			$output->writeln('<comment>Update found, updating to the latest stable version...</comment>');
-			$updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
+		$question->setMultiselect(false);
+		$question->setErrorMessage('Invalid option selected!');
 
-			$updateProcess->run();
+		$frontendFramework = $helper->ask($input, $output, $question);
 
-			if ($updateProcess->isSuccessful()) {
-				$output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
+		return strtolower($frontendFramework);
+	}
 
-				$createProcess = Process::fromShellCommandline('php ' . implode(' ', $_SERVER['argv']));
-				$createProcess->run(function ($type, $line) use ($output) {
-					$output->write($line);
-				});
+	protected function installVite($input, $output)
+	{
+		$helper = $this->getHelper('question');
+		$question = new ConfirmationQuestion("\n<info>? Do you want to add Vite to bundle your assets?</info> <comment>[Yes]</comment>", true);
 
-				return 0;
-			} else {
-				$output->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
-				$output->writeln("⚙️  Creating app with current version...\n");
-			}
-		}
-
-		$name = $this->getAppName($input, $output);
-		$directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
-
-		if (!$input->getOption('force')) {
-			$this->verifyApplicationDoesntExist($directory);
-		}
-
-		$preset = $this->getAppPreset($input, $output);
-
-		$output->writeln(
-			"\n⚙️  Creating \""
-				. basename($directory) . "\" in <info>./"
-				. basename(dirname($directory)) .
-				"</info> using <info>$preset@v3</info>."
-		);
-
-		if ($preset === 'leaf') {
-			return $this->buildLeafApp($input, $output, $directory);
-		}
-
-		$commands = [
-			"$composer create-project leafs/$preset " . basename($directory)
-		];
-
-		if ($input->getOption('no-ansi')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --no-ansi';
-			}, $commands);
-		}
-
-		if ($input->getOption('quiet')) {
-			$commands = array_map(function ($value) {
-				return $value . ' --quiet';
-			}, $commands);
-		}
-
-		$testing = $this->getAppTestPreset($input, $output);
-
-		if ($testing) {
-			$commands[] = "cd " . basename($directory);
-			$commands[] = "$composer require leafs/alchemy --dev";
-			$commands[] = "./vendor/bin/alchemy setup --$testing";
-		}
-
-		$process = Process::fromShellCommandline(
-			implode(' && ', $commands),
-			dirname($directory),
-			null,
-			null,
-			null
-		);
-
-		if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-			$process->setTty(true);
-		}
-
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
-
-		if ($process->isSuccessful()) {
-			if ($this->getAppDockPreset($input, $output)) {
-				FS::superCopy(__DIR__ . '/themes/docker', $directory);
-				$output->write("\n🚀  Docker environment scaffolded successfully");
-			}
-
-			$output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
-			$output->writeln("👉  Get started with the following commands:");
-			$output->writeln("\n    <info>cd</info> " . basename($directory));
-			$output->writeln("    <info>leaf serve</info>");
-
-			if ($testing) {
-				$output->writeln("\n👉  You can run tests with:");
-				$output->writeln("\n    <info>leaf test</info>");
-			}
-
-			$output->writeln("\n🍁  Happy gardening!");
-		}
-
-		return 0;
+		return $helper->ask($input, $output, $question);
 	}
 
 	/**
