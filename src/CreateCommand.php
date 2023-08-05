@@ -20,11 +20,6 @@ use Symfony\Component\Process\Process;
 class CreateCommand extends Command
 {
 	/**
-	 * Add testing to app?
-	 */
-	protected $testing = false;
-
-	/**
 	 * Available modules
 	 */
 	protected $modules = [
@@ -239,7 +234,7 @@ class CreateCommand extends Command
 			$output->writeln("\n    <info>cd</info> " . basename($directory));
 			$output->writeln("    <info>leaf serve</info>");
 
-			if ($this->testing) {
+			if ($testing) {
 				$output->writeln("\n👉  You can run tests with:");
 				$output->writeln("\n    <info>leaf test</info>");
 			}
@@ -354,7 +349,7 @@ class CreateCommand extends Command
 			$output->writeln("\n    <info>cd</info> " . basename($directory));
 			$output->writeln("    <info>leaf serve</info>");
 
-			if ($this->testing) {
+			if ($testing) {
 				$output->writeln("\n👉  You can run tests with:");
 				$output->writeln("\n    <info>leaf test</info>");
 			}
