@@ -23,7 +23,7 @@ class ViewBuildCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$npm = Utils\Core::findNpm();
-		$success = Utils\Core::run("$npm install", $output);
+		$success = Utils\Core::run("$npm run build", $output);
 
 		if (!$success) return 1;
 
