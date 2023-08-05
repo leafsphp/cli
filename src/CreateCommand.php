@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Process\Process;
 
@@ -24,8 +25,21 @@ class CreateCommand extends Command
 	protected $testing = false;
 
 	/**
+	 * Available modules
+	 */
+	protected $modules = [
+		'Database' => 'leafs/db',
+		'Authentication' => 'leafs/auth',
+		'Session support' => 'leafs/session',
+		'Cookie support' => 'leafs/cookie',
+		'CSRF protection' => 'leafs/csrf',
+		'CORS support' => 'leafs/cors',
+		'Leaf Date' => 'leafs/date',
+		'Leaf Fetch' => 'leafs/fetch'
+	];
+
+	/**
 	 * Configure the command options.
-	 *
 	 * @return void
 	 */
 	protected function configure()
@@ -83,13 +97,12 @@ class CreateCommand extends Command
 		}
 
 		$helper = $this->getHelper('question');
-		$question = new ChoiceQuestion('<info>? What preset would you like to use?</info> (0) ', ['leaf', 'leaf mvc', 'leaf api'], 'leaf');
+		$question = new ChoiceQuestion('<info>? What kind of app do you want to create?</info> <comment>[leaf]</comment>', ['leaf', 'leaf mvc', 'leaf api'], 'leaf');
 
 		$question->setMultiselect(false);
-		$question->setErrorMessage('Invalid option selected!');
+		$question->setErrorMessage('❌ Invalid option selected!');
 
 		$preset = $helper->ask($input, $output, $question);
-		$output->writeln("\n<comment> - </comment>Using preset $preset\n");
 
 		return str_replace('leaf ', '', $preset);
 	}
@@ -104,28 +117,92 @@ class CreateCommand extends Command
 			return 'phpunit';
 		}
 
+		if ($input->getOption('custom')) {
+			$helper = $this->getHelper('question');
+			$question = new ChoiceQuestion('<info>? What testing framework would you like to use?</info> <comment>[none]</comment>', ['none', 'pest', 'phpunit'], 'none');
+
+			$question->setMultiselect(false);
+			$question->setErrorMessage('Invalid option selected!');
+
+			$testing = $helper->ask($input, $output, $question);
+
+			if ($testing === 'none') {
+				$output->writeln("\n💪 No tests, hope you know what you're doing\n");
+				return false;
+			}
+
+			$output->writeln("\n🧪 Using $testing\n");
+
+			return $testing;
+		}
+
 		return false;
+	}
+
+	protected function getAppDockPreset($input, $output)
+	{
+		if ($input->getOption('docker')) {
+			return true;
+		}
+
+		if ($input->getOption('custom')) {
+			$helper = $this->getHelper('question');
+			$question = new ConfirmationQuestion('<info>? Would you like to scaffold a docker environment?</info> (No) ', false);
+
+			return $helper->ask($input, $output, $question);
+		}
+
+		return false;
+	}
+
+	protected function moduleSelection($input, $output)
+	{
+		$helper = $this->getHelper('question');
+		$question = new ChoiceQuestion('<info>? What modules would you like to add?</info> <comment>[none]</comment> eg: 1,2,7', array_merge(['None'], array_keys($this->modules)), '0');
+
+		$question->setMultiselect(true);
+		$question->setErrorMessage('Invalid option selected!');
+
+		$modules = $helper->ask($input, $output, $question);
+
+		if (in_array('None', $modules)) {
+			$modules = [];
+		}
+
+		$output->writeln(count($modules) > 0 ? "🛠️ Using modules\n" : "🥲  No modules selected\n");
+
+		return $modules;
 	}
 
 	protected function buildLeafApp($input, $output, $directory): int
 	{
 		FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
-		$output->writeln('<comment> - </comment>' . basename($directory) . " scaffolded successfully\n");
 
+		$output->writeln('⚡️' . basename($directory) . " scaffolded successfully\n");
 		$composer = Utils\Core::findComposer();
 
+		$modules = array_map(function ($module) {
+			return $this->modules[$module];
+		}, $this->moduleSelection($input, $output));
+
 		$commands = [
-			$composer . ' install',
+			"$composer install",
 		];
 
-		if ($this->testing) {
-			$commands[] = "composer require leafs/alchemy --dev";
-			$commands[] = "./vendor/bin/alchemy setup --{$this->testing}";
+		if ($input->getOption('custom') && count($modules) > 0) {
+			$commands[] = "$composer require " . implode(' ', $modules);
 		}
 
-		if ($input->getOption('docker')) {
+		$testing = $this->getAppTestPreset($input, $output);
+
+		if ($testing) {
+			$commands[] = "$composer require leafs/alchemy --dev";
+			$commands[] = "./vendor/bin/alchemy setup --$testing";
+		}
+
+		if ($this->getAppDockPreset($input, $output)) {
 			FS::superCopy(__DIR__ . '/themes/docker', $directory);
-			$output->writeln("<comment> - </comment>Docker environment scaffolded successfully\n");
+			$output->write("🚀  Docker environment scaffolded successfully\n");
 		}
 
 		if ($input->getOption('no-ansi')) {
@@ -201,8 +278,8 @@ class CreateCommand extends Command
 
 				return 0;
 			} else {
-				$output->writeln("<error>Leaf CLI update failed, please try again later</error>\n");
-				$output->writeln("<comment> - </comment>Creating app with current version...\n");
+				$output->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
+				$output->writeln("⚙️ Creating app with current version...\n");
 			}
 		}
 
@@ -214,10 +291,9 @@ class CreateCommand extends Command
 		}
 
 		$preset = $this->getAppPreset($input, $output);
-		$this->testing = $this->getAppTestPreset($input, $output);
 
 		$output->writeln(
-			"\n<comment> - </comment>Creating \""
+			"\n⚙️ Creating \""
 				. basename($directory) . "\" in <info>./"
 				. basename(dirname($directory)) .
 				"</info> using <info>$preset@v3</info>."
@@ -227,10 +303,8 @@ class CreateCommand extends Command
 			return $this->buildLeafApp($input, $output, $directory);
 		}
 
-		$installCommand = "$composer create-project leafs/$preset " . basename($directory);
-
 		$commands = [
-			$installCommand,
+			"$composer create-project leafs/$preset " . basename($directory)
 		];
 
 		if ($input->getOption('no-ansi')) {
@@ -245,10 +319,12 @@ class CreateCommand extends Command
 			}, $commands);
 		}
 
-		if ($this->testing) {
+		$testing = $this->getAppTestPreset($input, $output);
+
+		if ($testing) {
 			$commands[] = "cd " . basename($directory);
-			$commands[] = "composer require leafs/alchemy --dev";
-			$commands[] = "./vendor/bin/alchemy setup --{$this->testing}";
+			$commands[] = "$composer require leafs/alchemy --dev";
+			$commands[] = "./vendor/bin/alchemy setup --$testing";
 		}
 
 		$process = Process::fromShellCommandline(
@@ -268,7 +344,7 @@ class CreateCommand extends Command
 		});
 
 		if ($process->isSuccessful()) {
-			if ($input->getOption('docker')) {
+			if ($this->getAppDockPreset($input, $output)) {
 				FS::superCopy(__DIR__ . '/themes/docker', $directory);
 				$output->write("\n🚀  Docker environment scaffolded successfully");
 			}
