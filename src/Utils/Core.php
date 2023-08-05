@@ -4,11 +4,31 @@ declare(strict_types=1);
 
 namespace Leaf\Console\Utils;
 
+use Symfony\Component\Process\Process;
+
 class Core
 {
 	/**
+	 * Run a shell process with the output.
+	 */
+	public static function run(string $command, $output, string $cwd = null)
+	{
+		$process = Process::fromShellCommandline(
+			$command,
+			$cwd,
+			null,
+			null,
+			null
+		);
+
+		$process->run(function ($type, $line) use ($output) {
+			$output->write($line);
+		});
+
+		return $process->isSuccessful();
+	}
+	/**
 	 * Get the composer command for the environment.
-	 *
 	 * @return string
 	 */
 	public static function findComposer(): string
@@ -24,7 +44,6 @@ class Core
 
 	/**
 	 * Get the git command for the environment.
-	 *
 	 * @return string
 	 */
 	public static function findGit(): string
@@ -40,7 +59,6 @@ class Core
 
 	/**
 	 * Get the node command for the environment.
-	 *
 	 * @return string
 	 */
 	public static function findNodeJS(): string
@@ -56,7 +74,6 @@ class Core
 
 	/**
 	 * Get the node command for the environment.
-	 *
 	 * @return string
 	 */
 	public static function findNpm(): string
@@ -72,7 +89,6 @@ class Core
 
 	/**
 	 * Get the leaf CLI bin.
-	 *
 	 * @return string
 	 */
 	public static function findLeaf(): string
@@ -88,7 +104,6 @@ class Core
 
 	/**
 	 * Get the leaf watcher bin.
-	 *
 	 * @return string
 	 */
 	public static function findWatcher(): string
@@ -104,7 +119,6 @@ class Core
 
 	/**
 	 * Check if a system command exists
-	 * 
 	 * @return bool
 	 */
 	public static function commandExists(string $cmd)
