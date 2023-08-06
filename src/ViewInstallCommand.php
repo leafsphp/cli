@@ -69,10 +69,32 @@ class ViewInstallCommand extends Command
 	 */
 	protected function installBlade($output)
 	{
-		$npm = Utils\Core::findNpm();
-		$success = Utils\Core::run("$npm install blade-ui-kit", $output);
+		$directory = getcwd();
+		$isMVCApp = $this->isMVCApp();
+		$composer = Utils\Core::findComposer();
 
-		if (!$success) return 1;
+		$success = Utils\Core::run("$composer require leafs/blade", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to install blade</error>");
+			return 1;
+		};
+		
+		if ($isMVCApp) {
+			$paths = require "$directory/config/paths.php";
+			$viewsPath = trim($paths['views'] ?? 'app/views', '/');
+
+			\Leaf\FS::superCopy(__DIR__ . '/themes/blade', "$directory/$viewsPath");
+
+			$viewConfig = require "$directory/config/view.php";
+			$viewConfig['viewEngine'] = '\Leaf\Blade';
+			file_put_contents("$directory/config/view.php", '<?php return ' . var_export($viewConfig, true) . ';');
+		} else {
+			\Leaf\FS::superCopy(__DIR__ . '/themes/blade', $directory);
+		}
+
+		$output->writeln("\n🎉   <info>Blade setup successfully.</info>");
+		$output->writeln("👉  Read the blade docs to create your first template.\n");
 
 		return 0;
 	}
@@ -82,10 +104,32 @@ class ViewInstallCommand extends Command
 	 */
 	protected function installBareUi($output)
 	{
-		$npm = Utils\Core::findNpm();
-		$success = Utils\Core::run("$npm install bare-ui", $output);
+		$directory = getcwd();
+		$isMVCApp = $this->isMVCApp();
+		$composer = Utils\Core::findComposer();
 
-		if (!$success) return 1;
+		$success = Utils\Core::run("$composer require leafs/bareui", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to install Bare UI</error>");
+			return 1;
+		};
+
+		if ($isMVCApp) {
+			$paths = require "$directory/config/paths.php";
+			$viewsPath = trim($paths['views'] ?? 'app/views', '/');
+
+			\Leaf\FS::superCopy(__DIR__ . '/themes/bareui', "$directory/$viewsPath");
+
+			$viewConfig = require "$directory/config/view.php";
+			$viewConfig['viewEngine'] = '\Leaf\BareUI';
+			file_put_contents("$directory/config/view.php", '<?php return ' . var_export($viewConfig, true) . ';');
+		} else {
+			\Leaf\FS::superCopy(__DIR__ . '/themes/bareui', $directory);
+		}
+
+		$output->writeln("\n🎉   <info>Bare UI setup successfully.</info>");
+		$output->writeln("👉  Read the bare ui docs to create your first template.\n");
 
 		return 0;
 	}
@@ -95,10 +139,70 @@ class ViewInstallCommand extends Command
 	 */
 	protected function installInertia($output)
 	{
+		$directory = getcwd();
 		$npm = Utils\Core::findNpm();
-		$success = Utils\Core::run("$npm install @inertiajs/inertia @inertiajs/inertia-vue3", $output);
+		$composer = Utils\Core::findComposer();
 
-		if (!$success) return 1;
+		$success = Utils\Core::run("$npm install @leafphp/vite-plugin vite", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to install vite</error>");
+			return 1;
+		};
+
+		$output->writeln("\n✅  <info>Vite installed successfully</info>");
+		$output->writeln("🧱  <info>Setting up Leaf Inertia server bridge...</info>\n");
+
+		$success = Utils\Core::run("$composer require leafs/vite:dev-main leafs/inertia:dev-main", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to setup Leaf Inertia server bridge</error>");
+			return 1;
+		};
+
+		$isMVCApp = $this->isMVCApp();
+		$isBladeProject = $this->isBladeProject();
+
+		foreach (glob(__DIR__ . '/themes/inertia/root/{,.}[!.,!..]*', GLOB_MARK | GLOB_BRACE) as $file) {
+			if (basename($file) === 'vite.config.js' && file_exists("$directory/vite.config.js")) {
+				continue;
+			}
+
+			if (is_file($file)) {
+				copy($file, rtrim($directory, '/') . '/' . basename($file));
+			} else {
+				\Leaf\FS::superCopy($file, rtrim($directory, '/') . '/' . basename($file));
+			}
+		}
+
+		if (!$isMVCApp) {
+			$viteConfig = file_get_contents("$directory/vite.config.js");
+			$viteConfig = str_replace(
+				"leaf({",
+				"leaf({\nhotFile: 'hot',",
+				$viteConfig
+			);
+			file_put_contents("$directory/vite.config.js", $viteConfig);
+		} else {
+			$paths = require "$directory/config/paths.php";
+			$viewsPath = trim($paths['views'] ?? 'app/views', '/');
+
+			\Leaf\FS::superCopy(
+				(__DIR__ . '/themes/inertia/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+				"$directory/$viewsPath"
+			);
+		}
+
+		$package = json_decode(file_get_contents("$directory/package.json"), true);
+		$package['scripts']['dev'] = 'vite';
+		$package['scripts']['build'] = 'vite build';
+		file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+		$output->writeln("\n🎉   <info>Inertia setup successfully. Inertia is best used with a framework of sorts.</info>");
+		$output->writeln("👉  Get started with the following commands:\n");
+		$output->writeln('    leaf view:dev <info>- start dev server</info>');
+		$output->writeln('    leaf view:build <info>- build for production</info>');
+		$output->writeln('');
 
 		return 0;
 	}
