@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -131,22 +130,9 @@ class ViewInstallCommand extends Command
 			return 1;
 		};
 
-		$isMVCApp = is_dir("$directory/app/views") && file_exists("$directory/config/paths.php") && is_dir("$directory/public");
-		$isBladeProject = false;
-
-		if (file_exists("$directory/config/view.php")) {
-			$viewConfig = require "$directory/config/view.php";
-			$isBladeProject = strpos(strtolower($viewConfig['viewEngine'] ?? $viewConfig['view_engine'] ?? ''), 'blade') !== false;
-		} else if (file_exists("$directory/composer.lock")) {
-			$composerLock = json_decode(file_get_contents("$directory/composer.lock"), true);
-			$packages = $composerLock['packages'] ?? [];
-			foreach ($packages as $package) {
-				if ($package['name'] === 'leafs/blade') {
-					$isBladeProject = true;
-					break;
-				}
-			}
-		}
+		$isMVCApp = $this->isMVCApp();
+		$isBladeProject = $this->isBladeProject();
+		$ext = $isBladeProject ? 'blade' : 'view';
 
 		if (!$isBladeProject) {
 			$output->writeln("\n🎨  <info>Setting up BareUI as main view engine.</info>\n");
@@ -185,13 +171,13 @@ class ViewInstallCommand extends Command
 			);
 			file_put_contents("$directory/vite.config.js", $viteConfig);
 
-			$inertiaView = file_get_contents("$directory/_inertia.view.php");
+			$inertiaView = file_get_contents("$directory/_inertia.$ext.php");
 			$inertiaView = str_replace(
 				'<?php echo vite([\'/js/app.jsx\', "/js/Pages/{$page[\'component\']}.jsx"]); ?>',
 				'<?php echo vite([\'js/app.jsx\', "js/Pages/{$page[\'component\']}.jsx"], \'/\'); ?>',
 				$inertiaView
 			);
-			file_put_contents("$directory/_inertia.view.php", $inertiaView);
+			file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
 		}
 
 		$package = json_decode(file_get_contents("$directory/package.json"), true);
@@ -213,10 +199,58 @@ class ViewInstallCommand extends Command
 	 */
 	protected function installTailwind($output)
 	{
+		$directory = getcwd();
 		$npm = Utils\Core::findNpm();
-		$success = Utils\Core::run("$npm install tailwindcss", $output);
+		$composer = Utils\Core::findComposer();
 
-		if (!$success) return 1;
+		$success = Utils\Core::run("$npm install tailwindcss postcss autoprefixer @vitejs/plugin-vue vite", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to install tailwind</error>");
+			return 1;
+		};
+
+		$output->writeln("\n✅  <info>Tailwind CSS installed successfully</info>");
+		$output->writeln("🧱  <info>Setting up Leaf server bridge...</info>\n");
+
+		$success = Utils\Core::run("$composer require leafs/vite:dev-main", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to setup Leaf server bridge</error>");
+			return 1;
+		};
+
+		$isMVCApp = $this->isMVCApp();
+
+		\Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/root', $directory);
+
+		if ($isMVCApp) {
+			$paths = require "$directory/config/paths.php";
+			$viewsPath = trim($paths['views'] ?? 'app/views', '/');
+
+			\Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/view', "$directory/$viewsPath");
+		} else {
+			\Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/view', $directory);
+
+			$viteConfig = file_get_contents("$directory/vite.config.js");
+			$viteConfig = str_replace(
+				"leaf({",
+				"leaf({\nhotFile: 'hot',",
+				$viteConfig
+			);
+			file_put_contents("$directory/vite.config.js", $viteConfig);
+		}
+
+		$package = json_decode(file_get_contents("$directory/package.json"), true);
+		$package['scripts']['dev'] = 'vite';
+		$package['scripts']['build'] = 'vite build';
+		file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+		$output->writeln("\n⚛️   <info>Tailwind CSS setup successfully</info>");
+		$output->writeln("👉  Get started with the following commands:\n");
+		$output->writeln('    leaf view:dev <info>- start dev server</info>');
+		$output->writeln('    leaf view:build <info>- build for production</info>');
+		$output->writeln('');
 
 		return 0;
 	}
@@ -245,5 +279,34 @@ class ViewInstallCommand extends Command
 		if (!$success) return 1;
 
 		return 0;
+	}
+
+	// ------------------------ utils ------------------------ //
+	protected function isMVCApp()
+	{
+		$directory = getcwd();
+		return is_dir("$directory/app/views") && file_exists("$directory/config/paths.php") && is_dir("$directory/public");
+	}
+
+	protected function isBladeProject()
+	{
+		$directory = getcwd();
+		$isBladeProject = false;
+
+		if (file_exists("$directory/config/view.php")) {
+			$viewConfig = require "$directory/config/view.php";
+			$isBladeProject = strpos(strtolower($viewConfig['viewEngine'] ?? $viewConfig['view_engine'] ?? ''), 'blade') !== false;
+		} else if (file_exists("$directory/composer.lock")) {
+			$composerLock = json_decode(file_get_contents("$directory/composer.lock"), true);
+			$packages = $composerLock['packages'] ?? [];
+			foreach ($packages as $package) {
+				if ($package['name'] === 'leafs/blade') {
+					$isBladeProject = true;
+					break;
+				}
+			}
+		}
+
+		return $isBladeProject;
 	}
 }
