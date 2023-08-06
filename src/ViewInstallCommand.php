@@ -322,10 +322,88 @@ class ViewInstallCommand extends Command
 	 */
 	protected function installVue($output)
 	{
-		$npm = Utils\Core::findNpm();
-		$success = Utils\Core::run("$npm install vue@next", $output);
+		$output->writeln("📦  <info>Installing Vue...</info>\n");
 
-		if (!$success) return 1;
+		$directory = getcwd();
+		$npm = Utils\Core::findNpm();
+		$composer = Utils\Core::findComposer();
+		$success = Utils\Core::run("$npm install @leafphp/vite-plugin @vitejs/plugin-vue @inertiajs/vue3 vue", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to install Vue</error>");
+			return 1;
+		};
+
+		$output->writeln("\n✅  <info>Vue installed successfully</info>");
+		$output->writeln("🧱  <info>Setting up Leaf Vue server bridge...</info>\n");
+
+		$success = Utils\Core::run("$composer require leafs/inertia:dev-main leafs/vite:dev-main", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to setup Leaf Vue server bridge</error>");
+			return 1;
+		};
+
+		$isMVCApp = $this->isMVCApp();
+		$isBladeProject = $this->isBladeProject();
+		$ext = $isBladeProject ? 'blade' : 'view';
+
+		if (!$isBladeProject) {
+			$output->writeln("\n🎨  <info>Setting up BareUI as main view engine.</info>\n");
+			$success = Utils\Core::run("$composer require leafs/bareui", $output);
+
+			if (!$success) {
+				$output->writeln("❌  <error>Could not install BareUI, run leaf install bareui</error>\n");
+				return 1;
+			};
+		}
+
+		\Leaf\FS::superCopy(__DIR__ . '/themes/vue/root', $directory);
+
+		if ($isMVCApp) {
+			$paths = require "$directory/config/paths.php";
+			$viewsPath = trim($paths['views'] ?? 'app/views', '/');
+			$routesPath = trim($paths['routes'] ?? 'app/routes', '/');
+
+			\Leaf\FS::superCopy(__DIR__ . '/themes/vue/routes',  "$directory/$routesPath");
+			\Leaf\FS::superCopy(
+				(__DIR__ . '/themes/vue/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+				"$directory/$viewsPath"
+			);
+		} else {
+			\Leaf\FS::superCopy(__DIR__ . '/themes/vue/routes', $directory);
+			\Leaf\FS::superCopy(
+				(__DIR__ . '/themes/vue/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+				$directory
+			);
+
+			$viteConfig = file_get_contents("$directory/vite.config.js");
+			$viteConfig = str_replace(
+				"leaf({",
+				"leaf({\nhotFile: 'hot',",
+				$viteConfig
+			);
+			file_put_contents("$directory/vite.config.js", $viteConfig);
+
+			$inertiaView = file_get_contents("$directory/_inertia.$ext.php");
+			$inertiaView = str_replace(
+				'<?php echo vite([\'/js/app.js\', "/js/Pages/{$page[\'component\']}.vue"]); ?>',
+				'<?php echo vite([\'js/app.js\', "js/Pages/{$page[\'component\']}.vue"], \'/\'); ?>',
+				$inertiaView
+			);
+			file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
+		}
+
+		$package = json_decode(file_get_contents("$directory/package.json"), true);
+		$package['scripts']['dev'] = 'vite';
+		$package['scripts']['build'] = 'vite build';
+		file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+		$output->writeln("\n⚛️   <info>Vue setup successfully</info>");
+		$output->writeln("👉  Get started with the following commands:\n");
+		$output->writeln('    leaf view:dev <info>- start dev server</info>');
+		$output->writeln('    leaf view:build <info>- build for production</info>');
+		$output->writeln('');
 
 		return 0;
 	}
