@@ -136,7 +136,7 @@ class ViewInstallCommand extends Command
 
 		if (file_exists("$directory/config/view.php")) {
 			$viewConfig = require "$directory/config/view.php";
-			$isBladeProject = strpos(strtolower($viewConfig['viewEngine']), 'blade') !== false;
+			$isBladeProject = strpos(strtolower($viewConfig['viewEngine'] ?? $viewConfig['view_engine'] ?? ''), 'blade') !== false;
 		} else if (file_exists("$directory/composer.lock")) {
 			$composerLock = json_decode(file_get_contents("$directory/composer.lock"), true);
 			$packages = $composerLock['packages'] ?? [];
@@ -158,10 +158,19 @@ class ViewInstallCommand extends Command
 			};
 		}
 
+		\Leaf\FS::superCopy(__DIR__ . '/themes/react/root', $directory);
+
 		if ($isMVCApp) {
-			\Leaf\FS::superCopy(__DIR__ . '/themes/docker', $directory);
+			$paths = require "$directory/config/paths.php";
+			$viewsPath = trim($paths['views'] ?? 'app/views', '/');
+			$routesPath = trim($paths['routes'] ?? 'app/routes', '/');
+
+			\Leaf\FS::superCopy(__DIR__ . '/themes/react/routes',  "$directory/$routesPath");
+			\Leaf\FS::superCopy(
+				(__DIR__ . '/themes/react/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+				"$directory/$viewsPath"
+			);
 		} else {
-			\Leaf\FS::superCopy(__DIR__ . '/themes/react/root', $directory);
 			\Leaf\FS::superCopy(__DIR__ . '/themes/react/routes', $directory);
 			\Leaf\FS::superCopy(
 				(__DIR__ . '/themes/react/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
