@@ -203,7 +203,7 @@ class ViewInstallCommand extends Command
 		$npm = Utils\Core::findNpm();
 		$composer = Utils\Core::findComposer();
 
-		$success = Utils\Core::run("$npm install tailwindcss postcss autoprefixer @vitejs/plugin-vue vite", $output);
+		$success = Utils\Core::run("$npm install tailwindcss postcss autoprefixer @leafphp/vite-plugin vite", $output);
 
 		if (!$success) {
 			$output->writeln("❌  <error>Failed to install tailwind</error>");
@@ -222,7 +222,17 @@ class ViewInstallCommand extends Command
 
 		$isMVCApp = $this->isMVCApp();
 
-		\Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/root', $directory);
+		foreach (glob(__DIR__ . '/themes/tailwind/root/{,.}[!.,!..]*', GLOB_MARK | GLOB_BRACE) as $file) {
+			if (basename($file) === 'vite.config.js' && file_exists("$directory/vite.config.js")) {
+				continue;
+			}
+
+			if (is_file($file)) {
+				copy($file, rtrim($directory, '/') . '/' . basename($file));
+			} else {
+				\Leaf\FS::superCopy($file, rtrim($directory, '/') . '/' . basename($file));
+			}
+		}
 
 		if ($isMVCApp) {
 			$paths = require "$directory/config/paths.php";
@@ -251,8 +261,6 @@ class ViewInstallCommand extends Command
 		$output->writeln('    leaf view:dev <info>- start dev server</info>');
 		$output->writeln('    leaf view:build <info>- build for production</info>');
 		$output->writeln('');
-
-		return 0;
 	}
 
 	/**
@@ -260,12 +268,53 @@ class ViewInstallCommand extends Command
 	 */
 	protected function installVite($output)
 	{
+		$directory = getcwd();
 		$npm = Utils\Core::findNpm();
-		$success = Utils\Core::run("$npm install vite", $output);
+		$composer = Utils\Core::findComposer();
 
-		if (!$success) return 1;
+		$success = Utils\Core::run("$npm install @leafphp/vite-plugin vite", $output);
 
-		return 0;
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to install vite</error>");
+			return 1;
+		};
+
+		$output->writeln("\n✅  <info>Tailwind CSS installed successfully</info>");
+		$output->writeln("🧱  <info>Setting up Leaf Vite server bridge...</info>\n");
+
+		$success = Utils\Core::run("$composer require leafs/vite:dev-main", $output);
+
+		if (!$success) {
+			$output->writeln("❌  <error>Failed to setup Leaf Vite server bridge</error>");
+			return 1;
+		};
+
+		$isMVCApp = $this->isMVCApp();
+
+		if (!file_exists("$directory/vite.config.js")) {
+			\Leaf\FS::superCopy(__DIR__ . '/themes/vite', $directory);
+		}
+
+		if (!$isMVCApp) {
+			$viteConfig = file_get_contents("$directory/vite.config.js");
+			$viteConfig = str_replace(
+				"leaf({",
+				"leaf({\nhotFile: 'hot',",
+				$viteConfig
+			);
+			file_put_contents("$directory/vite.config.js", $viteConfig);
+		}
+
+		$package = json_decode(file_get_contents("$directory/package.json"), true);
+		$package['scripts']['dev'] = 'vite';
+		$package['scripts']['build'] = 'vite build';
+		file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+		$output->writeln("\n⚛️   <info>Vite setup successfully</info>");
+		$output->writeln("👉  Get started with the following commands:\n");
+		$output->writeln('    leaf view:dev <info>- start dev server</info>');
+		$output->writeln('    leaf view:build <info>- build for production</info>');
+		$output->writeln('');
 	}
 
 	/**
