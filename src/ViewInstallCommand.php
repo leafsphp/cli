@@ -307,6 +307,8 @@ class ViewInstallCommand extends Command
 		$npm = Utils\Core::findNpm();
 		$composer = Utils\Core::findComposer();
 
+		$output->writeln("📦  <info>Installing tailwind...</info>\n");
+
 		$success = Utils\Core::run("$npm install tailwindcss postcss autoprefixer @leafphp/vite-plugin vite", $output);
 
 		if (!$success) {
@@ -343,28 +345,63 @@ class ViewInstallCommand extends Command
 			$viewsPath = trim($paths['views'] ?? 'app/views', '/');
 
 			\Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/view', "$directory/$viewsPath");
+
+			if (file_exists("$directory/app/views/js/app.js")) {
+				$jsApp = file_get_contents("$directory/app/views/js/app.js");
+				if (strpos($jsApp, "import '../css/app.css';") === false) {
+					\Leaf\FS::prepend("$directory/app/views/js/app.js", "import '../css/app.css';\n");
+				}
+			}
+
+			if (file_exists("$directory/app/views/js/app.jsx")) {
+				$jsApp = file_get_contents("$directory/app/views/js/app.jsx");
+				if (strpos($jsApp, "import '../css/app.css';") === false) {
+					\Leaf\FS::prepend("$directory/app/views/js/app.jsx", "import '../css/app.css';\n");
+				}
+			}
 		} else {
 			\Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/view', $directory);
 
 			$viteConfig = file_get_contents("$directory/vite.config.js");
+			$viteConfig = str_replace(
+				["hotFile: 'hot',", 'hotFile: "hot",'],
+				'',
+				$viteConfig
+			);
 			$viteConfig = str_replace(
 				"leaf({",
 				"leaf({\nhotFile: 'hot',",
 				$viteConfig
 			);
 			file_put_contents("$directory/vite.config.js", $viteConfig);
+
+			if (file_exists("$directory/js/app.js")) {
+				$jsApp = file_get_contents("$directory/js/app.js");
+				if (strpos($jsApp, "import '../css/app.css';") === false) {
+					\Leaf\FS::prepend("$directory/js/app.js", "import '../css/app.css';\n");
+				}
+			}
+
+			if (file_exists("$directory/js/app.jsx")) {
+				$jsApp = file_get_contents("$directory/js/app.jsx");
+				if (strpos($jsApp, "import '../css/app.css';") === false) {
+					\Leaf\FS::prepend("$directory/js/app.jsx", "import '../css/app.css';\n");
+				}
+			}
 		}
 
 		$package = json_decode(file_get_contents("$directory/package.json"), true);
+		$package['type'] = 'module';
 		$package['scripts']['dev'] = 'vite';
 		$package['scripts']['build'] = 'vite build';
 		file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
-		$output->writeln("\n⚛️   <info>Tailwind CSS setup successfully</info>");
+		$output->writeln("\n🎉  <info>Tailwind CSS setup successfully</info>");
 		$output->writeln("👉  Get started with the following commands:\n");
 		$output->writeln('    leaf view:dev <info>- start dev server</info>');
-		$output->writeln('    leaf view:build <info>- build for production</info>');
-		$output->writeln('');
+		$output->writeln("    leaf view:build <info>- build for production</info>\n");
+
+		return 0;
 	}
 
 	/**
