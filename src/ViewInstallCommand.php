@@ -194,6 +194,7 @@ class ViewInstallCommand extends Command
         }
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
+        $package['type'] = 'module';
         $package['scripts']['dev'] = 'vite';
         $package['scripts']['build'] = 'vite build';
         file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
@@ -284,6 +285,7 @@ class ViewInstallCommand extends Command
         }
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
+        $package['type'] = 'module';
         $package['scripts']['dev'] = 'vite';
         $package['scripts']['build'] = 'vite build';
         file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
@@ -445,6 +447,7 @@ class ViewInstallCommand extends Command
         }
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
+        $package['type'] = 'module';
         $package['scripts']['dev'] = 'vite';
         $package['scripts']['build'] = 'vite build';
         file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
@@ -535,6 +538,7 @@ class ViewInstallCommand extends Command
         }
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
+        $package['type'] = 'module';
         $package['scripts']['dev'] = 'vite';
         $package['scripts']['build'] = 'vite build';
         file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
