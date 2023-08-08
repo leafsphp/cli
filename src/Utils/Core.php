@@ -125,4 +125,38 @@ class Core
 	{
 		return !empty(shell_exec(sprintf("which %s", escapeshellarg($cmd))));
 	}
+
+    /**
+     * Check if a project is a blade project
+     */
+    public static function isBladeProject($directory = null)
+    {
+        $isBladeProject = false;
+        $directory = $directory ?? getcwd();
+
+        if (file_exists("$directory/config/view.php")) {
+            $viewConfig = require "$directory/config/view.php";
+            $isBladeProject = strpos(strtolower($viewConfig['viewEngine'] ?? $viewConfig['view_engine'] ?? ''), 'blade') !== false;
+        } else if (file_exists("$directory/composer.lock")) {
+            $composerLock = json_decode(file_get_contents("$directory/composer.lock"), true);
+            $packages = $composerLock['packages'] ?? [];
+            foreach ($packages as $package) {
+                if ($package['name'] === 'leafs/blade') {
+                    $isBladeProject = true;
+                    break;
+                }
+            }
+        }
+
+        return $isBladeProject;
+    }
+
+    /**
+     * Check if a project is an MVC project
+     */
+    public static function isMVCProject($directory = null)
+    {
+        $directory = $directory ?? getcwd();
+        return is_dir("$directory/app/views") && file_exists("$directory/config/paths.php") && is_dir("$directory/public");
+    }
 }
