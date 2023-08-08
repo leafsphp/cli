@@ -201,8 +201,7 @@ class ViewInstallCommand extends Command
 		$output->writeln("\n🎉   <info>Inertia setup successfully. Inertia is best used with a framework of sorts.</info>");
 		$output->writeln("👉  Get started with the following commands:\n");
 		$output->writeln('    leaf view:dev <info>- start dev server</info>');
-		$output->writeln('    leaf view:build <info>- build for production</info>');
-		$output->writeln('');
+		$output->writeln("    leaf view:build <info>- build for production</info>");
 
 		return 0;
 	}
@@ -292,8 +291,7 @@ class ViewInstallCommand extends Command
 		$output->writeln("\n⚛️   <info>React setup successfully</info>");
 		$output->writeln("👉  Get started with the following commands:\n");
 		$output->writeln('    leaf view:dev <info>- start dev server</info>');
-		$output->writeln('    leaf view:build <info>- build for production</info>');
-		$output->writeln('');
+		$output->writeln("    leaf view:build <info>- build for production</info>");
 
 		return 0;
 	}
@@ -454,8 +452,9 @@ class ViewInstallCommand extends Command
 		$output->writeln("\n⚛️   <info>Vite setup successfully</info>");
 		$output->writeln("👉  Get started with the following commands:\n");
 		$output->writeln('    leaf view:dev <info>- start dev server</info>');
-		$output->writeln('    leaf view:build <info>- build for production</info>');
-		$output->writeln('');
+		$output->writeln("    leaf view:build <info>- build for production</info>\n");
+
+		return 0;
 	}
 
 	/**
@@ -543,8 +542,7 @@ class ViewInstallCommand extends Command
 		$output->writeln("\n⚛️   <info>Vue setup successfully</info>");
 		$output->writeln("👉  Get started with the following commands:\n");
 		$output->writeln('    leaf view:dev <info>- start dev server</info>');
-		$output->writeln('    leaf view:build <info>- build for production</info>');
-		$output->writeln('');
+		$output->writeln("    leaf view:build <info>- build for production</info>\n");
 
 		return 0;
 	}
