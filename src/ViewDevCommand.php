@@ -16,6 +16,7 @@ class ViewDevCommand extends Command
 	protected function configure()
 	{
 		$this
+            ->setAliases(['view:serve', 'view:watch'])
 			->setHelp('Run your frontend dev command')
 			->setDescription('Run your frontend dev server');
 	}
