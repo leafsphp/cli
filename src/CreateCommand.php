@@ -199,8 +199,8 @@ class CreateCommand extends Command
     {
         FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
 
-        $output->writeln('⚡️ ' . basename($directory) . " scaffolded successfully");
         $composer = Utils\Core::findComposer();
+        $output->writeln('⚡️ ' . basename($directory) . " scaffolded successfully");
 
         $commands = [
             "$composer install",
