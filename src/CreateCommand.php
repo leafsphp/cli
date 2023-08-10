@@ -202,15 +202,15 @@ class CreateCommand extends Command
         $output->writeln('⚡️ ' . basename($directory) . " scaffolded successfully");
         $composer = Utils\Core::findComposer();
 
-        $modules = array_map(function ($module) {
-            return $this->modules[$module];
-        }, $this->moduleSelection($input, $output));
-
         $commands = [
             "$composer install",
         ];
 
-        if ($input->getOption('custom') && count($modules) > 0) {
+        if ($input->getOption('custom')) {
+            $modules = array_map(function ($module) {
+                return $this->modules[$module];
+            }, $this->moduleSelection($input, $output));
+
             $commands[] = "$composer require " . implode(' ', $modules);
         }
 
