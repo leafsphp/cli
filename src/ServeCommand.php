@@ -120,7 +120,7 @@ class ServeCommand extends Command
 
 		$output->writeln(
 			$isDockerProject ?
-				'<info>Serving Leaf application using docker-compose...</info>' :
+				'<info>Serving Leaf application using Docker Compose...</info>' :
 				"<info>Starting Leaf development server on <href=http://localhost:$port>http://localhost:$port</></info>"
 		);
 
