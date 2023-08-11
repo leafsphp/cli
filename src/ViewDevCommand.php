@@ -7,7 +7,6 @@ namespace Leaf\Console;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 
 class ViewDevCommand extends Command
 {
@@ -16,7 +15,7 @@ class ViewDevCommand extends Command
     protected function configure()
     {
         $this
-            ->setAliases(['view:serve', 'view:watch'])
+            ->setAliases(['view:serve'])
             ->setHelp('Run your frontend dev command')
             ->setDescription('Run your frontend dev server');
     }
