@@ -68,26 +68,7 @@ for projects and enter:
 With leaf 3:
 
 ```sh
-leaf create <project-name> --v3
-```
-
-With leaf 2:
-
-```sh
-leaf create <project-name> --v2
-```
-
-If no version is passed in, leaf CLI will prompt you to select a version to use in your leaf app.
-
-```bash
 leaf create <project-name>
-```
-
-```sh
-* Select a version to use 
-  [0] v3
-  [1] v2
- >
 ```
 
 This will now prompt you to select a preset
@@ -99,16 +80,14 @@ Creating a new Leaf app "<project-name>" in ./projects-directory.
   [0] leaf
   [1] leaf mvc
   [2] leaf api
-  [3] skeleton
  > 
 ```
 
-Selecting a number will generate a leaf app based on the associated preset. As you can see, there are 4 presets:
+Selecting a number will generate a leaf app based on the associated preset. As you can see, there are 3 presets:
 
-- **Leaf**: a bare leaf project
-- **Leaf MVC**: a leaf MVC project with leaf 2
-- **Leaf API**: a leaf API project with leaf 2
-- **Skeleton**: a leaf skeleton project
+- **Leaf**: a bare leaf 3 project
+- **Leaf MVC**: a leaf MVC project with leaf 3
+- **Leaf API**: a leaf API project with leaf 3
 
 You can also pick a preset directly without going through the interactive installer.
 
@@ -130,10 +109,10 @@ leaf create <project-name> --api
 leaf create <project-name> --mvc
 ```
 
-**Leaf Skeleton:**
+You can also add `--custom` for a fully customisable leaf project.
 
 ```bash
-leaf create <project-name> --skeleton
+leaf create <project-name> --custom
 ```
 
 ### Installing packages
