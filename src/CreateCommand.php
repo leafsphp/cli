@@ -142,7 +142,11 @@ class CreateCommand extends Command
                     $installVite = $this->installVite($input, $output);
 
                     if (!$installVite) {
-                        $commands[] = 'rm -rf vite.config.js package.json package-lock.json';
+                        if (PHP_OS_FAMILY === 'Windows') {
+                            $commands[] = "del $directory/vite.config.js $directory/package.json $directory/package-lock.json";
+                        } else {
+                            $commands[] = "rm -rf $directory/vite.config.js $directory/package.json $directory/package-lock.json";
+                        }
                     } else {
                         $commands[] = "$leaf view:install --vite";
                     }
