@@ -30,8 +30,6 @@ class ViewInstallCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // $composer = Utils\Core::findComposer();
-
         if ($input->getOption('blade')) {
             return $this->installBlade($output);
         }
@@ -119,11 +117,36 @@ class ViewInstallCommand extends Command
             $paths = require "$directory/config/paths.php";
             $viewsPath = trim($paths['views'] ?? 'app/views', '/');
 
-            \Leaf\FS::superCopy(__DIR__ . '/themes/bareui', "$directory/$viewsPath");
+            \Leaf\FS::superCopy(__DIR__ . '/themes/bareui/theme', "$directory/$viewsPath");
+            \Leaf\FS::superCopy(__DIR__ . '/themes/bareui/config', "$directory/config");
 
-            $viewConfig = require "$directory/config/view.php";
-            $viewConfig['viewEngine'] = '\Leaf\BareUI';
-            file_put_contents("$directory/config/view.php", '<?php return ' . var_export($viewConfig, true) . ';');
+            if (file_exists("$directory/$viewsPath/index.blade.php")) {
+                unlink("$directory/$viewsPath/index.blade.php");
+            }
+
+            $appRoutePartial = "$directory/app/routes/_app.php";
+
+            if (file_exists($appRoutePartial)) {
+                $appRoute = file_get_contents($appRoutePartial);
+                $appRoute = str_replace(
+                    "render('index');",
+                    "render('index', ['name' => 'Name Variable']);",
+                    $appRoute
+                );
+                file_put_contents($appRoutePartial, $appRoute);
+            }
+
+            $indexFile = "$directory/public/index.php";
+
+            if (file_exists($indexFile)) {
+                $index = file_get_contents($indexFile);
+                $index = str_replace(
+                    "Leaf\View::attach(\Leaf\Blade::class);",
+                    "Leaf\View::attach(\Leaf\BareUI::class);",
+                    $index
+                );
+                file_put_contents($indexFile, $index);
+            }
         } else {
             \Leaf\FS::superCopy(__DIR__ . '/themes/bareui', $directory);
         }
@@ -153,7 +176,7 @@ class ViewInstallCommand extends Command
         $output->writeln("\n✅  <info>Vite installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf Inertia server bridge...</info>\n");
 
-        $success = Utils\Core::run("$composer require leafs/vite:dev-main leafs/inertia:dev-main", $output);
+        $success = Utils\Core::run("$composer require leafs/vite leafs/inertia", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to setup Leaf Inertia server bridge</error>");
@@ -227,7 +250,7 @@ class ViewInstallCommand extends Command
         $output->writeln("\n✅  <info>React installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf React server bridge...</info>\n");
 
-        $success = Utils\Core::run("$composer require leafs/inertia:dev-main leafs/vite:dev-main", $output);
+        $success = Utils\Core::run("$composer require leafs/inertia leafs/vite", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to setup Leaf React server bridge</error>");
@@ -319,7 +342,7 @@ class ViewInstallCommand extends Command
         $output->writeln("\n✅  <info>Tailwind CSS installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf server bridge...</info>\n");
 
-        $success = Utils\Core::run("$composer require leafs/vite:dev-main", $output);
+        $success = Utils\Core::run("$composer require leafs/vite", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to setup Leaf server bridge</error>");
@@ -423,7 +446,7 @@ class ViewInstallCommand extends Command
         $output->writeln("\n✅  <info>Tailwind CSS installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf Vite server bridge...</info>\n");
 
-        $success = Utils\Core::run("$composer require leafs/vite:dev-main", $output);
+        $success = Utils\Core::run("$composer require leafs/vite", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to setup Leaf Vite server bridge</error>");
@@ -480,7 +503,7 @@ class ViewInstallCommand extends Command
         $output->writeln("\n✅  <info>Vue installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf Vue server bridge...</info>\n");
 
-        $success = Utils\Core::run("$composer require leafs/inertia:dev-main leafs/vite:dev-main", $output);
+        $success = Utils\Core::run("$composer require leafs/inertia leafs/vite", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to setup Leaf Vue server bridge</error>");
