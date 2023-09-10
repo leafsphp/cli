@@ -135,12 +135,14 @@ class CreateCommand extends Command
                     $frontendFramework = $this->frontendFrameworkSelection($input, $output);
                     $commands[] = "$leaf view:install --$frontendFramework";
                 } else {
+                    if ($viewEngine === 'bare-ui') {
+                        $commands[] = "$leaf view:install --bare-ui";
+                    }
+
                     $installVite = $this->installVite($input, $output);
 
                     if (!$installVite) {
-                        FS::deleteFile($directory . '/vite.config.js');
-                        FS::deleteFile($directory . '/package.json');
-                        FS::deleteFile($directory . '/package-lock.json');
+                        $commands[] = 'rm -rf vite.config.js package.json package-lock.json';
                     } else {
                         $commands[] = "$leaf view:install --vite";
                     }
