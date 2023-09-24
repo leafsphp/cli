@@ -1,18 +1,11 @@
 import useSWR from 'swr';
+import { useState } from 'react';
 import { useStore } from 'glassx';
 import FadeIn from 'react-fade-in';
-import {
-    DownloadCloud,
-    Terminal,
-    Layers,
-    Star,
-    BookOpen,
-    GitHub,
-    Check,
-} from 'react-feather';
+import { DownloadCloud, Terminal, Layers, Star, BookOpen, GitHub } from 'react-feather'; // prettier-ignore
 
 import Card from '../components/Card';
-import { useState } from 'react';
+import DirectoryInput from '../components/DirectoryInput';
 
 const HomeScreen = () => {
     const [, setScreen] = useStore('screen');
@@ -87,7 +80,7 @@ const HomeScreen = () => {
                 </div>
             ) : (
                 <div className="flex flex-col justify-center items-center">
-                    <div className="text-gray-900 dark:text-white flex flex-col justify-center items-center my-10 max-w-[550px] px-10">
+                    <div className="text-gray-900 dark:text-white flex flex-col justify-center items-center my-10 max-w-[650px] px-10">
                         <p className="text-center">
                             We noticed this is your first time using the UI. To
                             get started, you need to configure a directory where
@@ -95,50 +88,13 @@ const HomeScreen = () => {
                             the UI. You can always update the folder you select.
                         </p>
 
-                        <div className="mt-10 w-full flex relative">
-                            <input
-                                type="text"
-                                className="absolute w-full rounded-full h-14 border dark:border-blue-200/20 border-gray-200 bg-transparent pl-5 pr-10"
-                                placeholder="/users/username/projects"
-                                onChange={(e) => setDir(e.target.value)}
-                            />
-                            <button
-                                className="absolute right-2 top-2 bg-[#3eaf7c] hover:bg-[#3eaf7c]/75 ease-in-out py-3 px-4 rounded-full w-10 h-10 text-white"
-                                onClick={async () => {
-                                    setLoading(true);
-
-                                    fetch(
-                                        'http://localhost:5500/server.php?action=setConfig',
-                                        {
-                                            method: 'POST',
-                                            body: JSON.stringify({
-                                                data: {
-                                                    dir,
-                                                },
-                                            }),
-                                        }
-                                    )
-                                        .then(() => {
-                                            configMutate();
-                                        })
-                                        .catch((err) => {
-                                            console.log(
-                                                'An error occurred',
-                                                err
-                                            );
-                                        })
-                                        .finally(() => {
-                                            setLoading(false);
-                                        });
-                                }}
-                            >
-                                {!loading ? (
-                                    <Check size={10} />
-                                ) : (
-                                    <div className="animate-ping">...</div>
-                                )}
-                            </button>
-                        </div>
+                        <DirectoryInput
+                            dir={dir}
+                            setDir={setDir}
+                            loading={loading}
+                            setLoading={setLoading}
+                            configMutate={configMutate}
+                        />
                     </div>
                 </div>
             )}
