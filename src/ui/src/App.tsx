@@ -2,6 +2,8 @@ import GlassX, { PersistedState, useStore } from 'glassx';
 
 import Router from './utils/router';
 
+// [TODO] Fix all `any` types later
+
 GlassX.store({
     state: {
         screen: 'Home',

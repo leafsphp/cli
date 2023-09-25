@@ -1,35 +1,60 @@
-import { Info, Terminal } from 'react-feather';
+import { useState } from 'react';
 
+import NameScreen from './Create/NameScreen';
 import PageLayout from '../components/PageLayout';
-import Card from '../components/Card';
+import AppTypeScreen from './Create/AppTypeScreen';
+import TemplateEngineScreen from './Create/TemplateEngineScreen';
+import FrontendFrameworkScreen from './Create/FrontendFrameworkScreen';
+import { WalkthroughSelections, WalkthroughSteps } from './@types/CreateScreen';
 
 const CreateScreen = () => {
-    // const [walkthrough, setWalkthrough] = useState();
+    const [walkthrough, setWalkthrough] = useState<WalkthroughSteps>('name');
+    const [selected, setSelected] = useState<Partial<WalkthroughSelections>>({
+        name: '',
+    });
+
+    const createApp = () => {
+        const formData = {
+            ...selected,
+            name: selected?.name?.trim().replace(/\s+/g, '-').toLowerCase(),
+        };
+    };
+
+    // [Todo] Refactor this later
+
     return (
         <PageLayout className="bg-white dark:bg-transparent text-gray-900 dark:text-white">
-            <div className="pt-5">
-                <div className="px-5">
-                    <div className="flex items-center">
-                        <Terminal size={32} className="mr-3" />
-                        <div>
-                            <h1 className="text-2xl font-bold">
-                                Create Application
-                            </h1>
-                            <div className="dark:text-gray-400 text-gray-600">
-                                Create a new Leaf app
-                            </div>
-                        </div>
-                    </div>
-                    <p className="dark:text-gray-300 text-white text-xs flex items-center mt-5 dark:bg-green-900/50 bg-green-900/75 py-2 px-3 rounded-md">
-                        <Info size={12} className="mr-1" /> This screen allows
-                        you setup a Leaf app to match your project.
-                    </p>
-                </div>
+            {walkthrough === 'name' && (
+                <NameScreen
+                    values={selected}
+                    setValues={setSelected}
+                    navigate={setWalkthrough}
+                />
+            )}
 
-                <div className="console-section mt-6 border-t dark:border-blue-200/10 border-gray-200 p-5">
-                    <Card>Card</Card>
-                </div>
-            </div>
+            {walkthrough === 'type' && (
+                <AppTypeScreen
+                    values={selected}
+                    setValues={setSelected}
+                    navigate={setWalkthrough}
+                />
+            )}
+            
+            {walkthrough === 'templateEngine' && (
+                <TemplateEngineScreen
+                    values={selected}
+                    setValues={setSelected}
+                    navigate={setWalkthrough}
+                />
+            )}
+            
+            {walkthrough === 'frontendFramework' && (
+                <FrontendFrameworkScreen
+                    values={selected as WalkthroughSelections}
+                    setValues={setSelected}
+                    navigate={setWalkthrough}
+                />
+            )}
         </PageLayout>
     );
 };
