@@ -1,6 +1,6 @@
 export interface WalkthroughSelections {
-    name: string;
-    type: 'leaf' | 'mvc' | 'api';
+    name?: string;
+    type?: 'leaf' | 'mvc' | 'api';
     templateEngine?: 'blade' | 'bare-ui';
     frontendFramework?: 'react' | 'vue';
     additionalFrontendOptions?: string[];
@@ -10,8 +10,10 @@ export interface WalkthroughSelections {
 }
 
 export type WalkthroughSteps = keyof WalkthroughSelections;
+export type ProjectType = WalkthroughSelections['type'];
 export type TemplateEngine = WalkthroughSelections['templateEngine'];
 export type FrontendFramework = WalkthroughSelections['frontendFramework'];
+export type AdditionalFrontendOptions = WalkthroughSelections['additionalFrontendOptions'];
 export type TestingFramework = WalkthroughSelections['testing'];
 
 export interface CreateSubScreenProps {

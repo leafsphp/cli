@@ -1,8 +1,9 @@
 import { FileMinus, Folder, FolderPlus } from 'react-feather';
 
 import Card from '../../components/Card';
+import { CreateSubScreenProps, ProjectType } from '../@types/CreateScreen';
 
-const AppTypeScreen: React.FC<React.PropsWithChildren<any>> = ({
+const AppTypeScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
     values,
     navigate,
     setValues,
@@ -52,7 +53,7 @@ const AppTypeScreen: React.FC<React.PropsWithChildren<any>> = ({
                                 : ''
                         }`}
                         onClick={() => {
-                            setValues({ ...values, type: key });
+                            setValues({ ...values, type: key as ProjectType });
                             navigate(key === 'api' ? 'testing' : 'templateEngine');
                         }}
                     >

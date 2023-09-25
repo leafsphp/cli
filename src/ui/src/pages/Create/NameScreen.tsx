@@ -1,6 +1,7 @@
 import InlineForm from '../../components/InlineForm';
+import { CreateSubScreenProps } from '../@types/CreateScreen';
 
-const NameScreen: React.FC<React.PropsWithChildren<any>> = ({
+const NameScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
     values,
     navigate,
     setValues,
@@ -19,7 +20,9 @@ const NameScreen: React.FC<React.PropsWithChildren<any>> = ({
             <div className="py-5 px-5 lg:px-10">
                 <InlineForm
                     value={values.name}
-                    setValue={(value) => setValues({ ...values, name: value })}
+                    setValue={(value) =>
+                        setValues({ ...values, name: value as string })
+                    }
                     placeholder="Application Name"
                     onSubmit={() => {
                         navigate('type');

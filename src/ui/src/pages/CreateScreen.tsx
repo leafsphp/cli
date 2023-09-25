@@ -6,10 +6,11 @@ import AppTypeScreen from './Create/AppTypeScreen';
 import TemplateEngineScreen from './Create/TemplateEngineScreen';
 import FrontendFrameworkScreen from './Create/FrontendFrameworkScreen';
 import { WalkthroughSelections, WalkthroughSteps } from './@types/CreateScreen';
+import AdditionalFrontendOptionsScreen from './Create/AdditionalFrontendOptionsScreen';
 
 const CreateScreen = () => {
     const [walkthrough, setWalkthrough] = useState<WalkthroughSteps>('name');
-    const [selected, setSelected] = useState<Partial<WalkthroughSelections>>({
+    const [selected, setSelected] = useState<WalkthroughSelections>({
         name: '',
     });
 
@@ -50,7 +51,15 @@ const CreateScreen = () => {
             
             {walkthrough === 'frontendFramework' && (
                 <FrontendFrameworkScreen
-                    values={selected as WalkthroughSelections}
+                    values={selected}
+                    setValues={setSelected}
+                    navigate={setWalkthrough}
+                />
+            )}
+            
+            {walkthrough === 'additionalFrontendOptions' && (
+                <AdditionalFrontendOptionsScreen
+                    values={selected}
                     setValues={setSelected}
                     navigate={setWalkthrough}
                 />

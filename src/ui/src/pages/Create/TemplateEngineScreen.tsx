@@ -1,10 +1,9 @@
 import Card from '../../components/Card';
+import { CreateSubScreenProps, TemplateEngine } from '../@types/CreateScreen';
 
-const TemplateEngineScreen: React.FC<React.PropsWithChildren<any>> = ({
-    values,
-    navigate,
-    setValues,
-}) => {
+const TemplateEngineScreen: React.FC<
+    React.PropsWithChildren<CreateSubScreenProps>
+> = ({ values, navigate, setValues }) => {
     const engines = [
         {
             key: 'bare-ui',
@@ -52,7 +51,10 @@ const TemplateEngineScreen: React.FC<React.PropsWithChildren<any>> = ({
                                 : ''
                         }`}
                         onClick={() => {
-                            setValues({ ...values, templateEngine: key });
+                            setValues({
+                                ...values,
+                                templateEngine: key as TemplateEngine,
+                            });
                             navigate('frontendFramework');
                         }}
                     >
