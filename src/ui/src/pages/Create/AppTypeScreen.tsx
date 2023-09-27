@@ -1,37 +1,10 @@
-import { FileMinus, Folder, FolderPlus } from 'react-feather';
-
 import Card from '../../components/Card';
+import { themes } from '../../data/walkthrough';
 import { CreateSubScreenProps, ProjectType } from '../@types/CreateScreen';
 
-const AppTypeScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
-    values,
-    navigate,
-    setValues,
-}) => {
-    const themes = [
-        {
-            key: 'leaf',
-            icon: FileMinus,
-            name: 'BASIC LEAF THEME',
-            description:
-                'A basic Leaf app with a single index.php file, the simplest and fastest way to get started with Leaf. You can further customize this theme to add some extra features.',
-        },
-        {
-            key: 'mvc',
-            icon: FolderPlus,
-            name: 'LEAF MVC THEME',
-            description:
-                'Leaf MVC is a simple MVC framework for Leaf. It provides a solid base for building complex web apps quickly. It is designed to be simple, lightweight and easy to learn.',
-        },
-        {
-            key: 'api',
-            icon: Folder,
-            name: 'LEAF API THEME',
-            description:
-                'Leaf API is a simple MVC framework for Leaf specially crafted for building APIs. It provides a solid base for building complex APIs quickly.',
-        },
-    ];
-
+const AppTypeScreen: React.FC<
+    React.PropsWithChildren<CreateSubScreenProps>
+> = ({ values, navigate, setValues }) => {
     return (
         <>
             <div className="px-5 lg:px-10">
@@ -54,7 +27,9 @@ const AppTypeScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = (
                         }`}
                         onClick={() => {
                             setValues({ ...values, type: key as ProjectType });
-                            navigate(key === 'api' ? 'testing' : 'templateEngine');
+                            navigate(
+                                key === 'api' ? 'testing' : 'templateEngine'
+                            );
                         }}
                     >
                         <h3 className="font-bold mb-1 flex items-center gap-1">

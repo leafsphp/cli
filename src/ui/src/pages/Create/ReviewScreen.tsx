@@ -1,5 +1,4 @@
 import Card from '../../components/Card';
-import { containers } from '../../data/walkthrough';
 import { CreateSubScreenProps } from '../@types/CreateScreen';
 
 const DockerScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
@@ -7,6 +6,31 @@ const DockerScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
     navigate,
     setValues,
 }) => {
+    const engines = [
+        {
+            key: 'none',
+            icon: (
+                <img
+                    src="https://leafphp.dev/assets/leaf3-logo-circle.5b8e60e2.png"
+                    className="w-5 h-5"
+                />
+            ),
+            name: 'No Container',
+            description: 'Skip containerization. You can always add it later.',
+        },
+        {
+            key: 'docker',
+            icon: (
+                <img
+                    src="https://www.docker.com/wp-content/uploads/2023/04/cropped-Docker-favicon-192x192.png"
+                    className="w-5 h-5"
+                />
+            ),
+            name: 'Docker',
+            description: 'Create a Docker container for your app.',
+        },
+    ];
+
     return (
         <>
             <div className="px-5 lg:px-10">
@@ -21,7 +45,7 @@ const DockerScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
             </div>
 
             <div className="mt-6 py-2 px-5 lg:px-10">
-                {containers.map(({ icon, key, name, description }) => (
+                {engines.map(({ icon, key, name, description }) => (
                     <Card
                         key={key}
                         className={`w-100 max-w-none items-start mb-5 ${

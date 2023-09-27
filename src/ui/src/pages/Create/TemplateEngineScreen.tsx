@@ -1,35 +1,10 @@
 import Card from '../../components/Card';
+import { templateEngines } from '../../data/walkthrough';
 import { CreateSubScreenProps, TemplateEngine } from '../@types/CreateScreen';
 
 const TemplateEngineScreen: React.FC<
     React.PropsWithChildren<CreateSubScreenProps>
 > = ({ values, navigate, setValues }) => {
-    const engines = [
-        {
-            key: 'bare-ui',
-            icon: (
-                <img
-                    src="https://leafphp.dev/assets/leaf3-logo-circle.5b8e60e2.png"
-                    className="w-5 h-5"
-                />
-            ),
-            name: 'Bare UI',
-            description:
-                'Barebones templating engine built for speed and efficiency.',
-        },
-        {
-            key: 'blade',
-            icon: (
-                <img
-                    src="https://laravel.com/img/logomark.min.svg"
-                    className="w-5 h-5"
-                />
-            ),
-            name: 'Laravel Blade',
-            description: "Laravel's powerful and flexible templating engine.",
-        },
-    ];
-
     return (
         <>
             <div className="px-5 lg:px-10">
@@ -42,7 +17,7 @@ const TemplateEngineScreen: React.FC<
             </div>
 
             <div className="mt-6 py-2 px-5 lg:px-10">
-                {engines.map(({ icon, key, name, description }) => (
+                {templateEngines.map(({ icon, key, name, description }) => (
                     <Card
                         key={key}
                         className={`w-100 max-w-none items-start mb-5 ${

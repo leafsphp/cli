@@ -1,46 +1,10 @@
 import Card from '../../components/Card';
+import { testingFrameworks } from '../../data/walkthrough';
 import { CreateSubScreenProps, TestingFramework } from '../@types/CreateScreen'; // prettier-ignore
 
 const TestingScreen: React.FC<
     React.PropsWithChildren<CreateSubScreenProps>
 > = ({ values, navigate, setValues }) => {
-    const engines = [
-        {
-            key: 'none',
-            icon: (
-                <img
-                    src="https://leafphp.dev/assets/leaf3-logo-circle.5b8e60e2.png"
-                    className="w-5 h-5"
-                />
-            ),
-            name: 'No Tests',
-            description:
-                'Exclude testing from your app. You can always add it later.',
-        },
-        {
-            key: 'pest',
-            icon: (
-                <img
-                    src="https://pestphp.com/www/assets/logo.svg"
-                    className="w-5 h-5"
-                />
-            ),
-            name: 'Pest PHP',
-            description: 'The elegant PHP testing framework.',
-        },
-        {
-            key: 'phpunit',
-            icon: (
-                <img
-                    src="https://phpunit.de/img/phpunit.svg"
-                    className="w-5 h-5"
-                />
-            ),
-            name: 'PHPUnit',
-            description: 'The PHP Testing Framework.',
-        },
-    ];
-
     return (
         <>
             <div className="px-5 lg:px-10">
@@ -55,7 +19,7 @@ const TestingScreen: React.FC<
             </div>
 
             <div className="mt-6 py-2 px-5 lg:px-10">
-                {engines.map(({ icon, key, name, description }) => (
+                {testingFrameworks.map(({ icon, key, name, description }) => (
                     <Card
                         key={key}
                         className={`w-100 max-w-none items-start mb-5 ${

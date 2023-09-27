@@ -1,47 +1,10 @@
 import Card from '../../components/Card';
+import { modules } from '../../data/walkthrough';
 import { CreateSubScreenProps } from '../@types/CreateScreen';
 
 const ModulesScreen: React.FC<
     React.PropsWithChildren<CreateSubScreenProps>
 > = ({ values, navigate, setValues }) => {
-    const options = [
-        {
-            key: 'none',
-            name: 'None',
-            description: 'Add no extra modules to your app.',
-        },
-        {
-            key: 'db',
-            name: 'Database',
-            description: 'Install Leaf DB in your app.',
-        },
-        {
-            key: 'auth',
-            name: 'Authentication',
-            description: 'Install Leaf Auth in your app.',
-        },
-        {
-            key: 'session',
-            name: 'Session',
-            description: 'Install Leaf Session in your app.',
-        },
-        {
-            key: 'cookie',
-            name: 'Cookie',
-            description: 'Install Leaf Cookie in your app.',
-        },
-        {
-            key: 'cors',
-            name: 'Cors',
-            description: 'Install Leaf Cors in your app.',
-        },
-        {
-            key: 'date',
-            name: 'Date',
-            description: 'Install Leaf Date in your app.',
-        },
-    ];
-
     return (
         <>
             <div className="px-5 lg:px-10">
@@ -54,7 +17,7 @@ const ModulesScreen: React.FC<
             </div>
 
             <div className="mt-6 py-2 px-5 lg:px-10 grid grid-cols-1 md:grid-cols-2 gap-2">
-                {options.map(({ key, name, description }) => (
+                {modules.map(({ key, name, description }) => (
                     <Card
                         key={key}
                         className={`w-100 max-w-none items-start ${
@@ -104,7 +67,7 @@ const ModulesScreen: React.FC<
 
             <div className="px-5 lg:px-10 mt-20">
                 <button
-                    className="bg-green-800 px-5 py-2 rounded-md"
+                    className="bg-green-800 px-5 py-2 rounded-md text-white"
                     onClick={() => navigate('testing')}
                 >
                     Next
