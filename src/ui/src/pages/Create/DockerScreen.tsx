@@ -1,7 +1,7 @@
 import Card from '../../components/Card';
-import { CreateSubScreenProps, TestingFramework } from '../@types/CreateScreen'; // prettier-ignore
+import { CreateSubScreenProps, FrontendFramework } from '../@types/CreateScreen'; // prettier-ignore
 
-const TestingScreen: React.FC<
+const DockerScreen: React.FC<
     React.PropsWithChildren<CreateSubScreenProps>
 > = ({ values, navigate, setValues }) => {
     const engines = [
@@ -13,31 +13,19 @@ const TestingScreen: React.FC<
                     className="w-5 h-5"
                 />
             ),
-            name: 'No Tests',
-            description:
-                'Exclude testing from your app. You can always add it later.',
+            name: 'No Container',
+            description: 'Skip containerization. You can always add it later.',
         },
         {
-            key: 'pest',
+            key: 'docker',
             icon: (
                 <img
-                    src="https://pestphp.com/www/assets/logo.svg"
+                    src="https://www.docker.com/wp-content/uploads/2023/04/cropped-Docker-favicon-192x192.png"
                     className="w-5 h-5"
                 />
             ),
-            name: 'Pest PHP',
-            description: 'The elegant PHP testing framework.',
-        },
-        {
-            key: 'phpunit',
-            icon: (
-                <img
-                    src="https://phpunit.de/img/phpunit.svg"
-                    className="w-5 h-5"
-                />
-            ),
-            name: 'PHPUnit',
-            description: 'The PHP Testing Framework.',
+            name: 'Docker',
+            description: 'Create a Docker container for your app.',
         },
     ];
 
@@ -46,10 +34,10 @@ const TestingScreen: React.FC<
             <div className="px-5 lg:px-10">
                 <div>
                     <h1 className="text-2xl font-bold">
-                        Choose a Testing Framework
+                        Choose a Container Solution
                     </h1>
                     <div className="dark:text-gray-400 text-gray-600">
-                        Leaf will use this framework to create and run tests
+                        This option allows you to containerize your app with
                     </div>
                 </div>
             </div>
@@ -67,11 +55,11 @@ const TestingScreen: React.FC<
                             if (key !== 'none') {
                                 setValues({
                                     ...values,
-                                    testing: key as TestingFramework,
+                                    frontendFramework: key as FrontendFramework,
                                 });
                             }
 
-                            navigate('docker');
+                            navigate('additionalFrontendOptions');
                         }}
                     >
                         <h3 className="font-bold mb-1 flex items-center gap-1">
@@ -87,4 +75,4 @@ const TestingScreen: React.FC<
     );
 };
 
-export default TestingScreen;
+export default DockerScreen;

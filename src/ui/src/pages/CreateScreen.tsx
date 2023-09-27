@@ -9,6 +9,7 @@ import { WalkthroughSelections, WalkthroughSteps } from './@types/CreateScreen';
 import AdditionalFrontendOptionsScreen from './Create/AdditionalFrontendOptionsScreen';
 import ModulesScreen from './Create/ModulesScreen';
 import TestingScreen from './Create/TestingScreen';
+import DockerScreen from './Create/DockerScreen';
 
 const CreateScreen = () => {
     const [walkthrough, setWalkthrough] = useState<WalkthroughSteps>('name');
@@ -77,6 +78,14 @@ const CreateScreen = () => {
 
             {walkthrough === 'testing' && (
                 <TestingScreen
+                    values={selected}
+                    setValues={setSelected}
+                    navigate={setWalkthrough}
+                />
+            )}
+            
+            {walkthrough === 'docker' && (
+                <DockerScreen
                     values={selected}
                     setValues={setSelected}
                     navigate={setWalkthrough}
