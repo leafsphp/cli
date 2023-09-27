@@ -13,31 +13,31 @@ const TestingScreen: React.FC<
                     className="w-5 h-5"
                 />
             ),
-            name: 'Use template engine',
+            name: 'No Tests',
             description:
-                'Render UIs on the server using your selected templating engine',
+                'Exclude testing from your app. You can always add it later.',
         },
         {
-            key: 'react',
+            key: 'pest',
             icon: (
                 <img
-                    src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMS41IC0xMC4yMzE3NCAyMyAyMC40NjM0OCI+CiAgPHRpdGxlPlJlYWN0IExvZ288L3RpdGxlPgogIDxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIyLjA1IiBmaWxsPSIjNjFkYWZiIi8+CiAgPGcgc3Ryb2tlPSIjNjFkYWZiIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiPgogICAgPGVsbGlwc2Ugcng9IjExIiByeT0iNC4yIi8+CiAgICA8ZWxsaXBzZSByeD0iMTEiIHJ5PSI0LjIiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPgogICAgPGVsbGlwc2Ugcng9IjExIiByeT0iNC4yIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+CiAgPC9nPgo8L3N2Zz4K"
+                    src="https://pestphp.com/www/assets/logo.svg"
                     className="w-5 h-5"
                 />
             ),
-            name: 'React JS',
-            description: 'The library for web and native user interfaces',
+            name: 'Pest PHP',
+            description: 'The elegant PHP testing framework.',
         },
         {
-            key: 'vue',
+            key: 'phpunit',
             icon: (
                 <img
-                    src="https://v2.vuejs.org/images/logo.svg"
+                    src="https://phpunit.de/img/phpunit.svg"
                     className="w-5 h-5"
                 />
             ),
-            name: 'Vue JS',
-            description: 'The Progressive JavaScript Framework',
+            name: 'PHPUnit',
+            description: 'The PHP Testing Framework.',
         },
     ];
 
@@ -46,10 +46,10 @@ const TestingScreen: React.FC<
             <div className="px-5 lg:px-10">
                 <div>
                     <h1 className="text-2xl font-bold">
-                        Choose a Frontend Framework
+                        Choose a Testing Framework
                     </h1>
                     <div className="dark:text-gray-400 text-gray-600">
-                        Leaf will use this framework to render your UI.
+                        Leaf will use this framework to create and run tests
                     </div>
                 </div>
             </div>

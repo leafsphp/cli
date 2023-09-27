@@ -63,18 +63,32 @@ const ModulesScreen: React.FC<
                                 : ''
                         }`}
                         onClick={() => {
-                            if (values.modules?.includes(key)) {
+                            if (key === 'none') {
                                 setValues({
                                     ...values,
-                                    modules: values.modules?.filter(
-                                        (option) => option !== key
-                                    ),
+                                    modules: ['none'],
                                 });
                             } else {
-                                setValues({
-                                    ...values,
-                                    modules: [...(values.modules ?? []), key],
-                                });
+                                if (values.modules?.includes(key)) {
+                                    setValues({
+                                        ...values,
+                                        modules: values.modules?.filter(
+                                            (option) =>
+                                                option !== key &&
+                                                option !== 'none'
+                                        ),
+                                    });
+                                } else {
+                                    setValues({
+                                        ...values,
+                                        modules: [
+                                            ...(values.modules?.filter(
+                                                (option) => option !== 'none'
+                                            ) ?? []),
+                                            key,
+                                        ],
+                                    });
+                                }
                             }
                         }}
                     >
@@ -89,7 +103,12 @@ const ModulesScreen: React.FC<
             </div>
 
             <div className="px-5 lg:px-10 mt-20">
-                <button onClick={() => navigate('modules')}>Next</button>
+                <button
+                    className="bg-green-800 px-5 py-2 rounded-md"
+                    onClick={() => navigate('testing')}
+                >
+                    Next
+                </button>
             </div>
         </>
     );

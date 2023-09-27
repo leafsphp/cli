@@ -19,7 +19,7 @@ const NameScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
 
             <div className="py-5 px-5 lg:px-10">
                 <InlineForm
-                    value={values.name}
+                    value={values?.name ?? ''}
                     setValue={(value) =>
                         setValues({ ...values, name: value as string })
                     }

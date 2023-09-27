@@ -78,7 +78,10 @@ const AdditionalFrontendOptionsScreen: React.FC<
                         </p>
                     </Card>
                 ))}
-                <button className="mt-20" onClick={() => navigate('modules')}>
+                <button
+                    className="mt-20 bg-green-800 px-5 py-2 rounded-md"
+                    onClick={() => navigate('modules')}
+                >
                     Next
                 </button>
             </div>

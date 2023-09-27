@@ -23,6 +23,11 @@ const InlineForm: React.FC<PropsWithChildren<InlineFormProps>> = ({
                     'absolute w-full rounded-full h-14 border dark:border-blue-200/20 border-gray-200 bg-transparent pl-5 pr-10',
                     isError ? 'border-red-500 dark:border-red-500' : ''
                 )}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        onSubmit();
+                    }
+                }}
                 onChange={(e) => {
                     const data = e.target.value;
 
