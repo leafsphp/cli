@@ -14,7 +14,7 @@ const PageLayout: React.FC<React.PropsWithChildren<PageLayoutProps>> = ({
     return (
         <div
             className={twMerge(
-                'h-screen w-screen flex flex-col justify-start items-center',
+                'h-screen w-screen flex flex-col justify-start items-center overflow-x-hidden',
                 className
             )}
         >

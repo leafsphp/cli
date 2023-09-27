@@ -10,19 +10,13 @@ import AdditionalFrontendOptionsScreen from './Create/AdditionalFrontendOptionsS
 import ModulesScreen from './Create/ModulesScreen';
 import TestingScreen from './Create/TestingScreen';
 import DockerScreen from './Create/DockerScreen';
+import ReviewScreen from './Create/ReviewScreen';
 
 const CreateScreen = () => {
     const [walkthrough, setWalkthrough] = useState<WalkthroughSteps>('name');
     const [selected, setSelected] = useState<WalkthroughSelections>({
         name: '',
     });
-
-    const createApp = () => {
-        const formData = {
-            ...selected,
-            name: selected?.name?.trim().replace(/\s+/g, '-').toLowerCase(),
-        };
-    };
 
     // [Todo] Refactor this later
 
@@ -86,6 +80,14 @@ const CreateScreen = () => {
             
             {walkthrough === 'docker' && (
                 <DockerScreen
+                    values={selected}
+                    setValues={setSelected}
+                    navigate={setWalkthrough}
+                />
+            )}
+            
+            {walkthrough === 'review' && (
+                <ReviewScreen
                     values={selected}
                     setValues={setSelected}
                     navigate={setWalkthrough}

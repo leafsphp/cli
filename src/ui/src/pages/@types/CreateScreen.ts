@@ -14,7 +14,8 @@ export type WalkthroughSteps = keyof WalkthroughSelections;
 export type ProjectType = WalkthroughSelections['type'];
 export type TemplateEngine = WalkthroughSelections['templateEngine'];
 export type FrontendFramework = WalkthroughSelections['frontendFramework'];
-export type AdditionalFrontendOptions = WalkthroughSelections['additionalFrontendOptions'];
+export type AdditionalFrontendOptions =
+    WalkthroughSelections['additionalFrontendOptions'];
 export type TestingFramework = WalkthroughSelections['testing'];
 
 export interface CreateSubScreenProps {

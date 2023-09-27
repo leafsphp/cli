@@ -95,12 +95,7 @@ export const frontendFrameworks = [
     },
     {
         key: 'vue',
-        icon: (
-            <img
-                src="https://v2.vuejs.org/images/logo.svg"
-                className="w-5 h-5"
-            />
-        ),
+        icon: <img src="https://vuejs.org/logo.svg" className="w-5 h-5" />,
         name: 'Vue JS',
         description: 'The Progressive JavaScript Framework',
     },

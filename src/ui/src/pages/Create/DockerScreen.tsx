@@ -30,7 +30,7 @@ const DockerScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
                                 : ''
                         }`}
                         onClick={() => {
-                            if (key !== 'docker') {
+                            if (key === 'docker') {
                                 setValues({
                                     ...values,
                                     docker: true,
