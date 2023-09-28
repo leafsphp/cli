@@ -276,7 +276,10 @@ function createApp($appInfo)
 
 \Leaf\View::attach(\Leaf\Blade::class);
 
-app()->config('views.path', 'views');
+app()->config([
+	'views.path' => 'views',
+	'views.cache' => 'views/cache'
+]);
 app()->blade->configure('views', 'views/cache');",
                         "response()->markup(
 		app()->blade->render('index', ['name' => 'Leaf'])
@@ -354,6 +357,8 @@ app()->run();"
                 );
                 file_put_contents($inertiaFile, $indexFileContent);
             }
+
+            unlink($directory . '/' . $appName . '/_frontend.php');
 
             $templateContent = file_get_contents($directory . '/' . $appName .
                 ($appInfo['templateEngine'] === 'blade' ? '/views/index.blade.php' : '/views/index.view.php'));
