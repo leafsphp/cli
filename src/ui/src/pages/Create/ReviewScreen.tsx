@@ -43,15 +43,19 @@ const ReviewScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
         fetch('http://localhost:5500/server.php?action=createApp', {
             method: 'POST',
             body: JSON.stringify({
-                data: formData,
+                data: JSON.stringify(formData),
             }),
         })
             .then((res) => {
-                setValues({});
-
                 if (res.ok) {
-                    setScreen('home');
+                    return res.json();
                 }
+            })
+            .then((response) => {
+                // setValues({});
+
+                console.log(response, 'response');
+                // setScreen('home');
             })
             .catch((err) => {
                 console.log('An error occurred', err);
