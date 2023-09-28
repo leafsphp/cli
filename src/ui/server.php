@@ -165,6 +165,29 @@ function superCopy($source, $dest, $permissions = 0755)
     return true;
 }
 
+function deleteDirectory($dir)
+{
+    if (!file_exists($dir)) {
+        return true;
+    }
+
+    if (!is_dir($dir)) {
+        return unlink($dir);
+    }
+
+    foreach (scandir($dir) as $item) {
+        if ($item == '.' || $item == '..') {
+            continue;
+        }
+
+        if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+            return false;
+        }
+    }
+
+    return rmdir($dir);
+}
+
 function createApp($appInfo)
 {
     $directory = $appInfo['directory'] ?? null;
@@ -215,10 +238,185 @@ function createApp($appInfo)
         $process->run();
     }
 
+    if (isset($appInfo['templateEngine'])) {
+        $process = new Process(['leaf', 'view:install', '--' . $appInfo['templateEngine']]);
+        $process->setWorkingDirectory($directory . '/' . $appName);
+        $process->setTimeout(null);
+        $process->setTty(true);
+        $process->run();
+    }
+
+    if (isset($appInfo['frontendFramework'])) {
+        $process = new Process(['leaf', 'view:install', '--' . $appInfo['frontendFramework']]);
+        $process->setWorkingDirectory($directory . '/' . $appName);
+        $process->setTimeout(null);
+        $process->setTty(true);
+        $process->run();
+    }
+
+    if (isset($appInfo['additionalFrontendOptions'])) {
+        foreach ($appInfo['additionalFrontendOptions'] as $option) {
+            $process = new Process(['leaf', 'view:install', '--' . $option]);
+            $process->setWorkingDirectory($directory . '/' . $appName);
+            $process->setTimeout(null);
+            $process->setTty(true);
+            $process->run();
+        }
+
+        if ($appInfo['type'] === 'basic') {
+            $indexFile = $directory . '/' . $appName . '/index.php';
+
+            $indexFileContent = file_get_contents($indexFile);
+
+            if ($appInfo['templateEngine'] === 'blade') {
+                $indexFileContent = str_replace(
+                    ["require __DIR__ . '/vendor/autoload.php';", "response()->page('./welcome.html');", 'app()->run();'],
+                    [
+                        "require __DIR__ . '/vendor/autoload.php';
+
+\Leaf\View::attach(\Leaf\Blade::class);
+
+app()->config('views.path', 'views');
+app()->blade->configure('views', 'views/cache');",
+                        "response()->markup(
+		app()->blade->render('index', ['name' => 'Leaf'])
+	);",
+                        "app()->get('/hello', function () {
+	echo inertia('Hello');
+});
+
+app()->run();"
+                    ],
+                    $indexFileContent
+                );
+            } else {
+                $indexFileContent = str_replace(
+                    ["require __DIR__ . '/vendor/autoload.php';", "response()->page('./welcome.html');", 'app()->run();'],
+                    [
+                        "require __DIR__ . '/vendor/autoload.php';
+
+app()->config('views.path', 'views');
+app()->template->config('path', __DIR__ . '/views');",
+                        "response()->markup(
+		app()->template->render('index', [
+			'name' => 'Leaf',
+		])
+	);",
+                        "app()->get('/hello', function () {
+	echo inertia('Hello');
+});
+
+app()->run();"
+                    ],
+                    $indexFileContent
+                );
+            }
+
+            file_put_contents($indexFile, $indexFileContent);
+            mkdir($directory . '/' . $appName . '/views');
+
+            if ($appInfo['templateEngine'] === 'blade') {
+                mkdir($directory . '/' . $appName . '/views/cache');
+                rename($directory . '/' . $appName . '/index.blade.php', $directory . '/' . $appName . '/views/index.blade.php');
+
+                if (isset($appInfo['frontendFramework'])) {
+                    rename($directory . '/' . $appName . '/_inertia.blade.php', $directory . '/' . $appName . '/views/_inertia.blade.php');
+                }
+            } else {
+                rename($directory . '/' . $appName . '/index.view.php', $directory . '/' . $appName . '/views/index.view.php');
+
+                if (isset($appInfo['frontendFramework'])) {
+                    rename($directory . '/' . $appName . '/_inertia.view.php', $directory . '/' . $appName . '/views/_inertia.view.php');
+                }
+            }
+
+            if (is_dir($directory . '/' . $appName . '/js')) {
+                superCopy($directory . '/' . $appName . '/js', $directory . '/' . $appName . '/views/js');
+                deleteDirectory($directory . '/' . $appName . '/js');
+            }
+
+            if (is_dir($directory . '/' . $appName . '/css')) {
+                superCopy($directory . '/' . $appName . '/css', $directory . '/' . $appName . '/views/css');
+                deleteDirectory($directory . '/' . $appName . '/css');
+            }
+
+            unlink($directory . '/' . $appName . '/welcome.html');
+
+            if (isset($appInfo['frontendFramework'])) {
+                $inertiaFile = $directory . '/' . $appName . '/views/_inertia' .
+                    ($appInfo['templateEngine'] === 'blade' ? '.blade.php' : '.view.php');
+
+                $inertiaFileContent = file_get_contents($inertiaFile);
+                $indexFileContent = str_replace(
+                    ["'js/", '"js/'],
+                    ["'views/js/", '"views/js/'],
+                    $inertiaFileContent
+                );
+                file_put_contents($inertiaFile, $indexFileContent);
+            }
+
+            $templateContent = file_get_contents($directory . '/' . $appName .
+                ($appInfo['templateEngine'] === 'blade' ? '/views/index.blade.php' : '/views/index.view.php'));
+            $templateContent = str_replace(
+                ['<title>Document</title>', 'Hello <?php echo $name; ?>', 'Hello {{ $name }}', '<body>'],
+                [
+                    "<title>Welcome to Leaf</title>
+                <?php echo vite('/css/app.css', 'views'); ?>",
+                    '<h1 class="text-4xl mb-2">Hello <?php echo $name; ?></h1>
+	<p>BareUI + Tailwind</p>',
+                    '<h1 class="text-4xl mb-2">Hello {{ $name }}</h1>
+    <p>Blade + Tailwind</p>',
+                    '<body class="flex flex-col justify-center items-center h-screen">'
+                ],
+                $templateContent
+            );
+            file_put_contents($directory . '/' . $appName . ($appInfo['templateEngine'] === 'blade' ? '/views/index.blade.php' : '/views/index.view.php'), $templateContent);
+
+            $viteConfig = file_get_contents($directory . '/' . $appName . '/vite.config.js');
+            $viteConfig = str_replace(
+                ['refresh: true', "input: ['app/views//js/app.jsx']", 'css/app.css', 'js/app.js'],
+                ["refresh: ['views/**']", "input: ['views/js/app.jsx']", '/css/app.css', '/js/app.js'],
+                $viteConfig
+            );
+            file_put_contents($directory . '/' . $appName . '/vite.config.js', $viteConfig);
+
+            $tailwindConfig = file_get_contents($directory . '/' . $appName . '/tailwind.config.js');
+            $tailwindConfig = str_replace(
+                ["'./app/views/**/*.blade.php',", './app/'],
+                ["'./views/**/*.blade.php', './views/**/*.view.php',", './'],
+                $tailwindConfig
+            );
+            file_put_contents($directory . '/' . $appName . '/tailwind.config.js', $tailwindConfig);
+        }
+    }
+
+    if (isset($appInfo['testing'])) {
+        $process = new Process(['composer', 'require', 'leafs/alchemy', '--dev']);
+        $process->setWorkingDirectory($directory . '/' . $appName);
+        $process->setTimeout(null);
+        $process->setTty(true);
+        $process->run();
+
+        $process = new Process(['leaf', 'test:setup', '--' . $appInfo['testing']]);
+        $process->setWorkingDirectory($directory . '/' . $appName);
+        $process->setTimeout(null);
+        $process->setTty(true);
+        $process->run();
+    }
+
+    if (isset($appInfo['modules'])) {
+        foreach ($appInfo['modules'] as $module) {
+            $process = new Process(['composer', 'require', 'leafs/' . $module]);
+            $process->setWorkingDirectory($directory . '/' . $appName);
+            $process->setTimeout(null);
+            $process->setTty(true);
+            $process->run();
+        }
+    }
+
     return [
         'status' => 'success',
         'message' => 'App created success',
         'data' => $appInfo,
-        'output' => $process->getOutput(),
     ];
 }
