@@ -254,7 +254,7 @@ function createApp($appInfo)
         $process->run();
     }
 
-    if (isset($appInfo['additionalFrontendOptions'])) {
+    if (isset($appInfo['additionalFrontendOptions']) || isset($appInfo['frontendFramework'])) {
         foreach ($appInfo['additionalFrontendOptions'] as $option) {
             $process = new Process(['leaf', 'view:install', '--' . $option]);
             $process->setWorkingDirectory($directory . '/' . $appName);
@@ -284,11 +284,13 @@ app()->blade->configure('views', 'views/cache');",
                         "response()->markup(
 		app()->blade->render('index', ['name' => 'Leaf'])
 	);",
-                        "app()->get('/hello', function () {
+                        isset($appInfo['frontendFramework']) ?
+                            "app()->get('/hello', function () {
 	echo inertia('Hello');
 });
 
 app()->run();"
+                            : "app()->run();"
                     ],
                     $indexFileContent
                 );
@@ -305,11 +307,13 @@ app()->template->config('path', __DIR__ . '/views');",
 			'name' => 'Leaf',
 		])
 	);",
-                        "app()->get('/hello', function () {
+                        isset($appInfo['frontendFramework']) ?
+                            "app()->get('/hello', function () {
 	echo inertia('Hello');
 });
 
 app()->run();"
+                            : "app()->run();"
                     ],
                     $indexFileContent
                 );
@@ -356,42 +360,48 @@ app()->run();"
                     $inertiaFileContent
                 );
                 file_put_contents($inertiaFile, $indexFileContent);
-            }
 
-            unlink($directory . '/' . $appName . '/_frontend.php');
+                unlink($directory . '/' . $appName . '/_frontend.php');
+            }
 
             $templateContent = file_get_contents($directory . '/' . $appName .
                 ($appInfo['templateEngine'] === 'blade' ? '/views/index.blade.php' : '/views/index.view.php'));
             $templateContent = str_replace(
                 ['<title>Document</title>', 'Hello <?php echo $name; ?>', 'Hello {{ $name }}', '<body>'],
                 [
-                    "<title>Welcome to Leaf</title>
-                <?php echo vite('/css/app.css', 'views'); ?>",
-                    '<h1 class="text-4xl mb-2">Hello <?php echo $name; ?></h1>
-	<p>BareUI + Tailwind</p>',
-                    '<h1 class="text-4xl mb-2">Hello {{ $name }}</h1>
-    <p>Blade + Tailwind</p>',
-                    '<body class="flex flex-col justify-center items-center h-screen">'
+                    '<title>Welcome to Leaf</title>' . ((isset($appInfo['frontendFramwork']) || isset($appInfo['additionalFrontendOptions'])) ?
+                        "
+        <?php echo vite('/css/app.css', 'views'); ?>" : ''
+                    ),
+                    ((in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<h1 class="text-4xl mb-2">Hello <?php echo $name; ?></h1>' : 'Hello <?php echo $name; ?>') . '
+	<p>BareUI' . (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? ' + Tailwind</p>' : (in_array('vite', $appInfo['additionalFrontendOptions']) ? ' + Vite</p>' : ' + Leaf</p>'))),
+                    ((in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<h1 class="text-4xl mb-2">Hello {{ $name }}</h1>' : 'Hello {{ $name }}') . '
+    <p>Blade' . (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? ' + Tailwind</p>' : (in_array('vite', $appInfo['additionalFrontendOptions']) ? ' + Vite</p>' : ' + Leaf</p>'))),
+                    (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<body class="flex flex-col justify-center items-center h-screen">' : '<body>')
                 ],
                 $templateContent
             );
             file_put_contents($directory . '/' . $appName . ($appInfo['templateEngine'] === 'blade' ? '/views/index.blade.php' : '/views/index.view.php'), $templateContent);
 
-            $viteConfig = file_get_contents($directory . '/' . $appName . '/vite.config.js');
-            $viteConfig = str_replace(
-                ['refresh: true', "input: ['app/views//js/app.jsx']", 'css/app.css', 'js/app.js'],
-                ["refresh: ['views/**']", "input: ['views/js/app.jsx']", '/css/app.css', '/js/app.js'],
-                $viteConfig
-            );
-            file_put_contents($directory . '/' . $appName . '/vite.config.js', $viteConfig);
+            if (is_file($directory . '/' . $appName . '/vite.config.js')) {
+                $viteConfig = file_get_contents($directory . '/' . $appName . '/vite.config.js');
+                $viteConfig = str_replace(
+                    ['refresh: true', "'app/views//js", '"app/views//js', 'css/app.css', 'js/app.js'],
+                    ["refresh: ['views/**']", "'views/js", '"views/js', '/css/app.css', '/js/app.js'],
+                    $viteConfig
+                );
+                file_put_contents($directory . '/' . $appName . '/vite.config.js', $viteConfig);
+            }
 
-            $tailwindConfig = file_get_contents($directory . '/' . $appName . '/tailwind.config.js');
-            $tailwindConfig = str_replace(
-                ["'./app/views/**/*.blade.php',", './app/'],
-                ["'./views/**/*.blade.php', './views/**/*.view.php',", './'],
-                $tailwindConfig
-            );
-            file_put_contents($directory . '/' . $appName . '/tailwind.config.js', $tailwindConfig);
+            if (is_file($directory . '/' . $appName . '/tailwind.config.js')) {
+                $tailwindConfig = file_get_contents($directory . '/' . $appName . '/tailwind.config.js');
+                $tailwindConfig = str_replace(
+                    ["'./app/views/**/*.blade.php',", './app/'],
+                    ["'./views/**/*.blade.php', './views/**/*.view.php',", './'],
+                    $tailwindConfig
+                );
+                file_put_contents($directory . '/' . $appName . '/tailwind.config.js', $tailwindConfig);
+            }
         }
     }
 
@@ -417,6 +427,10 @@ app()->run();"
             $process->setTty(true);
             $process->run();
         }
+    }
+
+    if (isset($appInfo['docker'])) {
+        superCopy(dirname(__DIR__) . '/themes/docker', $directory . '/' . $appName . '/docker');
     }
 
     return [
