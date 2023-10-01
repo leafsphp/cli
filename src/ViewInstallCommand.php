@@ -82,11 +82,8 @@ class ViewInstallCommand extends Command
             $paths = require "$directory/config/paths.php";
             $viewsPath = trim($paths['views'] ?? 'app/views', '/');
 
-            \Leaf\FS::superCopy(__DIR__ . '/themes/blade', "$directory/$viewsPath");
-
-            $viewConfig = require "$directory/config/view.php";
-            $viewConfig['viewEngine'] = '\Leaf\Blade';
-            file_put_contents("$directory/config/view.php", '<?php return ' . var_export($viewConfig, true) . ';');
+            \Leaf\FS::superCopy(__DIR__ . '/themes/blade/theme', "$directory/$viewsPath");
+            \Leaf\FS::superCopy(__DIR__ . '/themes/blade/config', "$directory/config");
         } else {
             \Leaf\FS::superCopy(__DIR__ . '/themes/blade', $directory);
         }
