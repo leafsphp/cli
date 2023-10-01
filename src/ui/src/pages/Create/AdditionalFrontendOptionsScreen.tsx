@@ -20,8 +20,15 @@ const AdditionalFrontendOptionsScreen: React.FC<
             </div>
 
             <div className="mt-6 py-2 px-5 lg:px-10">
-                {additionalFrontendOptions.map(
-                    ({ icon, key, name, description }) => (
+                {additionalFrontendOptions
+                    .filter(({ key }) => {
+                        if (values.type === 'mvc') {
+                            return key !== 'vite';
+                        }
+
+                        return true;
+                    })
+                    .map(({ icon, key, name, description }) => (
                         <Card
                             key={key}
                             className={`w-100 max-w-none items-start mb-5 ${
@@ -61,11 +68,12 @@ const AdditionalFrontendOptionsScreen: React.FC<
                                 {description}
                             </p>
                         </Card>
-                    )
-                )}
+                    ))}
                 <button
                     className="mt-20 bg-green-800 px-5 py-2 rounded-md text-white"
-                    onClick={() => navigate('modules')}
+                    onClick={() =>
+                        navigate(values.type === 'leaf' ? 'modules' : 'testing')
+                    }
                 >
                     Next
                 </button>
