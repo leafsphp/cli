@@ -458,17 +458,19 @@ function updateMVCBuild($appInfo, $directory, $appName)
 
         $indexTemplate = file_get_contents($directory . '/' . $appName . '/app/views/index.view.php');
         $indexTemplate = str_replace(
-            '<title>Document</title>',
-            '<title>Document</title>
+            ['<title>Document</title>', '<body>'],
+            ['<title>Document</title>
 
     <!-- assets() points to the public/assets folder -->
     <link rel="stylesheet" href="<?php echo assets(\'css/styles.css\'); ?>">' . (isset($appInfo['frontendFramework']) || (isset($appInfo['additionalFrontendOptions']) && !empty($appInfo['additionalFrontendOptions'])) ?
                 '
 
     <!-- ViewsPath() points to app/views -->
-    <link rel="stylesheet" href="<?php echo ViewsPath(\'css/app.css\'); ?>">
-    ' : ''
-            ),
+    <!-- <link rel="stylesheet" href="<?php echo ViewsPath(\'css/app.css\'); ?>"> -->
+
+    <!-- vite() loads and bundles assets you select -->
+    <?php echo vite(\'css/app.css\'); ?>' : ''
+            ), in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<body class="flex flex-col justify-center items-center h-screen">' : '<body>'],
             $indexTemplate,
         );
 
