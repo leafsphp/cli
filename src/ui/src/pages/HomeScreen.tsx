@@ -67,14 +67,11 @@ const HomeScreen = () => {
                             Setup a new Leaf app
                         </p>
                     </Card>
-                    <Card
-                        className="text-gray-900 dark:text-white"
-                        onClick={() => setScreen('Apps')}
-                    >
+                    <Card className="text-gray-900 dark:text-white bg-green-900/5 border-green-900/5">
                         <Layers />
                         <h6 className="mt-2 font-bold tracking-tight">Apps</h6>
-                        <p className="font-normal text-xs dark:text-gray-500 text-gray-800">
-                            List your apps
+                        <p className="bg-green-100 text-green-800 text-xs font-medium mr-2 mb-2 ml-1 px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                            Coming Soon
                         </p>
                     </Card>
                 </div>

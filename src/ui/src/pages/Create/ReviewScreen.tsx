@@ -334,9 +334,7 @@ const LoadingSection = () => {
     );
 };
 
-const SuccessSection: React.FC<CreateSubScreenProps> = ({
-    values,
-}) => {
+const SuccessSection: React.FC<CreateSubScreenProps> = ({ values }) => {
     const [, setScreen] = useStore('screen');
 
     return (
@@ -353,7 +351,12 @@ const SuccessSection: React.FC<CreateSubScreenProps> = ({
             <pre className="flex flex-col gap-4 w-full bg-gray-100 rounded-lg p-5">
                 <div className="flex items-center gap-2">
                     <div>$</div>
-                    <div>cd {values?.directory ?? values.name}</div>
+                    <div>
+                        cd{' '}
+                        {values?.directory
+                            ? `${values?.directory}/${values?.name}`
+                            : values.name}
+                    </div>
                 </div>
                 {!!(
                     values?.additionalFrontendOptions ||
