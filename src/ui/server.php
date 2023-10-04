@@ -270,6 +270,28 @@ function createApp($appInfo)
         if ($appInfo['type'] === 'basic') {
             updateBasicBuild($appInfo, $directory, $appName);
         }
+
+        if ($appInfo['type'] === 'mvc') {
+            if (isset($appInfo['frontendFramework']) || isset($appInfo['additionalFrontendOptions'])) {
+                $viteConfig = file_get_contents($directory . '/' . $appName . '/vite.config.js');
+                $viteConfig = str_replace(
+                    ["'app/views//js", '"app/views//js'],
+                    ["'app/views/js", '"app/views/js'],
+                    $viteConfig
+                );
+                file_put_contents($directory . '/' . $appName . '/vite.config.js', $viteConfig);
+            }
+
+            if (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? [])) {
+                $tailwindConfig = file_get_contents($directory . '/' . $appName . '/tailwind.config.js');
+                $tailwindConfig = str_replace(
+                    "'./app/views/**/*.blade.php',",
+                    "'./app/views/**/*.blade.php', './app/views/**/*.view.php',",
+                    $tailwindConfig
+                );
+                file_put_contents($directory . '/' . $appName . '/tailwind.config.js', $tailwindConfig);
+            }
+        }
     }
 
     if (isset($appInfo['testing'])) {
@@ -475,5 +497,33 @@ function updateMVCBuild($appInfo, $directory, $appName)
         );
 
         file_put_contents($directory . '/' . $appName . '/app/views/index.view.php', $indexTemplate);
+    } else {
+        $appRouteFile = file_get_contents($directory . '/' . $appName . '/app/routes/_app.php');
+        $appRouteFile = str_replace(
+            "render('index');",
+            "render('index', ['name' => 'Leaf']);",
+            $appRouteFile
+        );
+        file_put_contents($directory . '/' . $appName . '/app/routes/_app.php', $appRouteFile);
+
+        $indexTemplate = file_get_contents($directory . '/' . $appName . '/app/views/index.blade.php');
+        $indexTemplate = str_replace(
+            ['<title>Document</title>', '<body>'],
+            ['<title>Document</title>
+
+    <!-- assets() points to the public/assets folder -->
+    <link rel="stylesheet" href="<?php echo assets(\'css/styles.css\'); ?>">' . (isset($appInfo['frontendFramework']) || (isset($appInfo['additionalFrontendOptions']) && !empty($appInfo['additionalFrontendOptions'])) ?
+            '
+
+    <!-- ViewsPath() points to app/views -->
+    <!-- <link rel="stylesheet" href="<?php echo ViewsPath(\'css/app.css\'); ?>"> -->
+
+    <!-- vite() loads and bundles assets you select -->
+    <?php echo vite(\'css/app.css\'); ?>' : ''
+            ), in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<body class="flex flex-col justify-center items-center h-screen">' : '<body>'],
+            $indexTemplate,
+        );
+
+        file_put_contents($directory . '/' . $appName . '/app/views/index.blade.php', $indexTemplate);
     }
 }
