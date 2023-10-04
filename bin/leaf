@@ -27,6 +27,7 @@ $app->add(new Leaf\Console\ServeCommand);
 $app->add(new Leaf\Console\DeployCommand);
 $app->add(new Leaf\Console\InteractCommand);
 $app->add(new Leaf\Console\RunCommand);
+$app->add(new Leaf\Console\UICommand);
 $app->add(new Leaf\Console\ViewBuildCommand);
 $app->add(new Leaf\Console\ViewDevCommand);
 $app->add(new Leaf\Console\ViewInstallCommand);
