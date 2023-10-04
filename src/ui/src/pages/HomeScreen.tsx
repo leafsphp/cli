@@ -39,7 +39,7 @@ const HomeScreen = () => {
                         </span>
                     </div>
                     <p className="dark:text-gray-300 text-gray-600">
-                        v0.0.0 - 2 Sep, 2023
+                        v0.0.1 - 4 Oct, 2023
                     </p>
                 </div>
             </div>
