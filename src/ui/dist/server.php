@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: *');
 
-if (file_exists(dirname(__DIR__, 3) . '/autoload.php')) {
+if (file_exists(dirname(__DIR__, 5) . '/autoload.php')) {
     require dirname(__DIR__, 5) . '/autoload.php';
 } else {
     require dirname(__DIR__, 3) . '/vendor/autoload.php';
