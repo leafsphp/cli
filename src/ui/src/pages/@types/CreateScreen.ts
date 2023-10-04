@@ -8,6 +8,7 @@ export interface WalkthroughSelections {
     docker?: boolean;
     testing?: 'pest' | 'phpunit';
     review?: boolean;
+    directory?: string;
 }
 
 export type WalkthroughSteps = keyof WalkthroughSelections;
