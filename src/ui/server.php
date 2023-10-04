@@ -332,7 +332,6 @@ function createApp($appInfo)
 function updateBasicBuild($appInfo, $directory, $appName)
 {
     $indexFile = $directory . '/' . $appName . '/index.php';
-
     $indexFileContent = file_get_contents($indexFile);
 
     if ($appInfo['templateEngine'] === 'blade') {

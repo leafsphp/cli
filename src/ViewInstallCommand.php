@@ -85,7 +85,7 @@ class ViewInstallCommand extends Command
             \Leaf\FS::superCopy(__DIR__ . '/themes/blade/theme', "$directory/$viewsPath");
             \Leaf\FS::superCopy(__DIR__ . '/themes/blade/config', "$directory/config");
         } else {
-            \Leaf\FS::superCopy(__DIR__ . '/themes/blade', $directory);
+            \Leaf\FS::superCopy(__DIR__ . '/themes/blade/theme', $directory);
         }
 
         $output->writeln("\n🎉   <info>Blade setup successfully.</info>");
@@ -145,7 +145,7 @@ class ViewInstallCommand extends Command
                 file_put_contents($indexFile, $index);
             }
         } else {
-            \Leaf\FS::superCopy(__DIR__ . '/themes/bareui', $directory);
+            \Leaf\FS::superCopy(__DIR__ . '/themes/bareui/theme', $directory);
         }
 
         $output->writeln("\n🎉   <info>Bare UI setup successfully.</info>");
