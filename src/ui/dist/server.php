@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: *');
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
 $action = $_GET['action'] ?? null;
 
