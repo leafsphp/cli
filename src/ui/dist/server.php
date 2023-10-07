@@ -15,7 +15,7 @@ if (file_exists(dirname(__DIR__, 5) . '/autoload.php')) {
 $action = $_GET['action'] ?? null;
 
 if ($action === 'getConfig') {
-    $config = __DIR__ . '/ui.config.json';
+    $config = dirname(__DIR__, 4) . '/ui.config.json';
 
     if (!file_exists($config)) {
         touch($config);
@@ -35,7 +35,7 @@ if ($action === 'getConfig') {
 }
 
 if ($action === 'setConfig') {
-    $configFile = __DIR__ . '/ui.config.json';
+    $configFile = dirname(__DIR__, 4) . '/ui.config.json';
     $config = file_get_contents($configFile);
     $config = json_decode($config, true);
     $config = array_merge($config, getData('data')['data'] ?? []);
@@ -63,7 +63,7 @@ if ($action === 'createApp') {
     $appInfo = getData('data')['data'] ?? '{}';
     $appInfo = json_decode($appInfo, true);
 
-    $config = __DIR__ . '/ui.config.json';
+    $config = dirname(__DIR__, 4) . '/ui.config.json';
     $applicationConfig = file_get_contents($config);
     $applicationConfig = json_decode($applicationConfig, true);
 
