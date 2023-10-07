@@ -17,6 +17,7 @@ class UICommand extends Command
     protected function configure()
     {
         $this
+            ->setAliases(['gui'])
             ->setHelp('Open up the Leaf CLI GUI')
             ->setDescription('Start the Leaf CLI GUI process')
             ->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on', 3001);
