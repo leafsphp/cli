@@ -16,7 +16,7 @@ const HomeScreen = () => {
         'https://repo.packagist.org/p2/leafs/leaf.json'
     );
     const { data: config, mutate: configMutate } = useSWR(
-        'http://localhost:5500/server.php?action=getConfig'
+        `${window.location.origin}/server.php?action=getConfig`
     );
 
     const leafInfo = versionData?.packages['leafs/leaf'];

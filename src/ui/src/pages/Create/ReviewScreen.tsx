@@ -50,7 +50,7 @@ const ReviewScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
                 );
         }
 
-        fetch('http://localhost:5500/server.php?action=createApp', {
+        fetch(`${window.location.origin}/server.php?action=createApp`, {
             method: 'POST',
             body: JSON.stringify({
                 data: JSON.stringify(formData),

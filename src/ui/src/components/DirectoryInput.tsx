@@ -48,7 +48,7 @@ const DirectoryInput: React.FC<PropsWithChildren<DirectoryInputProps>> = ({
                 onClick={async () => {
                     setLoading(true);
 
-                    fetch('http://localhost:5500/server.php?action=setConfig', {
+                    fetch(`${window.location.origin}/server.php?action=setConfig`, {
                         method: 'POST',
                         body: JSON.stringify({
                             data: {
