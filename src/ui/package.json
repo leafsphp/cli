@@ -4,7 +4,7 @@
     "version": "0.1.0",
     "scripts": {
         "dev": "vite",
-        "build": "tsc && vite build && cp server.php dist/server.php",
+        "build": "tsc && vite build",
         "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview"
     },
