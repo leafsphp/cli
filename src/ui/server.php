@@ -210,31 +210,31 @@ function createApp($appInfo)
         $process = new Process(['composer', 'install']);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
     } else {
         $process = new Process(['composer', 'create-project', 'leafs/' . $type, $appName, '--no-install', '--no-scripts', '--no-progress', '--no-interaction']);
         $process->setWorkingDirectory($directory);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
 
         $process = new Process(['composer', 'install']);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
 
         $process = new Process(['composer', 'run', 'post-root-package-install']);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
 
         $process = new Process(['composer', 'run', 'post-create-project-cmd']);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
     }
 
@@ -242,7 +242,7 @@ function createApp($appInfo)
         $process = new Process(['leaf', 'view:install', '--' . $appInfo['templateEngine']]);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
 
         if ($appInfo['type'] === 'mvc') {
@@ -254,7 +254,7 @@ function createApp($appInfo)
         $process = new Process(['leaf', 'view:install', '--' . $appInfo['frontendFramework']]);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
     }
 
@@ -263,7 +263,7 @@ function createApp($appInfo)
             $process = new Process(['leaf', 'view:install', '--' . $option]);
             $process->setWorkingDirectory($directory . '/' . $appName);
             $process->setTimeout(null);
-            $process->setTty(true);
+            $process->setTty(false);
             $process->run();
         }
 
@@ -298,13 +298,13 @@ function createApp($appInfo)
         $process = new Process(['composer', 'require', 'leafs/alchemy', '--dev']);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
 
         $process = new Process(['leaf', 'test:setup', '--' . $appInfo['testing']]);
         $process->setWorkingDirectory($directory . '/' . $appName);
         $process->setTimeout(null);
-        $process->setTty(true);
+        $process->setTty(false);
         $process->run();
     }
 
@@ -313,7 +313,7 @@ function createApp($appInfo)
             $process = new Process(['composer', 'require', 'leafs/' . $module]);
             $process->setWorkingDirectory($directory . '/' . $appName);
             $process->setTimeout(null);
-            $process->setTty(true);
+            $process->setTty(false);
             $process->run();
         }
     }
