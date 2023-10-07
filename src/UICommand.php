@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Process\Process;
 
 class UICommand extends Command
@@ -21,14 +19,14 @@ class UICommand extends Command
         $this
             ->setHelp('Open up the Leaf CLI GUI')
             ->setDescription('Start the Leaf CLI GUI process')
-            ->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on');
+            ->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on', 3001);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
-        $uiDirectory = __DIR__ . '/ui/dist';
+        $port = (int) $input->getOption('port');
 
+        $uiDirectory = __DIR__ . '/ui/dist';
         $serveCommand = "cd $uiDirectory && php -S localhost:$port";
 
         $process = Process::fromShellCommandline(
