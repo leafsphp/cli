@@ -18,6 +18,7 @@ const ReviewScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
     navigate,
     setValues,
 }) => {
+    const [error, setError] = useState<boolean | string>(false);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -50,7 +51,7 @@ const ReviewScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
                 );
         }
 
-        fetch(`${window.location.origin}/server.php?action=createApp`, {
+        fetch(`http://localhost:5500/server.php?action=createApp`, {
             method: 'POST',
             body: JSON.stringify({
                 data: JSON.stringify(formData),
@@ -62,12 +63,16 @@ const ReviewScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
                 }
             })
             .then((response) => {
-                setValues({
-                    ...values,
-                    ...response?.data,
-                });
+                if (response?.status === 'success') {
+                    setValues({
+                        ...values,
+                        ...response?.data,
+                    });
 
-                setSuccess(true);
+                    setSuccess(true);
+                } else {
+                    setError(response?.message);
+                }
             })
             .catch((err) => {
                 console.log('An error occurred', err);
@@ -84,6 +89,13 @@ const ReviewScreen: React.FC<React.PropsWithChildren<CreateSubScreenProps>> = ({
             values={values}
             setValues={setValues}
             navigate={navigate}
+        />
+    ) : error ? (
+        <ErrorSection
+            values={values}
+            setValues={setValues}
+            navigate={navigate}
+            error={error}
         />
     ) : (
         <>
@@ -348,7 +360,7 @@ const SuccessSection: React.FC<CreateSubScreenProps> = ({ values }) => {
                 </p>
             </div>
 
-            <pre className="flex flex-col gap-4 w-full bg-gray-100 rounded-lg p-5">
+            <pre className="flex flex-col gap-4 w-full bg-gray-100 dark:bg-gray-900/50 rounded-lg p-5">
                 <div className="flex items-center gap-2">
                     <div>$</div>
                     <div>
@@ -381,6 +393,30 @@ const SuccessSection: React.FC<CreateSubScreenProps> = ({ values }) => {
                     }}
                 >
                     Go Home
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const ErrorSection: React.FC<
+    CreateSubScreenProps & { error: boolean | string }
+> = ({ error, navigate }) => {
+    return (
+        <div className="px-5 lg:px-10 h-[80vh] flex flex-col justify-center items-center">
+            <div className="mb-8 text-center ">
+                <h2 className="text-2xl">Your app could not be created!</h2>
+                <p className="text-gray-500">{error}</p>
+            </div>
+
+            <div className="mt-8">
+                <button
+                    className="bg-green-800 px-5 py-2 rounded-md text-white"
+                    onClick={() => {
+                        navigate('name');
+                    }}
+                >
+                    Go Back
                 </button>
             </div>
         </div>
