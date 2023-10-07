@@ -181,7 +181,13 @@ class CreateCommand extends Command
 
         if ($process->isSuccessful()) {
             if ($this->getAppDockPreset($input, $output)) {
-                FS::superCopy(__DIR__ . '/themes/docker', $directory);
+                $dockerThemeFolder = __DIR__ . '/themes/docker';
+
+                if ($preset === 'mvc' || $preset === 'api') {
+                    $dockerThemeFolder = __DIR__ . '/themes/mvc/docker';
+                }
+                
+                FS::superCopy($dockerThemeFolder, $directory);
                 $output->write("\n🚀  Docker environment scaffolded successfully");
             }
 
