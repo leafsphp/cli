@@ -25,7 +25,8 @@ class ViewInstallCommand extends Command
             ->addOption('react', null, InputOption::VALUE_NONE, 'Install react')
             ->addOption('tailwind', null, InputOption::VALUE_NONE, 'Install tailwind')
             ->addOption('vite', null, InputOption::VALUE_NONE, 'Setup vite files')
-            ->addOption('vue', null, InputOption::VALUE_NONE, 'Install vue');
+            ->addOption('vue', null, InputOption::VALUE_NONE, 'Install vue')
+            ->addOption('pm', 'pm', InputOption::VALUE_OPTIONAL, 'Package manager to use', 'npm');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -39,23 +40,23 @@ class ViewInstallCommand extends Command
         }
 
         if ($input->getOption('inerita')) {
-            return $this->installInertia($output);
+            return $this->installInertia($input, $output);
         }
 
         if ($input->getOption('react')) {
-            return $this->installReact($output);
+            return $this->installReact($input, $output);
         }
 
         if ($input->getOption('tailwind')) {
-            return $this->installTailwind($output);
+            return $this->installTailwind($input, $output);
         }
 
         if ($input->getOption('vite')) {
-            return $this->installVite($output);
+            return $this->installVite($input, $output);
         }
 
         if ($input->getOption('vue')) {
-            return $this->installVue($output);
+            return $this->installVue($input, $output);
         }
 
         $output->writeln('<error>You didn\'t select an option to install</error>');
@@ -157,13 +158,13 @@ class ViewInstallCommand extends Command
     /**
      * Install inerita
      */
-    protected function installInertia($output)
+    protected function installInertia($input, $output)
     {
         $directory = getcwd();
-        $npm = Utils\Core::findNpm();
+        $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
 
-        $success = Utils\Core::run("$npm install @leafphp/vite-plugin vite", $output);
+        $success = Utils\Core::run("$npm add @leafphp/vite-plugin vite", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to install vite</error>");
@@ -230,14 +231,14 @@ class ViewInstallCommand extends Command
     /**
      * Install react
      */
-    protected function installReact($output)
+    protected function installReact($input, $output)
     {
         $output->writeln("📦  <info>Installing react...</info>\n");
 
         $directory = getcwd();
-        $npm = Utils\Core::findNpm();
+        $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
-        $success = Utils\Core::run("$npm install @leafphp/vite-plugin @vitejs/plugin-react @inertiajs/react react react-dom", $output);
+        $success = Utils\Core::run("$npm add @leafphp/vite-plugin @vitejs/plugin-react @inertiajs/react react react-dom", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to install react</error>");
@@ -321,15 +322,15 @@ class ViewInstallCommand extends Command
     /**
      * Install tailwind
      */
-    protected function installTailwind($output)
+    protected function installTailwind($input, $output)
     {
         $directory = getcwd();
-        $npm = Utils\Core::findNpm();
+        $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
 
         $output->writeln("📦  <info>Installing tailwind...</info>\n");
 
-        $success = Utils\Core::run("$npm install tailwindcss postcss autoprefixer @leafphp/vite-plugin vite", $output);
+        $success = Utils\Core::run("$npm add tailwindcss postcss autoprefixer @leafphp/vite-plugin vite", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to install tailwind</error>");
@@ -427,13 +428,13 @@ class ViewInstallCommand extends Command
     /**
      * Install vite
      */
-    protected function installVite($output)
+    protected function installVite($input, $output)
     {
         $directory = getcwd();
-        $npm = Utils\Core::findNpm();
+        $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
 
-        $success = Utils\Core::run("$npm install @leafphp/vite-plugin vite", $output);
+        $success = Utils\Core::run("$npm add @leafphp/vite-plugin vite", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to install vite</error>");
@@ -483,14 +484,14 @@ class ViewInstallCommand extends Command
     /**
      * Install vue
      */
-    protected function installVue($output)
+    protected function installVue($input, $output)
     {
         $output->writeln("📦  <info>Installing Vue...</info>\n");
 
         $directory = getcwd();
-        $npm = Utils\Core::findNpm();
+        $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
-        $success = Utils\Core::run("$npm install @leafphp/vite-plugin @vitejs/plugin-vue @inertiajs/vue3 vue", $output);
+        $success = Utils\Core::run("$npm add @leafphp/vite-plugin @vitejs/plugin-vue @inertiajs/vue3 vue", $output);
 
         if (!$success) {
             $output->writeln("❌  <error>Failed to install Vue</error>");

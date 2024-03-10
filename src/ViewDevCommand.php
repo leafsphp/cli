@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Leaf\Console;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -17,13 +18,14 @@ class ViewDevCommand extends Command
         $this
             ->setAliases(['view:serve'])
             ->setHelp('Run your frontend dev command')
-            ->setDescription('Run your frontend dev server');
+            ->setDescription('Run your frontend dev server')
+            ->addOption('pm', 'pm', InputOption::VALUE_OPTIONAL, 'Package manager to use', 'npm');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $directory = getcwd();
-        $npm = Utils\Core::findNpm();
+        $npm = Utils\Core::findNpm($input->getOption('pm'));
 
         if (!is_dir("$directory/node_modules")) {
             $output->writeln("<info>Installing dependencies...</info>");

@@ -76,15 +76,15 @@ class Core
 	 * Get the node command for the environment.
 	 * @return string
 	 */
-	public static function findNpm(): string
+	public static function findNpm($packageManager = 'npm'): string
 	{
-		$npmPath = getcwd() . '/npm';
+		$npmPath = getcwd() . "/$packageManager";
 
 		if (file_exists($npmPath)) {
 			return $npmPath;
 		}
 
-		return 'npm';
+		return $packageManager;
 	}
 
 	/**
