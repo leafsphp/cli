@@ -60,6 +60,7 @@ class ViewInstallCommand extends Command
         }
 
         $output->writeln('<error>You didn\'t select an option to install</error>');
+
         return 1;
     }
 
