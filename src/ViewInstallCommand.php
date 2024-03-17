@@ -21,7 +21,7 @@ class ViewInstallCommand extends Command
             ->setDescription('Run a script in your composer.json')
             ->addOption('blade', null, InputOption::VALUE_NONE, 'Install blade')
             ->addOption('bare-ui', null, InputOption::VALUE_NONE, 'Install bare ui')
-            ->addOption('inerita', null, InputOption::VALUE_NONE, 'Setup inerita files')
+            ->addOption('inertia', null, InputOption::VALUE_NONE, 'Setup inertia files')
             ->addOption('react', null, InputOption::VALUE_NONE, 'Install react')
             ->addOption('tailwind', null, InputOption::VALUE_NONE, 'Install tailwind')
             ->addOption('vite', null, InputOption::VALUE_NONE, 'Setup vite files')
@@ -39,7 +39,7 @@ class ViewInstallCommand extends Command
             return $this->installBareUi($output);
         }
 
-        if ($input->getOption('inerita')) {
+        if ($input->getOption('inertia')) {
             return $this->installInertia($input, $output);
         }
 
@@ -157,7 +157,7 @@ class ViewInstallCommand extends Command
     }
 
     /**
-     * Install inerita
+     * Install inertia
      */
     protected function installInertia($input, $output)
     {
