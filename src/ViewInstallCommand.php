@@ -21,8 +21,9 @@ class ViewInstallCommand extends Command
             ->setDescription('Run a script in your composer.json')
             ->addOption('blade', null, InputOption::VALUE_NONE, 'Install blade')
             ->addOption('bare-ui', null, InputOption::VALUE_NONE, 'Install bare ui')
-            ->addOption('inerita', null, InputOption::VALUE_NONE, 'Setup inerita files')
+            ->addOption('inertia', null, InputOption::VALUE_NONE, 'Setup inertia files')
             ->addOption('react', null, InputOption::VALUE_NONE, 'Install react')
+            ->addOption('svelte', null, InputOption::VALUE_NONE, 'Install svelte')
             ->addOption('tailwind', null, InputOption::VALUE_NONE, 'Install tailwind')
             ->addOption('vite', null, InputOption::VALUE_NONE, 'Setup vite files')
             ->addOption('vue', null, InputOption::VALUE_NONE, 'Install vue')
@@ -39,12 +40,16 @@ class ViewInstallCommand extends Command
             return $this->installBareUi($output);
         }
 
-        if ($input->getOption('inerita')) {
+        if ($input->getOption('inertia')) {
             return $this->installInertia($input, $output);
         }
 
         if ($input->getOption('react')) {
             return $this->installReact($input, $output);
+        }
+
+        if ($input->getOption('svelte')) {
+            return $this->installSvelte($input, $output);
         }
 
         if ($input->getOption('tailwind')) {
@@ -157,7 +162,7 @@ class ViewInstallCommand extends Command
     }
 
     /**
-     * Install inerita
+     * Install inertia
      */
     protected function installInertia($input, $output)
     {
@@ -320,6 +325,97 @@ class ViewInstallCommand extends Command
         return 0;
     }
 
+    /**
+     * Install svelte
+     */
+    protected function installSvelte($input, $output)
+    {
+        $output->writeln("📦  <info>Installing svelte...</info>\n");
+
+        $directory = getcwd();
+        $npm = Utils\Core::findNpm($input->getOption('pm'));
+        $composer = Utils\Core::findComposer();
+        $success = Utils\Core::run("$npm add @leafphp/vite-plugin svelte @sveltejs/vite-plugin-svelte @inertiajs/svelte", $output);
+
+        if (!$success) {
+            $output->writeln("❌  <error>Failed to install svelte</error>");
+            return 1;
+        };
+
+        $output->writeln("\n✅  <info>Svelte installed successfully</info>");
+        $output->writeln("🧱  <info>Setting up Leaf Svelte server bridge...</info>\n");
+
+        $success = Utils\Core::run("$composer require leafs/inertia leafs/vite", $output);
+
+        if (!$success) {
+            $output->writeln("❌  <error>Failed to setup Leaf Svelte server bridge</error>");
+            return 1;
+        };
+
+        $isMVCApp = $this->isMVCApp();
+        $isBladeProject = $this->isBladeProject();
+        $ext = $isBladeProject ? 'blade' : 'view';
+
+        if (!$isBladeProject) {
+            $output->writeln("\n🎨  <info>Setting up BareUI as main view engine.</info>\n");
+            $success = Utils\Core::run("$composer require leafs/bareui", $output);
+
+            if (!$success) {
+                $output->writeln("❌  <error>Could not install BareUI, run leaf install bareui</error>\n");
+                return 1;
+            };
+        }
+
+        \Leaf\FS::superCopy(__DIR__ . '/themes/svelte/root', $directory);
+
+        if ($isMVCApp) {
+            $paths = require "$directory/config/paths.php";
+            $viewsPath = trim($paths['views'] ?? 'app/views', '/');
+            $routesPath = trim($paths['routes'] ?? 'app/routes', '/');
+
+            \Leaf\FS::superCopy(__DIR__ . '/themes/svelte/routes',  "$directory/$routesPath");
+            \Leaf\FS::superCopy(
+                (__DIR__ . '/themes/svelte/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+                "$directory/$viewsPath"
+            );
+        } else {
+            \Leaf\FS::superCopy(__DIR__ . '/themes/svelte/routes', $directory);
+            \Leaf\FS::superCopy(
+                (__DIR__ . '/themes/svelte/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+                $directory
+            );
+
+            $viteConfig = file_get_contents("$directory/vite.config.js");
+            $viteConfig = str_replace(
+                "leaf({",
+                "leaf({\nhotFile: 'hot',",
+                $viteConfig
+            );
+            file_put_contents("$directory/vite.config.js", $viteConfig);
+
+            $inertiaView = file_get_contents("$directory/_inertia.$ext.php");
+            $inertiaView = str_replace(
+                '<?php echo vite([\'/js/app.jsx\', "/js/Pages/{$page[\'component\']}.jsx"]); ?>',
+                '<?php echo vite([\'js/app.js\'], \'/\'); ?>',
+                $inertiaView
+            );
+            file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
+        }
+
+        $package = json_decode(file_get_contents("$directory/package.json"), true);
+        $package['type'] = 'module';
+        $package['scripts']['dev'] = 'vite';
+        $package['scripts']['build'] = 'vite build';
+        file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+        $output->writeln("\n⚛️   <info>Svelte setup successfully</info>");
+        $output->writeln("👉  Get started with the following commands:\n");
+        $output->writeln('    leaf view:dev <info>- start dev server</info>');
+        $output->writeln("    leaf view:build <info>- build for production</info>");
+
+        return 0;
+    }
+    
     /**
      * Install tailwind
      */
