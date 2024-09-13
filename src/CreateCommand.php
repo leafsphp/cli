@@ -65,8 +65,8 @@ class CreateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $composer = Utils\Core::findComposer();
         $leaf = Utils\Core::findLeaf();
+        $composer = Utils\Core::findComposer();
         $needsUpdate = Package::updateAvailable();
 
         if ($needsUpdate) {
@@ -111,7 +111,7 @@ class CreateCommand extends Command
         }
 
         $commands = [
-            "$composer create-project leafs/$preset " . basename($directory),
+            "$composer create-project leafs/mvc " . basename($directory),
             'cd ' . basename($directory),
         ];
 
@@ -180,6 +180,10 @@ class CreateCommand extends Command
         });
 
         if ($process->isSuccessful()) {
+            if ($preset === 'api') {
+                $this->buildAPIApp($input, $output, $directory);
+            }
+
             if ($this->getAppDockPreset($input, $output)) {
                 $dockerThemeFolder = __DIR__ . '/themes/docker';
 
@@ -262,8 +266,6 @@ class CreateCommand extends Command
             $process->setTty(true);
         }
 
-        echo "\n";
-
         $process->run(function ($type, $line) use ($output) {
             $output->write($line);
         });
@@ -283,6 +285,58 @@ class CreateCommand extends Command
         }
 
         return 0;
+    }
+
+    protected function buildAPIApp($input, $output, $directory): bool
+    {
+        /// Will refactor when we switch to PHP 8.2
+
+        function deleteDir($dir)
+        {
+            if (!file_exists($dir)) {
+                return true;
+            }
+
+            if (!is_dir($dir)) {
+                return unlink($dir);
+            }
+
+            foreach (scandir($dir) as $item) {
+                if ($item == '.' || $item == '..') {
+                    continue;
+                }
+
+                if (!deleteDir($dir . DIRECTORY_SEPARATOR . $item)) {
+                    return false;
+                }
+            }
+
+            return rmdir($dir);
+        }
+
+        if (file_exists($directory . '/vite.config.js')) {
+            FS::deleteFile($directory . '/vite.config.js');
+        }
+
+        if (file_exists($directory . '/package.json')) {
+            FS::deleteFile($directory . '/package.json');
+        }
+
+        if (is_dir($directory . '/app/views')) {
+            deleteDir($directory . '/app/views');
+
+            FS::deleteFolder($directory . '/app/views');
+            FS::createFolder($directory . '/app/views');
+            FS::createFile($directory . '/app/views/.gitkeep');
+
+            deleteDir($directory . '/app/routes');
+            FS::superCopy(__DIR__ . '/themes/api/routes', $directory . '/app/routes');
+
+            FS::deleteFile($directory . '/public/index.php');
+            FS::superCopy(__DIR__ . '/themes/api/index.php', $directory . '/public/index.php');
+        }
+
+        return true;
     }
 
     protected function getAppName($input, $output): string
@@ -321,14 +375,22 @@ class CreateCommand extends Command
         }
 
         $helper = $this->getHelper('question');
-        $question = new ChoiceQuestion('<info>? What kind of app do you want to create?</info> <comment>[leaf]</comment>', ['leaf', 'leaf mvc', 'leaf api'], 'leaf');
+        $question = new ChoiceQuestion('<info>? What kind of app do you want to create?</info> <comment>[leaf]</comment>', ['leaf', 'leaf mvc', 'leaf mvc for apis'], 'leaf');
 
         $question->setMultiselect(false);
         $question->setErrorMessage('❌ Invalid option selected!');
 
         $preset = $helper->ask($input, $output, $question);
 
-        return str_replace('leaf ', '', $preset);
+        if ($preset === 'leaf mvc for apis') {
+            return 'api';
+        }
+
+        if ($preset === 'leaf mvc') {
+            return 'mvc';
+        }
+        
+        return 'leaf';
     }
 
     protected function getAppTestPreset($input, $output)

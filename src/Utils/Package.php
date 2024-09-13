@@ -65,6 +65,10 @@ class Package
 		$currentVersion = static::version();
 		$latestVersion = static::ltsVersion();
 
+        if ($currentVersion > $latestVersion) {
+            return false;
+        }
+
 		return ($currentVersion !== $latestVersion);
 	}
 }
