@@ -58,7 +58,9 @@ class InstallCommand extends Command
 			$output->write($line);
 		});
 
-		if (!$process->isSuccessful()) return 1;
+		if (!$process->isSuccessful()) {
+            return 1;
+        }
 
 		$output->writeln('<comment>packages installed successfully!</comment>');
 
