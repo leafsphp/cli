@@ -45,7 +45,7 @@ if ($action === 'setConfig') {
     echo json_encode([
         'status' => 'success',
         'message' => 'Config saved success',
-        'data' => $config
+        'data' => $config,
     ]);
 }
 
@@ -81,6 +81,7 @@ if ($action === 'createApp') {
 
     if ($data) {
         echo json_encode($data);
+
         return;
     }
 }
@@ -103,7 +104,7 @@ function hashDirectory($directory)
         return false;
     }
 
-    $files = array();
+    $files = [];
     $dir = dir($directory);
 
     while (false !== ($file = $dir->read())) {
@@ -123,7 +124,7 @@ function hashDirectory($directory)
 
 /**
  * Copy a file, or recursively copy a folder and its contents
- * 
+ *
  * @author      Aidan Lister <aidan@php.net>
  * @version     1.0.1
  * @link        http://aidanlister.com/2004/04/recursively-copying-directories-in-php/
@@ -159,13 +160,14 @@ function superCopy($source, $dest, $permissions = 0755)
         }
 
         // Deep copy directories
-        if ($sourceHash != hashDirectory($source . "/" . $entry)) {
+        if ($sourceHash != hashDirectory($source . '/' . $entry)) {
             superCopy("$source/$entry", "$dest/$entry", $permissions);
         }
     }
 
     // Clean up
     $dir->close();
+
     return true;
 }
 
@@ -360,7 +362,7 @@ app()->blade->configure('views', 'views/cache');",
 });
 
 app()->run();"
-                    : "app()->run();"
+                    : 'app()->run();',
             ],
             $indexFileContent
         );
@@ -383,7 +385,7 @@ app()->template->config('path', __DIR__ . '/views');",
 });
 
 app()->run();"
-                    : "app()->run();"
+                    : 'app()->run();',
             ],
             $indexFileContent
         );
@@ -439,7 +441,8 @@ app()->run();"
     $templateContent = str_replace(
         ['<title>Document</title>', 'Hello <?php echo $name; ?>', 'Hello {{ $name }}', '<body>'],
         [
-            '<title>Welcome to Leaf</title>' . ((isset($appInfo['frontendFramwork']) || isset($appInfo['additionalFrontendOptions'])) ?
+            '<title>Welcome to Leaf</title>' . (
+                (isset($appInfo['frontendFramwork']) || isset($appInfo['additionalFrontendOptions'])) ?
                 "
         <?php echo vite('/css/app.css', 'views'); ?>" : ''
             ),
@@ -447,7 +450,7 @@ app()->run();"
 	<p>BareUI' . (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? ' + Tailwind</p>' : (in_array('vite', $appInfo['additionalFrontendOptions']) ? ' + Vite</p>' : ' + Leaf</p>'))),
             ((in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<h1 class="text-4xl mb-2">Hello {{ $name }}</h1>' : 'Hello {{ $name }}') . '
     <p>Blade' . (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? ' + Tailwind</p>' : (in_array('vite', $appInfo['additionalFrontendOptions']) ? ' + Vite</p>' : ' + Leaf</p>'))),
-            (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<body class="flex flex-col justify-center items-center h-screen">' : '<body>')
+            (in_array('tailwind', $appInfo['additionalFrontendOptions'] ?? []) ? '<body class="flex flex-col justify-center items-center h-screen">' : '<body>'),
         ],
         $templateContent
     );
@@ -487,7 +490,8 @@ function updateMVCBuild($appInfo, $directory, $appName)
             ['<title>Document</title>
 
     <!-- assets() points to the public/assets folder -->
-    <link rel="stylesheet" href="<?php echo assets(\'css/styles.css\'); ?>">' . (isset($appInfo['frontendFramework']) || (isset($appInfo['additionalFrontendOptions']) && !empty($appInfo['additionalFrontendOptions'])) ?
+    <link rel="stylesheet" href="<?php echo assets(\'css/styles.css\'); ?>">' . (
+                isset($appInfo['frontendFramework']) || (isset($appInfo['additionalFrontendOptions']) && !empty($appInfo['additionalFrontendOptions'])) ?
                 '
 
     <!-- ViewsPath() points to app/views -->
@@ -515,7 +519,8 @@ function updateMVCBuild($appInfo, $directory, $appName)
             ['<title>Document</title>
 
     <!-- assets() points to the public/assets folder -->
-    <link rel="stylesheet" href="<?php echo assets(\'css/styles.css\'); ?>">' . (isset($appInfo['frontendFramework']) || (isset($appInfo['additionalFrontendOptions']) && !empty($appInfo['additionalFrontendOptions'])) ?
+    <link rel="stylesheet" href="<?php echo assets(\'css/styles.css\'); ?>">' . (
+                isset($appInfo['frontendFramework']) || (isset($appInfo['additionalFrontendOptions']) && !empty($appInfo['additionalFrontendOptions'])) ?
                 '
 
     <!-- ViewsPath() points to app/views -->

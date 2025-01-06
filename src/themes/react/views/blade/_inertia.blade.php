@@ -13,9 +13,9 @@
             $__inertiaSsrResponse = (new \Leaf\Inertia\Ssr\Gateway())->dispatch($page);
         }
 
-        if ($__inertiaSsrResponse) {
-            echo $__inertiaSsrResponse->head;
-        }
+    if ($__inertiaSsrResponse) {
+        echo $__inertiaSsrResponse->head;
+    }
     ?>
 </head>
 
@@ -26,11 +26,11 @@
             $__inertiaSsrResponse = (new \Leaf\Inertia\Ssr\Gateway())->dispatch($page);
         }
 
-        if ($__inertiaSsrResponse) {
-            echo $__inertiaSsrResponse->body;
-        } else {
-            echo '<div id="app" data-page="' . htmlspecialchars(json_encode($page), ENT_QUOTES, 'UTF-8', true) . '"></div>';
-        }
+    if ($__inertiaSsrResponse) {
+        echo $__inertiaSsrResponse->body;
+    } else {
+        echo '<div id="app" data-page="' . htmlspecialchars(json_encode($page), ENT_QUOTES, 'UTF-8', true) . '"></div>';
+    }
     ?>
 </body>
 

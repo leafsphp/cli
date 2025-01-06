@@ -30,7 +30,7 @@ class CreateCommand extends Command
         'CSRF protection' => 'leafs/csrf',
         'CORS support' => 'leafs/cors',
         'Leaf Date' => 'leafs/date',
-        'Leaf Fetch' => 'leafs/fetch'
+        'Leaf Fetch' => 'leafs/fetch',
     ];
 
     /**
@@ -101,9 +101,9 @@ class CreateCommand extends Command
 
         $output->writeln(
             "\n⚙️  Creating \""
-                . basename($directory) . "\" in <info>./"
-                . basename(dirname($directory)) .
-                "</info> using <info>$preset@v3</info>."
+            . basename($directory) . '" in <info>./'
+            . basename(dirname($directory)) .
+            "</info> using <info>$preset@v3</info>."
         );
 
         if ($preset === 'leaf') {
@@ -190,15 +190,15 @@ class CreateCommand extends Command
                 if ($preset === 'mvc' || $preset === 'api') {
                     $dockerThemeFolder = __DIR__ . '/themes/mvc/docker';
                 }
-                
+
                 FS::superCopy($dockerThemeFolder, $directory);
                 $output->write("\n🚀  Docker environment scaffolded successfully");
             }
 
-            $output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
-            $output->writeln("👉  Get started with the following commands:");
+            $output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . '</info>');
+            $output->writeln('👉  Get started with the following commands:');
             $output->writeln("\n    <info>cd</info> " . basename($directory));
-            $output->writeln("    <info>leaf serve</info>");
+            $output->writeln('    <info>leaf serve</info>');
 
             if ($testing) {
                 $output->writeln("\n👉  You can run tests with:");
@@ -216,7 +216,7 @@ class CreateCommand extends Command
         FS::superCopy(__DIR__ . '/themes/leaf3', $directory);
 
         $composer = Utils\Core::findComposer();
-        $output->writeln('⚡️ ' . basename($directory) . " scaffolded successfully");
+        $output->writeln('⚡️ ' . basename($directory) . ' scaffolded successfully');
 
         $commands = [
             "$composer install",
@@ -271,10 +271,10 @@ class CreateCommand extends Command
         });
 
         if ($process->isSuccessful()) {
-            $output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . "</info>");
-            $output->writeln("👉  Get started with the following commands:");
+            $output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . '</info>');
+            $output->writeln('👉  Get started with the following commands:');
             $output->writeln("\n    <info>cd</info> " . basename($directory));
-            $output->writeln("    <info>leaf serve</info>");
+            $output->writeln('    <info>leaf serve</info>');
 
             if ($testing) {
                 $output->writeln("\n👉  You can run tests with:");
@@ -389,7 +389,7 @@ class CreateCommand extends Command
         if ($preset === 'leaf mvc') {
             return 'mvc';
         }
-        
+
         return 'leaf';
     }
 
@@ -414,6 +414,7 @@ class CreateCommand extends Command
 
             if ($testing === 'none') {
                 $output->writeln("\n💪  No tests, hope you know what you're doing");
+
                 return false;
             }
 

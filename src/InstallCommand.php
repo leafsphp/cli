@@ -13,95 +13,98 @@ use Symfony\Component\Process\Process;
 
 class InstallCommand extends Command
 {
-	protected static $defaultName = 'install';
+    protected static $defaultName = 'install';
 
-	protected function configure()
-	{
-		$this
-			->setHelp('Install a new package')
-			->setDescription('Add a new package to your leaf app')
-			->addArgument('packages', InputArgument::IS_ARRAY, 'package(s) to install. Can also include a version constraint, e.g. foo/bar or foo/bar@1.0.0')
+    protected function configure()
+    {
+        $this
+            ->setHelp('Install a new package')
+            ->setDescription('Add a new package to your leaf app')
+            ->addArgument('packages', InputArgument::IS_ARRAY, 'package(s) to install. Can also include a version constraint, e.g. foo/bar or foo/bar@1.0.0')
             ->addOption('dev', 'd', InputOption::VALUE_NONE, 'Install package as a dev dependency');
-	}
+    }
 
-	protected function execute(InputInterface $input, OutputInterface $output): int
-	{
-		$packages = $input->getArgument('packages');
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $packages = $input->getArgument('packages');
 
-		if (count($packages)) {
-			return $this->install($packages, $input, $output);
-		}
+        if (count($packages)) {
+            return $this->install($packages, $input, $output);
+        }
 
-		return $this->installDependencies($output);
-	}
+        return $this->installDependencies($output);
+    }
 
-	protected function installDependencies($output)
-	{
-		$composerJsonPath = getcwd() . '/composer.json';
-		$composerLockPath = getcwd() . '/composer.lock';
+    protected function installDependencies($output)
+    {
+        $composerJsonPath = getcwd() . '/composer.json';
+        $composerLockPath = getcwd() . '/composer.lock';
 
-		if (!file_exists($composerJsonPath)) {
-			$output->writeln('<error>No composer.json found in the current directory. Pass in a package to add if you meant to install something.</error>');
-			return 1;
-		}
+        if (!file_exists($composerJsonPath)) {
+            $output->writeln('<error>No composer.json found in the current directory. Pass in a package to add if you meant to install something.</error>');
 
-		$composer = Utils\Core::findComposer();
-		$process = Process::fromShellCommandline(
-			file_exists($composerLockPath) ? "$composer install" : "$composer update",
-			null,
-			null,
-			null,
-			null
-		);
-
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
-
-		if (!$process->isSuccessful()) {
             return 1;
         }
 
-		$output->writeln('<comment>packages installed successfully!</comment>');
+        $composer = Utils\Core::findComposer();
+        $process = Process::fromShellCommandline(
+            file_exists($composerLockPath) ? "$composer install" : "$composer update",
+            null,
+            null,
+            null,
+            null
+        );
 
-		return 0;
-	}
+        $process->run(function ($type, $line) use ($output) {
+            $output->write($line);
+        });
 
-	/**
-	 * Install packages
-	 */
-	protected function install($packages, $input, $output)
-	{
-		foreach ($packages as $package) {
-			if (strpos($package, '/') == false) {
-				$package = "leafs/$package";
-			}
+        if (!$process->isSuccessful()) {
+            return 1;
+        }
 
-			$package = str_replace('@', ':', $package);
+        $output->writeln('<comment>packages installed successfully!</comment>');
 
-			$output->writeln("<info>Installing $package...</info>");
-			$composer = Utils\Core::findComposer();
-			$process = Process::fromShellCommandline(
-				"$composer require $package" . ($input->getOption('dev') ? ' --dev' : ''),
-				null,
-				null,
-				null,
-				null
-			);
+        return 0;
+    }
 
-			$process->run(function ($type, $line) use ($output) {
-				$output->write($line);
-			});
+    /**
+     * Install packages
+     */
+    protected function install($packages, $input, $output)
+    {
+        foreach ($packages as $package) {
+            if (strpos($package, '/') == false) {
+                $package = "leafs/$package";
+            }
 
-			if (!$process->isSuccessful()) return 1;
+            $package = str_replace('@', ':', $package);
 
-			$output->writeln("<comment>$package installed successfully!</comment>");
-		}
+            $output->writeln("<info>Installing $package...</info>");
+            $composer = Utils\Core::findComposer();
+            $process = Process::fromShellCommandline(
+                "$composer require $package" . ($input->getOption('dev') ? ' --dev' : ''),
+                null,
+                null,
+                null,
+                null
+            );
 
-		if (count($packages) > 1) {
-			$output->writeln('<info>All packages installed</info>');
-		}
+            $process->run(function ($type, $line) use ($output) {
+                $output->write($line);
+            });
 
-		return 0;
-	}
+            if (!$process->isSuccessful()) {
+                return 1;
+            }
+
+            $output->writeln("<comment>$package installed successfully!</comment>");
+        }
+
+        if (count($packages) > 1) {
+            $output->writeln('<info>All packages installed</info>');
+        }
+
+        return 0;
+    }
 }

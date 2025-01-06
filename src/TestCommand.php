@@ -11,44 +11,48 @@ use Symfony\Component\Process\Process;
 
 class TestCommand extends Command
 {
-	protected static $defaultName = 'test';
+    protected static $defaultName = 'test';
 
-	protected function configure()
-	{
-		$this
-			->setHelp('Test your leaf application through leaf alchemy')
-			->setDescription('Test your leaf application through leaf alchemy');
-	}
+    protected function configure()
+    {
+        $this
+            ->setHelp('Test your leaf application through leaf alchemy')
+            ->setDescription('Test your leaf application through leaf alchemy');
+    }
 
-	protected function execute(InputInterface $input, OutputInterface $output): int
-	{
-		$composerJsonPath = getcwd() . '/composer.json';
-		$alchemyConfig = getcwd() . '/alchemy.config.php';
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $composerJsonPath = getcwd() . '/composer.json';
+        $alchemyConfig = getcwd() . '/alchemy.config.php';
 
-		if (!file_exists($composerJsonPath)) {
-			$output->writeln('<error>No composer.json found in the current directory.</error>');
-			return 1;
-		}
+        if (!file_exists($composerJsonPath)) {
+            $output->writeln('<error>No composer.json found in the current directory.</error>');
 
-		if (!file_exists($alchemyConfig)) {
-			$output->writeln('<error>No alchemy.config.php found in the current directory.</error>');
-			return 1;
-		}
+            return 1;
+        }
 
-		$process = Process::fromShellCommandline(
-			"./vendor/bin/alchemy run",
-			null,
-			null,
-			null,
-			null
-		);
+        if (!file_exists($alchemyConfig)) {
+            $output->writeln('<error>No alchemy.config.php found in the current directory.</error>');
 
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
+            return 1;
+        }
 
-		if (!$process->isSuccessful()) return 1;
+        $process = Process::fromShellCommandline(
+            './vendor/bin/alchemy run',
+            null,
+            null,
+            null,
+            null
+        );
 
-		return 0;
-	}
+        $process->run(function ($type, $line) use ($output) {
+            $output->write($line);
+        });
+
+        if (!$process->isSuccessful()) {
+            return 1;
+        }
+
+        return 0;
+    }
 }

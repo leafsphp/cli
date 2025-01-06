@@ -11,64 +11,64 @@ namespace Leaf\Console\Utils;
  */
 class Package
 {
-	/**
-	 * Check current version
-	 */
-	public static function info()
-	{
-		return json_decode(file_get_contents(
-			dirname(__DIR__, 2) . "/composer.json"
-		));
-	}
+    /**
+     * Check current version
+     */
+    public static function info()
+    {
+        return json_decode(file_get_contents(
+            dirname(__DIR__, 2) . '/composer.json'
+        ));
+    }
 
-	/**
-	 * Check current version
-	 */
-	public static function version()
-	{
-		$meta = static::info();
+    /**
+     * Check current version
+     */
+    public static function version()
+    {
+        $meta = static::info();
 
-		return $meta->version;
-	}
+        return $meta->version;
+    }
 
-	/**
-	 * Find latest stable version
-	 */
-	public static function ltsInfo()
-	{
-		$data = file_get_contents("https://repo.packagist.org/p2/leafs/cli.json");
+    /**
+     * Find latest stable version
+     */
+    public static function ltsInfo()
+    {
+        $data = file_get_contents('https://repo.packagist.org/p2/leafs/cli.json');
 
-		if (!$data) {
-			return static::info();
-		}
+        if (!$data) {
+            return static::info();
+        }
 
-		$package = json_decode($data);
+        $package = json_decode($data);
 
-		return $package->packages->{"leafs/cli"}[0];
-	}
+        return $package->packages->{'leafs/cli'}[0];
+    }
 
-	/**
-	 * Find latest stable version
-	 */
-	public static function ltsVersion()
-	{
-		$package = static::ltsInfo();
+    /**
+     * Find latest stable version
+     */
+    public static function ltsVersion()
+    {
+        $package = static::ltsInfo();
 
-		return $package->version;
-	}
+        return $package->version;
+    }
 
-	/**
-	 * Check if there is an update available
-	 */
-	public static function updateAvailable()
-	{
-		$currentVersion = static::version();
-		$latestVersion = static::ltsVersion();
+    /**
+     * Check if there is an update available
+     */
+    public static function updateAvailable()
+    {
+        $currentVersion = static::version();
+        $latestVersion = static::ltsVersion();
 
         if ($currentVersion > $latestVersion) {
             return false;
         }
 
-		return ($currentVersion !== $latestVersion);
-	}
+        return ($currentVersion !== $latestVersion);
+    }
 }

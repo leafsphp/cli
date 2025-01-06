@@ -3,7 +3,7 @@
 require __DIR__ . '/vendor/autoload.php';
 
 app()->get('/', function () {
-	response()->page('./welcome.html');
+    response()->page('./welcome.html');
 });
 
 app()->run();

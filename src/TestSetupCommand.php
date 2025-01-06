@@ -12,67 +12,71 @@ use Symfony\Component\Process\Process;
 
 class TestSetupCommand extends Command
 {
-	protected static $defaultName = 'test:setup';
+    protected static $defaultName = 'test:setup';
 
-	protected function configure()
-	{
-		$this
-			->setHelp('Setup tests with Pest PHP or PHPUnit')
-			->setDescription('Add tests to your application')
-			->addOption('pest', null, InputOption::VALUE_NONE, 'Setup tests with Pest PHP (default)')
-			->addOption('phpunit', null, InputOption::VALUE_NONE, 'Setup tests with PHPUnit');
-	}
+    protected function configure()
+    {
+        $this
+            ->setHelp('Setup tests with Pest PHP or PHPUnit')
+            ->setDescription('Add tests to your application')
+            ->addOption('pest', null, InputOption::VALUE_NONE, 'Setup tests with Pest PHP (default)')
+            ->addOption('phpunit', null, InputOption::VALUE_NONE, 'Setup tests with PHPUnit');
+    }
 
-	protected function execute(InputInterface $input, OutputInterface $output): int
-	{
-		$engine = 'pest';
-		$composerJsonPath = getcwd() . '/composer.json';
-		$alchemyInstalled = file_exists(getcwd() . '/vendor/bin/alchemy');
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $engine = 'pest';
+        $composerJsonPath = getcwd() . '/composer.json';
+        $alchemyInstalled = file_exists(getcwd() . '/vendor/bin/alchemy');
 
-		if ($input->getOption('phpunit')) {
-			$engine = 'phpunit';
-		}
+        if ($input->getOption('phpunit')) {
+            $engine = 'phpunit';
+        }
 
-		if (!file_exists($composerJsonPath)) {
-			$output->writeln('<error>No composer.json found in the current directory.</error>');
-			return 1;
-		}
+        if (!file_exists($composerJsonPath)) {
+            $output->writeln('<error>No composer.json found in the current directory.</error>');
 
-		if (!$alchemyInstalled) {
-			$output->writeln('<info>Alchemy is not installed. Attempting to install alchemy.</info>');
+            return 1;
+        }
 
-			$installProcess = Process::fromShellCommandline(
-				'composer require leafs/alchemy --dev -W',
-				null,
-				null,
-				null,
-				null
-			);
+        if (!$alchemyInstalled) {
+            $output->writeln('<info>Alchemy is not installed. Attempting to install alchemy.</info>');
 
-			$installProcess->run(function ($type, $line) use ($output) {
-				$output->write($line);
-			});
+            $installProcess = Process::fromShellCommandline(
+                'composer require leafs/alchemy --dev -W',
+                null,
+                null,
+                null,
+                null
+            );
 
-			if (!$installProcess->isSuccessful()) {
-				$output->writeln('<error>Failed to install Alchemy. Please run composer require leafs/alchemy and try again.</error>');
-				return 1;
-			}
-		}
+            $installProcess->run(function ($type, $line) use ($output) {
+                $output->write($line);
+            });
 
-		$process = Process::fromShellCommandline(
-			"./vendor/bin/alchemy setup --$engine",
-			null,
-			null,
-			null,
-			null
-		);
+            if (!$installProcess->isSuccessful()) {
+                $output->writeln('<error>Failed to install Alchemy. Please run composer require leafs/alchemy and try again.</error>');
 
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
+                return 1;
+            }
+        }
 
-		if (!$process->isSuccessful()) return 1;
+        $process = Process::fromShellCommandline(
+            "./vendor/bin/alchemy setup --$engine",
+            null,
+            null,
+            null,
+            null
+        );
 
-		return 0;
-	}
+        $process->run(function ($type, $line) use ($output) {
+            $output->write($line);
+        });
+
+        if (!$process->isSuccessful()) {
+            return 1;
+        }
+
+        return 0;
+    }
 }

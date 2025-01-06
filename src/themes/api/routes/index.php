@@ -11,7 +11,7 @@
 |
 */
 app()->set404(function () {
-	response()->json('Resource not found', 404, true);
+    response()->json('Resource not found', 404, true);
 });
 
 /*

@@ -7,13 +7,13 @@
 	<title inertia>Document</title>
 	<?php echo vite(['/js/app.js']); ?>
 	<?php
-	if (!isset($__inertiaSsrDispatched)) {
-		$__inertiaSsrDispatched = true;
-		$__inertiaSsrResponse = (new \Leaf\Inertia\Ssr\Gateway())->dispatch($page);
-	}
+    if (!isset($__inertiaSsrDispatched)) {
+        $__inertiaSsrDispatched = true;
+        $__inertiaSsrResponse = (new \Leaf\Inertia\Ssr\Gateway())->dispatch($page);
+    }
 
 	if ($__inertiaSsrResponse) {
-		echo $__inertiaSsrResponse->head;
+	    echo $__inertiaSsrResponse->head;
 	}
 	?>
 </head>
@@ -21,14 +21,14 @@
 <body>
 	<?php
 	if (!isset($__inertiaSsrDispatched)) {
-		$__inertiaSsrDispatched = true;
-		$__inertiaSsrResponse = (new \Leaf\Inertia\Ssr\Gateway())->dispatch($page);
+	    $__inertiaSsrDispatched = true;
+	    $__inertiaSsrResponse = (new \Leaf\Inertia\Ssr\Gateway())->dispatch($page);
 	}
 
 	if ($__inertiaSsrResponse) {
-		echo $__inertiaSsrResponse->body;
+	    echo $__inertiaSsrResponse->body;
 	} else {
-		echo '<div id="app" data-page="' . htmlspecialchars(json_encode($page), ENT_QUOTES, 'UTF-8', true) . '"></div>';
+	    echo '<div id="app" data-page="' . htmlspecialchars(json_encode($page), ENT_QUOTES, 'UTF-8', true) . '"></div>';
 	}
 	?>
 </body>

@@ -12,42 +12,45 @@ use Symfony\Component\Process\Process;
 
 class RunCommand extends Command
 {
-	protected static $defaultName = 'run';
+    protected static $defaultName = 'run';
 
-	protected function configure()
-	{
-		$this
-			->setHelp('Run a composer script')
-			->setDescription('Run a script in your composer.json')
-			->addArgument('scriptName', InputArgument::REQUIRED, 'Command to run.');
-	}
+    protected function configure()
+    {
+        $this
+            ->setHelp('Run a composer script')
+            ->setDescription('Run a script in your composer.json')
+            ->addArgument('scriptName', InputArgument::REQUIRED, 'Command to run.');
+    }
 
-	protected function execute(InputInterface $input, OutputInterface $output): int
-	{
-		$composerJsonPath = getcwd() . '/composer.json';
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $composerJsonPath = getcwd() . '/composer.json';
 
-		if (!file_exists($composerJsonPath)) {
-			$output->writeln('<error>No composer.json found in the current directory.</error>');
-			return 1;
-		}
+        if (!file_exists($composerJsonPath)) {
+            $output->writeln('<error>No composer.json found in the current directory.</error>');
 
-		$script = $input->getArgument('scriptName');
-		$composer = Utils\Core::findComposer();
+            return 1;
+        }
 
-		$process = Process::fromShellCommandline(
-			"$composer run $script",
-			null,
-			null,
-			null,
-			null
-		);
+        $script = $input->getArgument('scriptName');
+        $composer = Utils\Core::findComposer();
 
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
+        $process = Process::fromShellCommandline(
+            "$composer run $script",
+            null,
+            null,
+            null,
+            null
+        );
 
-		if (!$process->isSuccessful()) return 1;
+        $process->run(function ($type, $line) use ($output) {
+            $output->write($line);
+        });
 
-		return 0;
-	}
+        if (!$process->isSuccessful()) {
+            return 1;
+        }
+
+        return 0;
+    }
 }

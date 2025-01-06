@@ -8,123 +8,124 @@ use Symfony\Component\Process\Process;
 
 class Core
 {
-	/**
-	 * Run a shell process with the output.
-	 */
-	public static function run(string $command, $output, string $cwd = null)
-	{
-		$process = Process::fromShellCommandline(
-			$command,
-			$cwd,
-			null,
-			null,
-			null
-		);
+    /**
+     * Run a shell process with the output.
+     */
+    public static function run(string $command, $output, string $cwd = null)
+    {
+        $process = Process::fromShellCommandline(
+            $command,
+            $cwd,
+            null,
+            null,
+            null
+        );
 
-		$process->run(function ($type, $line) use ($output) {
-			$output->write($line);
-		});
+        $process->run(function ($type, $line) use ($output) {
+            $output->write($line);
+        });
 
-		return $process->isSuccessful();
-	}
-	/**
-	 * Get the composer command for the environment.
-	 * @return string
-	 */
-	public static function findComposer(): string
-	{
-		$composerPath = getcwd() . '/composer.phar';
+        return $process->isSuccessful();
+    }
 
-		if (file_exists($composerPath)) {
-			return '"' . PHP_BINARY . '" ' . $composerPath;
-		}
+    /**
+     * Get the composer command for the environment.
+     * @return string
+     */
+    public static function findComposer(): string
+    {
+        $composerPath = getcwd() . '/composer.phar';
 
-		return 'composer';
-	}
+        if (file_exists($composerPath)) {
+            return '"' . PHP_BINARY . '" ' . $composerPath;
+        }
 
-	/**
-	 * Get the git command for the environment.
-	 * @return string
-	 */
-	public static function findGit(): string
-	{
-		$gitPath = getcwd() . '/git';
+        return 'composer';
+    }
 
-		if (file_exists($gitPath)) {
-			return $gitPath;
-		}
+    /**
+     * Get the git command for the environment.
+     * @return string
+     */
+    public static function findGit(): string
+    {
+        $gitPath = getcwd() . '/git';
 
-		return 'git';
-	}
+        if (file_exists($gitPath)) {
+            return $gitPath;
+        }
 
-	/**
-	 * Get the node command for the environment.
-	 * @return string
-	 */
-	public static function findNodeJS(): string
-	{
-		$nodePath = getcwd() . '/node';
+        return 'git';
+    }
 
-		if (file_exists($nodePath)) {
-			return $nodePath;
-		}
+    /**
+     * Get the node command for the environment.
+     * @return string
+     */
+    public static function findNodeJS(): string
+    {
+        $nodePath = getcwd() . '/node';
 
-		return 'node';
-	}
+        if (file_exists($nodePath)) {
+            return $nodePath;
+        }
 
-	/**
-	 * Get the node command for the environment.
-	 * @return string
-	 */
-	public static function findNpm($packageManager = 'npm'): string
-	{
-		$npmPath = getcwd() . "/$packageManager";
+        return 'node';
+    }
 
-		if (file_exists($npmPath)) {
-			return $npmPath;
-		}
+    /**
+     * Get the node command for the environment.
+     * @return string
+     */
+    public static function findNpm($packageManager = 'npm'): string
+    {
+        $npmPath = getcwd() . "/$packageManager";
 
-		return $packageManager;
-	}
+        if (file_exists($npmPath)) {
+            return $npmPath;
+        }
 
-	/**
-	 * Get the leaf CLI bin.
-	 * @return string
-	 */
-	public static function findLeaf(): string
-	{
-		$leafPath = __DIR__ . '/../../bin/leaf';
+        return $packageManager;
+    }
 
-		if (file_exists($leafPath)) {
-			return '"' . PHP_BINARY . '" ' . $leafPath;
-		}
+    /**
+     * Get the leaf CLI bin.
+     * @return string
+     */
+    public static function findLeaf(): string
+    {
+        $leafPath = __DIR__ . '/../../bin/leaf';
 
-		return 'leaf';
-	}
+        if (file_exists($leafPath)) {
+            return '"' . PHP_BINARY . '" ' . $leafPath;
+        }
 
-	/**
-	 * Get the leaf watcher bin.
-	 * @return string
-	 */
-	public static function findWatcher(): string
-	{
-		$watcherPath = getcwd() . '/watcher/bin/watcher.js';
+        return 'leaf';
+    }
 
-		if (file_exists($watcherPath)) {
-			return $watcherPath;
-		}
+    /**
+     * Get the leaf watcher bin.
+     * @return string
+     */
+    public static function findWatcher(): string
+    {
+        $watcherPath = getcwd() . '/watcher/bin/watcher.js';
 
-		return 'leaf-watcher';
-	}
+        if (file_exists($watcherPath)) {
+            return $watcherPath;
+        }
 
-	/**
-	 * Check if a system command exists
-	 * @return bool
-	 */
-	public static function commandExists(string $cmd)
-	{
-		return !empty(shell_exec(sprintf("which %s", escapeshellarg($cmd))));
-	}
+        return 'leaf-watcher';
+    }
+
+    /**
+     * Check if a system command exists
+     * @return bool
+     */
+    public static function commandExists(string $cmd)
+    {
+        return !empty(shell_exec(sprintf('which %s', escapeshellarg($cmd))));
+    }
 
     /**
      * Check if a project is a blade project
@@ -137,12 +138,13 @@ class Core
         if (file_exists("$directory/config/view.php")) {
             $viewConfig = require "$directory/config/view.php";
             $isBladeProject = strpos(strtolower($viewConfig['viewEngine'] ?? $viewConfig['view_engine'] ?? ''), 'blade') !== false;
-        } else if (file_exists("$directory/composer.lock")) {
+        } elseif (file_exists("$directory/composer.lock")) {
             $composerLock = json_decode(file_get_contents("$directory/composer.lock"), true);
             $packages = $composerLock['packages'] ?? [];
             foreach ($packages as $package) {
                 if ($package['name'] === 'leafs/blade') {
                     $isBladeProject = true;
+
                     break;
                 }
             }
@@ -157,6 +159,7 @@ class Core
     public static function isMVCProject($directory = null)
     {
         $directory = $directory ?? getcwd();
+
         return is_dir("$directory/app/views") && file_exists("$directory/config/paths.php") && is_dir("$directory/public");
     }
 }
