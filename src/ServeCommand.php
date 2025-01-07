@@ -23,7 +23,10 @@ class ServeCommand extends Command
             ->setDescription('Run your Leaf app')
             ->addArgument('filename', InputArgument::OPTIONAL, 'The PHP script to run')
             ->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on')
-            ->addOption('watch', 'w', InputOption::VALUE_NONE, 'Run your leaf app with hot reloading [experimental]');
+            ->addOption('watch', 'w', InputOption::VALUE_NONE, 'Run your leaf app with hot reloading [experimental]')
+            // ->addOption('path', 't', InputOption::VALUE_OPTIONAL, 'Path to your app', getcwd() . '/public')
+            // ->addOption('host', 's', InputOption::VALUE_OPTIONAL, 'Your application host', 'localhost')
+            ->addOption('no-concurrent', 'nc', InputOption::VALUE_OPTIONAL, 'Run PHP server without Vite server', false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -111,10 +114,20 @@ class ServeCommand extends Command
 
     protected function startServer(InputInterface $input, OutputInterface $output): int
     {
-        $port = $input->getOption('port') ? (int) $input->getOption('port') : 5500;
+        $useConcurrent = true;
+
+        $noConcurrent = $input->getOption('no-concurrent');
+        $port = (int) ($input->getOption('port') ?? 5500);
+
+        if ($noConcurrent || !file_exists(getcwd() . '/vite.config.js')) {
+            $useConcurrent = false;
+        }
+
+        $serveCommand = !$useConcurrent ? "php -S localhost:$port" : "npx concurrently -c \"#3eaf7c,#bd34fe\" \"php -S localhost:$port\" \"npm run dev\" --names=server,vite --colors";
+
         $isDockerProject = file_exists(getcwd() . '/docker-compose.yml');
         $process = Process::fromShellCommandline(
-            $isDockerProject ? 'docker compose up' : "php -S localhost:$port",
+            $isDockerProject ? 'docker compose up' : $serveCommand,
             null,
             null,
             null,
