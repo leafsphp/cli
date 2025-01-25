@@ -48,7 +48,7 @@ class InstallCommand extends Command
 
         $composer = Utils\Core::findComposer();
         $process = Process::fromShellCommandline(
-            file_exists($composerLockPath) ? "$composer install" : "$composer update",
+            file_exists($composerLockPath) ? "$composer install --ansi" : "$composer update --ansi",
             null,
             null,
             null,
@@ -83,7 +83,7 @@ class InstallCommand extends Command
             $output->writeln("<info>Installing $package...</info>");
             $composer = Utils\Core::findComposer();
             $process = Process::fromShellCommandline(
-                "$composer require $package" . ($input->getOption('dev') ? ' --dev' : ''),
+                "$composer require $package" . ($input->getOption('dev') ? ' --dev' : '') . ' --ansi',
                 null,
                 null,
                 null,
