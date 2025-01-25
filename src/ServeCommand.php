@@ -31,6 +31,10 @@ class ServeCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if ($this->isMVCApp()) {
+            return (int) Utils\Core::run("php leaf serve --ansi", $output);
+        }
+
         $vendorPath = getcwd() . '/vendor';
         $composerJsonPath = getcwd() . '/composer.json';
 
@@ -147,5 +151,12 @@ class ServeCommand extends Command
                 $output->write("<error>$line</error>");
             }
         });
+    }
+
+    protected function isMVCApp()
+    {
+        $directory = getcwd();
+
+        return is_dir("$directory/app/views") && file_exists("$directory/leaf") && is_dir("$directory/public");
     }
 }

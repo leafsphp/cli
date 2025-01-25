@@ -160,6 +160,6 @@ class Core
     {
         $directory = $directory ?? getcwd();
 
-        return is_dir("$directory/app/views") && file_exists("$directory/config/paths.php") && is_dir("$directory/public");
+        return is_dir("$directory/app/views") && file_exists("$directory/leaf") && is_dir("$directory/public");
     }
 }

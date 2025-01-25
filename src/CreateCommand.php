@@ -157,7 +157,7 @@ class CreateCommand extends Command
         $testing = $this->getAppTestPreset($input, $output);
 
         if ($testing) {
-            $commands[] = "$composer require leafs/alchemy --dev";
+            $commands[] = "$composer require leafs/alchemy --dev --ansi";
             $commands[] = "./vendor/bin/alchemy setup --$testing";
         }
 
@@ -168,10 +168,6 @@ class CreateCommand extends Command
             null,
             null
         );
-
-        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-            $process->setTty(true);
-        }
 
         echo "\n";
 
@@ -255,16 +251,12 @@ class CreateCommand extends Command
         }
 
         $process = Process::fromShellCommandline(
-            implode(' && ', $commands),
+            implode(' && ', $commands) . ' --ansi',
             $directory,
             null,
             null,
             null
         );
-
-        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-            $process->setTty(true);
-        }
 
         $process->run(function ($type, $line) use ($output) {
             $output->write($line);

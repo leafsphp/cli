@@ -20,7 +20,6 @@ class ViewInstallCommand extends Command
             ->setDescription('Run a script in your composer.json')
             ->addOption('blade', null, InputOption::VALUE_NONE, 'Install blade')
             ->addOption('bare-ui', null, InputOption::VALUE_NONE, 'Install bare ui')
-            ->addOption('inertia', null, InputOption::VALUE_NONE, 'Setup inertia files')
             ->addOption('react', null, InputOption::VALUE_NONE, 'Install react')
             ->addOption('svelte', null, InputOption::VALUE_NONE, 'Install svelte')
             ->addOption('tailwind', null, InputOption::VALUE_NONE, 'Install tailwind')
@@ -37,10 +36,6 @@ class ViewInstallCommand extends Command
 
         if ($input->getOption('bare-ui')) {
             return $this->installBareUi($output);
-        }
-
-        if ($input->getOption('inertia')) {
-            return $this->installInertia($input, $output);
         }
 
         if ($input->getOption('react')) {
@@ -81,9 +76,8 @@ class ViewInstallCommand extends Command
 
         if (!$success) {
             $output->writeln('❌  <error>Failed to install blade</error>');
-
             return 1;
-        };
+        }
 
         if ($isMVCApp) {
             $paths = require "$directory/config/paths.php";
@@ -114,9 +108,8 @@ class ViewInstallCommand extends Command
 
         if (!$success) {
             $output->writeln('❌  <error>Failed to install Bare UI</error>');
-
             return 1;
-        };
+        }
 
         if ($isMVCApp) {
             $paths = require "$directory/config/paths.php";
@@ -163,97 +156,26 @@ class ViewInstallCommand extends Command
     }
 
     /**
-     * Install inertia
-     */
-    protected function installInertia($input, $output)
-    {
-        $directory = getcwd();
-        $npm = Utils\Core::findNpm($input->getOption('pm'));
-        $composer = Utils\Core::findComposer();
-
-        $success = Utils\Core::run("$npm add @leafphp/vite-plugin vite", $output);
-
-        if (!$success) {
-            $output->writeln('❌  <error>Failed to install vite</error>');
-
-            return 1;
-        };
-
-        $output->writeln("\n✅  <info>Vite installed successfully</info>");
-        $output->writeln("🧱  <info>Setting up Leaf Inertia server bridge...</info>\n");
-
-        $success = Utils\Core::run("$composer require leafs/vite leafs/inertia", $output);
-
-        if (!$success) {
-            $output->writeln('❌  <error>Failed to setup Leaf Inertia server bridge</error>');
-
-            return 1;
-        };
-
-        $isMVCApp = $this->isMVCApp();
-        $isBladeProject = $this->isBladeProject();
-
-        foreach (glob(__DIR__ . '/themes/inertia/root/{,.}[!.,!..]*', GLOB_MARK | GLOB_BRACE) as $file) {
-            if (basename($file) === 'vite.config.js' && file_exists("$directory/vite.config.js")) {
-                continue;
-            }
-
-            if (is_file($file)) {
-                copy($file, rtrim($directory, '/') . '/' . basename($file));
-            } else {
-                \Leaf\FS::superCopy($file, rtrim($directory, '/') . '/' . basename($file));
-            }
-        }
-
-        if (!$isMVCApp) {
-            $viteConfig = file_get_contents("$directory/vite.config.js");
-            $viteConfig = str_replace(
-                'leaf({',
-                "leaf({\nhotFile: 'hot',",
-                $viteConfig
-            );
-            file_put_contents("$directory/vite.config.js", $viteConfig);
-        } else {
-            $paths = require "$directory/config/paths.php";
-            $viewsPath = trim($paths['views'] ?? 'app/views', '/');
-
-            \Leaf\FS::superCopy(
-                (__DIR__ . '/themes/inertia/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
-                "$directory/$viewsPath"
-            );
-        }
-
-        $package = json_decode(file_get_contents("$directory/package.json"), true);
-        $package['type'] = 'module';
-        $package['scripts']['dev'] = 'vite';
-        $package['scripts']['build'] = 'vite build';
-        file_put_contents("$directory/package.json", json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-
-        $output->writeln("\n🎉   <info>Inertia setup successfully. Inertia is best used with a framework of sorts.</info>");
-        $output->writeln("👉  Get started with the following commands:\n");
-        $output->writeln('    leaf view:dev <info>- start dev server</info>');
-        $output->writeln('    leaf view:build <info>- build for production</info>');
-
-        return 0;
-    }
-
-    /**
      * Install react
      */
     protected function installReact($input, $output)
     {
+        $directory = getcwd();
+
+        if ($this->isMVCApp()) {
+            return (int) Utils\Core::run("php $directory/leaf view:install --react --ansi", $output);
+        }
+
         $output->writeln("📦  <info>Installing react...</info>\n");
 
-        $directory = getcwd();
         $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
         $success = Utils\Core::run("$npm add @leafphp/vite-plugin @vitejs/plugin-react @inertiajs/react react react-dom", $output);
 
         if (!$success) {
             $output->writeln('❌  <error>Failed to install react</error>');
-
             return 1;
-        };
+        }
 
         $output->writeln("\n✅  <info>React installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf React server bridge...</info>\n");
@@ -262,11 +184,9 @@ class ViewInstallCommand extends Command
 
         if (!$success) {
             $output->writeln('❌  <error>Failed to setup Leaf React server bridge</error>');
-
             return 1;
-        };
+        }
 
-        $isMVCApp = $this->isMVCApp();
         $isBladeProject = $this->isBladeProject();
         $ext = $isBladeProject ? 'blade' : 'view';
 
@@ -276,46 +196,32 @@ class ViewInstallCommand extends Command
 
             if (!$success) {
                 $output->writeln("❌  <error>Could not install BareUI, run leaf install bareui</error>\n");
-
                 return 1;
-            };
+            }
         }
 
         \Leaf\FS::superCopy(__DIR__ . '/themes/react/root', $directory);
+        \Leaf\FS::superCopy(__DIR__ . '/themes/react/routes', $directory);
+        \Leaf\FS::superCopy(
+            (__DIR__ . '/themes/react/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+            $directory
+        );
 
-        if ($isMVCApp) {
-            $paths = require "$directory/config/paths.php";
-            $viewsPath = trim($paths['views'] ?? 'app/views', '/');
-            $routesPath = trim($paths['routes'] ?? 'app/routes', '/');
+        $viteConfig = file_get_contents("$directory/vite.config.js");
+        $viteConfig = str_replace(
+            'leaf({',
+            "leaf({\nhotFile: 'hot',",
+            $viteConfig
+        );
+        file_put_contents("$directory/vite.config.js", $viteConfig);
 
-            \Leaf\FS::superCopy(__DIR__ . '/themes/react/routes', "$directory/$routesPath");
-            \Leaf\FS::superCopy(
-                (__DIR__ . '/themes/react/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
-                "$directory/$viewsPath"
-            );
-        } else {
-            \Leaf\FS::superCopy(__DIR__ . '/themes/react/routes', $directory);
-            \Leaf\FS::superCopy(
-                (__DIR__ . '/themes/react/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
-                $directory
-            );
-
-            $viteConfig = file_get_contents("$directory/vite.config.js");
-            $viteConfig = str_replace(
-                'leaf({',
-                "leaf({\nhotFile: 'hot',",
-                $viteConfig
-            );
-            file_put_contents("$directory/vite.config.js", $viteConfig);
-
-            $inertiaView = file_get_contents("$directory/_inertia.$ext.php");
-            $inertiaView = str_replace(
-                '<?php echo vite([\'/js/app.jsx\', "/js/Pages/{$page[\'component\']}.jsx"]); ?>',
-                '<?php echo vite([\'js/app.jsx\', "js/Pages/{$page[\'component\']}.jsx"], \'/\'); ?>',
-                $inertiaView
-            );
-            file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
-        }
+        $inertiaView = file_get_contents("$directory/_inertia.$ext.php");
+        $inertiaView = str_replace(
+            '<?php echo vite([\'/js/app.jsx\', "/js/Pages/{$page[\'component\']}.jsx"]); ?>',
+            '<?php echo vite([\'js/app.jsx\', "js/Pages/{$page[\'component\']}.jsx"], \'/\'); ?>',
+            $inertiaView
+        );
+        file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
         $package['type'] = 'module';
@@ -336,9 +242,14 @@ class ViewInstallCommand extends Command
      */
     protected function installSvelte($input, $output)
     {
+        $directory = getcwd();
+
+        if ($this->isMVCApp()) {
+            return (int) Utils\Core::run("php $directory/leaf view:install --svelte --ansi", $output);
+        }
+
         $output->writeln("📦  <info>Installing svelte...</info>\n");
 
-        $directory = getcwd();
         $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
         $success = Utils\Core::run("$npm add @leafphp/vite-plugin svelte @sveltejs/vite-plugin-svelte @inertiajs/svelte", $output);
@@ -347,7 +258,7 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to install svelte</error>');
 
             return 1;
-        };
+        }
 
         $output->writeln("\n✅  <info>Svelte installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf Svelte server bridge...</info>\n");
@@ -358,9 +269,8 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to setup Leaf Svelte server bridge</error>');
 
             return 1;
-        };
+        }
 
-        $isMVCApp = $this->isMVCApp();
         $isBladeProject = $this->isBladeProject();
         $ext = $isBladeProject ? 'blade' : 'view';
 
@@ -372,44 +282,31 @@ class ViewInstallCommand extends Command
                 $output->writeln("❌  <error>Could not install BareUI, run leaf install bareui</error>\n");
 
                 return 1;
-            };
+            }
         }
 
         \Leaf\FS::superCopy(__DIR__ . '/themes/svelte/root', $directory);
+        \Leaf\FS::superCopy(__DIR__ . '/themes/svelte/routes', $directory);
+        \Leaf\FS::superCopy(
+            (__DIR__ . '/themes/svelte/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+            $directory
+        );
 
-        if ($isMVCApp) {
-            $paths = require "$directory/config/paths.php";
-            $viewsPath = trim($paths['views'] ?? 'app/views', '/');
-            $routesPath = trim($paths['routes'] ?? 'app/routes', '/');
+        $viteConfig = file_get_contents("$directory/vite.config.js");
+        $viteConfig = str_replace(
+            'leaf({',
+            "leaf({\nhotFile: 'hot',",
+            $viteConfig
+        );
+        file_put_contents("$directory/vite.config.js", $viteConfig);
 
-            \Leaf\FS::superCopy(__DIR__ . '/themes/svelte/routes', "$directory/$routesPath");
-            \Leaf\FS::superCopy(
-                (__DIR__ . '/themes/svelte/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
-                "$directory/$viewsPath"
-            );
-        } else {
-            \Leaf\FS::superCopy(__DIR__ . '/themes/svelte/routes', $directory);
-            \Leaf\FS::superCopy(
-                (__DIR__ . '/themes/svelte/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
-                $directory
-            );
-
-            $viteConfig = file_get_contents("$directory/vite.config.js");
-            $viteConfig = str_replace(
-                'leaf({',
-                "leaf({\nhotFile: 'hot',",
-                $viteConfig
-            );
-            file_put_contents("$directory/vite.config.js", $viteConfig);
-
-            $inertiaView = file_get_contents("$directory/_inertia.$ext.php");
-            $inertiaView = str_replace(
-                '<?php echo vite([\'/js/app.jsx\', "/js/Pages/{$page[\'component\']}.jsx"]); ?>',
-                '<?php echo vite([\'js/app.js\'], \'/\'); ?>',
-                $inertiaView
-            );
-            file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
-        }
+        $inertiaView = file_get_contents("$directory/_inertia.$ext.php");
+        $inertiaView = str_replace(
+            '<?php echo vite([\'/js/app.jsx\', "/js/Pages/{$page[\'component\']}.jsx"]); ?>',
+            '<?php echo vite([\'js/app.js\'], \'/\'); ?>',
+            $inertiaView
+        );
+        file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
         $package['type'] = 'module';
@@ -430,7 +327,13 @@ class ViewInstallCommand extends Command
      */
     protected function installTailwind($input, $output)
     {
+        $isMVCApp = $this->isMVCApp();
         $directory = getcwd();
+
+        if ($this->isMVCApp()) {
+            return (int) Utils\Core::run("php $directory/leaf view:install --tailwind --ansi", $output);
+        }
+
         $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
 
@@ -442,7 +345,8 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to install tailwind</error>');
 
             return 1;
-        };
+        }
+        ;
 
         $output->writeln("\n✅  <info>Tailwind CSS installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf server bridge...</info>\n");
@@ -453,9 +357,8 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to setup Leaf server bridge</error>');
 
             return 1;
-        };
+        }
 
-        $isMVCApp = $this->isMVCApp();
 
         foreach (glob(__DIR__ . '/themes/tailwind/root/{,.}[!.,!..]*', GLOB_MARK | GLOB_BRACE) as $file) {
             if (basename($file) === 'vite.config.js' && file_exists("$directory/vite.config.js")) {
@@ -469,55 +372,36 @@ class ViewInstallCommand extends Command
             }
         }
 
-        if ($isMVCApp) {
-            $paths = require "$directory/config/paths.php";
-            $viewsPath = trim($paths['views'] ?? 'app/views', '/');
 
-            \Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/view', "$directory/$viewsPath");
+        \Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/view', $directory);
 
-            if (file_exists("$directory/app/views/js/app.js")) {
-                $jsApp = file_get_contents("$directory/app/views/js/app.js");
-                if (strpos($jsApp, "import '../css/app.css';") === false) {
-                    \Leaf\FS::prepend("$directory/app/views/js/app.js", "import '../css/app.css';\n");
-                }
-            }
+        $viteConfig = file_get_contents("$directory/vite.config.js");
+        $viteConfig = str_replace(
+            ["hotFile: 'hot',", 'hotFile: "hot",'],
+            '',
+            $viteConfig
+        );
+        $viteConfig = str_replace(
+            'leaf({',
+            "leaf({\nhotFile: 'hot',",
+            $viteConfig
+        );
+        file_put_contents("$directory/vite.config.js", $viteConfig);
 
-            if (file_exists("$directory/app/views/js/app.jsx")) {
-                $jsApp = file_get_contents("$directory/app/views/js/app.jsx");
-                if (strpos($jsApp, "import '../css/app.css';") === false) {
-                    \Leaf\FS::prepend("$directory/app/views/js/app.jsx", "import '../css/app.css';\n");
-                }
-            }
-        } else {
-            \Leaf\FS::superCopy(__DIR__ . '/themes/tailwind/view', $directory);
-
-            $viteConfig = file_get_contents("$directory/vite.config.js");
-            $viteConfig = str_replace(
-                ["hotFile: 'hot',", 'hotFile: "hot",'],
-                '',
-                $viteConfig
-            );
-            $viteConfig = str_replace(
-                'leaf({',
-                "leaf({\nhotFile: 'hot',",
-                $viteConfig
-            );
-            file_put_contents("$directory/vite.config.js", $viteConfig);
-
-            if (file_exists("$directory/js/app.js")) {
-                $jsApp = file_get_contents("$directory/js/app.js");
-                if (strpos($jsApp, "import '../css/app.css';") === false) {
-                    \Leaf\FS::prepend("$directory/js/app.js", "import '../css/app.css';\n");
-                }
-            }
-
-            if (file_exists("$directory/js/app.jsx")) {
-                $jsApp = file_get_contents("$directory/js/app.jsx");
-                if (strpos($jsApp, "import '../css/app.css';") === false) {
-                    \Leaf\FS::prepend("$directory/js/app.jsx", "import '../css/app.css';\n");
-                }
+        if (file_exists("$directory/js/app.js")) {
+            $jsApp = file_get_contents("$directory/js/app.js");
+            if (strpos($jsApp, "import '../css/app.css';") === false) {
+                \Leaf\FS::prepend("$directory/js/app.js", "import '../css/app.css';\n");
             }
         }
+
+        if (file_exists("$directory/js/app.jsx")) {
+            $jsApp = file_get_contents("$directory/js/app.jsx");
+            if (strpos($jsApp, "import '../css/app.css';") === false) {
+                \Leaf\FS::prepend("$directory/js/app.jsx", "import '../css/app.css';\n");
+            }
+        }
+
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
         $package['type'] = 'module';
@@ -548,7 +432,7 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to install vite</error>');
 
             return 1;
-        };
+        }
 
         $output->writeln("\n✅  <info>Tailwind CSS installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf Vite server bridge...</info>\n");
@@ -559,7 +443,7 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to setup Leaf Vite server bridge</error>');
 
             return 1;
-        };
+        }
 
         $isMVCApp = $this->isMVCApp();
 
@@ -596,9 +480,14 @@ class ViewInstallCommand extends Command
      */
     protected function installVue($input, $output)
     {
+        $directory = getcwd();
+
+        if ($this->isMVCApp()) {
+            return (int) Utils\Core::run("php $directory/leaf view:install --vue --ansi", $output);
+        }
+
         $output->writeln("📦  <info>Installing Vue...</info>\n");
 
-        $directory = getcwd();
         $npm = Utils\Core::findNpm($input->getOption('pm'));
         $composer = Utils\Core::findComposer();
         $success = Utils\Core::run("$npm add @leafphp/vite-plugin @vitejs/plugin-vue @inertiajs/vue3 vue", $output);
@@ -607,7 +496,7 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to install Vue</error>');
 
             return 1;
-        };
+        }
 
         $output->writeln("\n✅  <info>Vue installed successfully</info>");
         $output->writeln("🧱  <info>Setting up Leaf Vue server bridge...</info>\n");
@@ -618,9 +507,8 @@ class ViewInstallCommand extends Command
             $output->writeln('❌  <error>Failed to setup Leaf Vue server bridge</error>');
 
             return 1;
-        };
+        }
 
-        $isMVCApp = $this->isMVCApp();
         $isBladeProject = $this->isBladeProject();
         $ext = $isBladeProject ? 'blade' : 'view';
 
@@ -632,44 +520,32 @@ class ViewInstallCommand extends Command
                 $output->writeln("❌  <error>Could not install BareUI, run leaf install bareui</error>\n");
 
                 return 1;
-            };
+            }
+            ;
         }
 
         \Leaf\FS::superCopy(__DIR__ . '/themes/vue/root', $directory);
+        \Leaf\FS::superCopy(__DIR__ . '/themes/vue/routes', $directory);
+        \Leaf\FS::superCopy(
+            (__DIR__ . '/themes/vue/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
+            $directory
+        );
 
-        if ($isMVCApp) {
-            $paths = require "$directory/config/paths.php";
-            $viewsPath = trim($paths['views'] ?? 'app/views', '/');
-            $routesPath = trim($paths['routes'] ?? 'app/routes', '/');
+        $viteConfig = file_get_contents("$directory/vite.config.js");
+        $viteConfig = str_replace(
+            'leaf({',
+            "leaf({\nhotFile: 'hot',",
+            $viteConfig
+        );
+        file_put_contents("$directory/vite.config.js", $viteConfig);
 
-            \Leaf\FS::superCopy(__DIR__ . '/themes/vue/routes', "$directory/$routesPath");
-            \Leaf\FS::superCopy(
-                (__DIR__ . '/themes/vue/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
-                "$directory/$viewsPath"
-            );
-        } else {
-            \Leaf\FS::superCopy(__DIR__ . '/themes/vue/routes', $directory);
-            \Leaf\FS::superCopy(
-                (__DIR__ . '/themes/vue/views/' . ($isBladeProject ? 'blade' : 'bare-ui')),
-                $directory
-            );
-
-            $viteConfig = file_get_contents("$directory/vite.config.js");
-            $viteConfig = str_replace(
-                'leaf({',
-                "leaf({\nhotFile: 'hot',",
-                $viteConfig
-            );
-            file_put_contents("$directory/vite.config.js", $viteConfig);
-
-            $inertiaView = file_get_contents("$directory/_inertia.$ext.php");
-            $inertiaView = str_replace(
-                '<?php echo vite([\'/js/app.js\', "/js/Pages/{$page[\'component\']}.vue"]); ?>',
-                '<?php echo vite([\'js/app.js\', "js/Pages/{$page[\'component\']}.vue"], \'/\'); ?>',
-                $inertiaView
-            );
-            file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
-        }
+        $inertiaView = file_get_contents("$directory/_inertia.$ext.php");
+        $inertiaView = str_replace(
+            '<?php echo vite([\'/js/app.js\', "/js/Pages/{$page[\'component\']}.vue"]); ?>',
+            '<?php echo vite([\'js/app.js\', "js/Pages/{$page[\'component\']}.vue"], \'/\'); ?>',
+            $inertiaView
+        );
+        file_put_contents("$directory/_inertia.$ext.php", $inertiaView);
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
         $package['type'] = 'module';
@@ -690,7 +566,7 @@ class ViewInstallCommand extends Command
     {
         $directory = getcwd();
 
-        return is_dir("$directory/app/views") && file_exists("$directory/config/paths.php") && is_dir("$directory/public");
+        return is_dir("$directory/app/views") && file_exists("$directory/leaf") && is_dir("$directory/public");
     }
 
     protected function isBladeProject($directory = null)
