@@ -23,9 +23,8 @@
     "require": {
         "ext-json": "*",
         "leafs/fs": "^1.0",
-        "psy/psysh": "*",
-        "symfony/console": "^5.0|^6.0",
-        "symfony/process": "^5.0|^6.0"
+        "leafs/sprout": "dev-main",
+        "psy/psysh": "*"
     },
     "bin": [
         "bin/leaf"

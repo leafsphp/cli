@@ -10,26 +10,29 @@ if (file_exists(dirname(__DIR__, 3) . "/autoload.php")) {
 $leafCli = json_decode(file_get_contents(dirname(__DIR__) . "/composer.json"));
 $currentVersion = $leafCli->version;
 
-$app = new Symfony\Component\Console\Application("
+$app = sprout()->createApp([
+    'name' => "
 <info> _              __    ___ _    ___ 
 | |   ___ __ _ / _|  / __| |  |_ <comment>$currentVersion</comment>
 | |__/ -_) _` |  _| | (__| |__ | | 
 |____\___\__,_|_|    \___|____|___|</info>                       
-");
+    ",
+    'version' => ''
+]);
 
-$app->add(new Leaf\Console\CreateCommand);
-$app->add(new Leaf\Console\UpdateCommand);
-$app->add(new Leaf\Console\TestCommand);
-$app->add(new Leaf\Console\TestSetupCommand);
-$app->add(new Leaf\Console\InstallCommand);
-$app->add(new Leaf\Console\UninstallCommand);
-$app->add(new Leaf\Console\ServeCommand);
-$app->add(new Leaf\Console\DeployCommand);
-$app->add(new Leaf\Console\InteractCommand);
-$app->add(new Leaf\Console\RunCommand);
-$app->add(new Leaf\Console\UICommand);
-$app->add(new Leaf\Console\ViewBuildCommand);
-$app->add(new Leaf\Console\ViewDevCommand);
-$app->add(new Leaf\Console\ViewInstallCommand);
+// $app->register(Leaf\Console\CreateCommand::class);
+// $app->register(Leaf\Console\UpdateCommand::class);
+// $app->register(Leaf\Console\TestCommand::class);
+// $app->register(Leaf\Console\TestSetupCommand::class);
+// $app->register(Leaf\Console\InstallCommand::class);
+// $app->register(Leaf\Console\UninstallCommand::class);
+// $app->register(Leaf\Console\ServeCommand::class);
+// $app->register(Leaf\Console\DeployCommand::class);
+$app->register(Leaf\Console\InteractCommand::class);
+// $app->register(Leaf\Console\RunCommand::class);
+// $app->register(Leaf\Console\UICommand::class);
+// $app->register(Leaf\Console\ViewBuildCommand::class);
+// $app->register(Leaf\Console\ViewDevCommand::class);
+// $app->register(Leaf\Console\ViewInstallCommand::class);
 
 $app->run();
