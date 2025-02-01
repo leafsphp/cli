@@ -28,8 +28,6 @@ class InteractCommand extends Command
             $this->writeln('<info>Required files not found, starting shell running in retard mode...</info>');
         }
 
-        $shell = new Shell();
-
-        return $shell->run();
+        return (new Shell())->run();
     }
 }
