@@ -4,48 +4,24 @@ declare(strict_types=1);
 
 namespace Leaf\Console;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
+use Leaf\Sprout\Command;
 
 class UICommand extends Command
 {
-    protected static $defaultName = 'ui';
+    protected $signature = 'ui {--port=3001}';
 
-    protected function configure()
+    protected $description = 'Open up the Leaf CLI GUI';
+
+    protected function execute(): int
     {
-        $this
-            ->setAliases(['gui'])
-            ->setHelp('Open up the Leaf CLI GUI')
-            ->setDescription('Start the Leaf CLI GUI process')
-            ->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to run app on', 3001);
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $port = (int) $input->getOption('port');
-
+        $port = $this->option('port');
         $uiDirectory = __DIR__ . '/ui/dist';
         $serveCommand = "cd $uiDirectory && php -S localhost:$port";
 
-        $process = Process::fromShellCommandline(
-            $serveCommand,
-            null,
-            null,
-            null,
-            null
-        );
+        $process = sprout()->process($serveCommand);
 
-        $output->writeln("<info>CLI GUI started at <href=http://localhost:$port>http://localhost:$port</></info>");
+        $this->writeln("<info>CLI GUI started at <href=http://localhost:$port>http://localhost:$port</></info>");
 
-        return $process->run(function ($type, $line) use ($output, $process) {
-            if (is_string($line) && !strpos($line, 'Failed')) {
-                $output->write($line);
-            } else {
-                $output->write("<error>$line</error>");
-            }
-        });
+        return $process->run();
     }
 }

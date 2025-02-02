@@ -4,45 +4,35 @@ declare(strict_types=1);
 
 namespace Leaf\Console;
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Leaf\Sprout\Command;
 
 class ViewBuildCommand extends Command
 {
-    protected static $defaultName = 'view:build';
+    protected $signature = 'view:build {--pm=npm}';
 
-    protected function configure()
+    protected $description = 'Build your frontend assets';
+
+    protected function execute(): int
     {
-        $this
-            ->setHelp('Run your frontend dev command')
-            ->setDescription('Run your frontend dev server')
-            ->addOption('pm', 'pm', InputOption::VALUE_OPTIONAL, 'Package manager to use', 'npm');
-    }
+        if (!sprout()->npm($this->option('pm'))->json()) {
+            $this->writeln('<error>No package.json found in the current directory.</error>');
+            return 1;
+        }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $directory = getcwd();
-        $npm = Utils\Core::findNpm($input->getOption('pm'));
-
-        if (!is_dir("$directory/node_modules")) {
-            $output->writeln('<info>Installing dependencies...</info>');
-            $success = Utils\Core::run("$npm install", $output);
-
-            if (!$success) {
-                $output->writeln('<error>❌  Failed to install dependencies.</error>');
-
+        if (!sprout()->npm($this->option('pm'))->hasDependencies()) {
+            $this->writeln('<info>Installing dependencies...</info>');
+            
+            if (!sprout()->npm($this->option('pm'))->install()->isSuccessful()) {
+                $this->writeln('<error>❌  Failed to install dependencies.</error>');
                 return 1;
             }
         }
 
-        $success = Utils\Core::run("$npm run build", $output);
+        $this->writeln('<info>Building assets...</info>');
 
-        if (!$success) {
-            return 1;
-        }
-
-        return 0;
+        return (int) sprout()
+            ->npm($this->option('pm'))
+            ->runScript('build')
+            ->isSuccessful();
     }
 }
