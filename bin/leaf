@@ -21,18 +21,14 @@ $app = sprout()->createApp([
 ]);
 
 // $app->register(Leaf\Console\CreateCommand::class);
-// $app->register(Leaf\Console\UpdateCommand::class);
-// $app->register(Leaf\Console\TestCommand::class);
-// $app->register(Leaf\Console\TestSetupCommand::class);
-// $app->register(Leaf\Console\InstallCommand::class);
-// $app->register(Leaf\Console\UninstallCommand::class);
-// $app->register(Leaf\Console\ServeCommand::class);
-// $app->register(Leaf\Console\DeployCommand::class);
+$app->register(Leaf\Console\UpdateCommand::class);
+$app->register(Leaf\Console\InstallCommand::class);
+$app->register(Leaf\Console\UninstallCommand::class);
+$app->register(Leaf\Console\ServeCommand::class);
 $app->register(Leaf\Console\InteractCommand::class);
-// $app->register(Leaf\Console\RunCommand::class);
-// $app->register(Leaf\Console\UICommand::class);
-// $app->register(Leaf\Console\ViewBuildCommand::class);
-// $app->register(Leaf\Console\ViewDevCommand::class);
+$app->register(Leaf\Console\RunCommand::class);
+$app->register(Leaf\Console\UICommand::class);
+$app->register(Leaf\Console\ViewBuildCommand::class);
 // $app->register(Leaf\Console\ViewInstallCommand::class);
 
 $app->run();

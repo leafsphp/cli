@@ -12,14 +12,14 @@ class ViewBuildCommand extends Command
 
     protected $description = 'Build your frontend assets';
 
-    protected function execute(): int
+    protected function handle(): int
     {
-        if (!sprout()->npm($this->option('pm'))->json()) {
+        if (!sprout()->npm()->json()) {
             $this->writeln('<error>No package.json found in the current directory.</error>');
             return 1;
         }
 
-        if (!sprout()->npm($this->option('pm'))->hasDependencies()) {
+        if (!sprout()->npm()->hasDependencies()) {
             $this->writeln('<info>Installing dependencies...</info>');
             
             if (!sprout()->npm($this->option('pm'))->install()->isSuccessful()) {

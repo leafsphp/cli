@@ -14,10 +14,10 @@ class UpdateCommand extends Command
 
     protected function handle(): int
     {
-        if (sprout()->composer(true)->remove('cli --no-update --no-install')->isSuccessful()) {
+        if (sprout()->composer(true)->remove('leafs/cli --no-update --no-install --ansi')->isSuccessful()) {
             sleep(1);
 
-            if (sprout()->composer(true)->install('cli')->isSuccessful()) {
+            if (sprout()->composer(true)->install('leafs/cli --ansi')->isSuccessful()) {
                 $this->writeln('<info>Leaf CLI installed successfully!</info>');
                 return 0;
             }
