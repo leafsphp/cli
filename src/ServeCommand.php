@@ -18,7 +18,7 @@ class ServeCommand extends Command
     protected function handle(): int
     {
         if ($this->isMVCApp()) {
-            return (int) sprout()->run("php leaf serve --ansi");
+            return (int) sprout()->run("php leaf serve --port={$this->option('port')} --ansi", null);
         }
 
         if (!sprout()->composer()->json()) {

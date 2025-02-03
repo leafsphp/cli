@@ -8,13 +8,14 @@ use Leaf\Sprout\Command;
 
 class InstallCommand extends Command
 {
-    protected $signature = 'install {packages*} {--d|dev}';
+    protected $signature = 'install {packages?*} {--d|dev=false : Install as a dev dependency}';
 
     protected $description = 'Install a new package';
 
-    protected function execute(): int
+    protected function handle(): int
     {
         $packages = $this->argument('packages');
+        $parsedPackages = [];
 
         if (count($packages)) {
             foreach ($packages as $package) {
@@ -25,14 +26,14 @@ class InstallCommand extends Command
                 $package = str_replace('@', ':', $package);
                 $package = $this->option('dev') ? "$package --dev" : $package;
 
-                $this->writeln("<info>Installing $package...</info>");
-
-                if (!sprout()->composer()->install($package)->isSuccessful()) {
-                    return 1;
-                }
-
-                $this->writeln("<comment>$package installed successfully!</comment>");
+                $parsedPackages[] = $package;
             }
+
+            if (!sprout()->composer()->install(implode(' ', $parsedPackages) . ' --ansi')->isSuccessful()) {
+                return 1;
+            }
+
+            return 0;
         }
 
         return (int) sprout()->composer()->install()->isSuccessful();

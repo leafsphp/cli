@@ -12,9 +12,10 @@ class UninstallCommand extends Command
 
     protected $description = 'Uninstall a package';
 
-    protected function execute(): int
+    protected function handle(): int
     {
         $packages = $this->argument('packages');
+        $parsedPackages = [];
 
         if (!sprout()->composer()->json()) {
             $this->writeln('<error>No composer.json found in the current directory.</error>');
@@ -26,9 +27,11 @@ class UninstallCommand extends Command
                 $package = "leafs/$package";
             }
 
-            if (!sprout()->composer()->remove($package)->isSuccessful()) {
-                return 1;
-            }
+            $parsedPackages[] = $package;
+        }
+
+        if (!sprout()->composer()->remove(implode(' ', $parsedPackages) . ' --ansi')->isSuccessful()) {
+            return 1;
         }
 
         $this->writeln('<comment>packages uninstalled successfully!</comment>');

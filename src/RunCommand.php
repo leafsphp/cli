@@ -8,7 +8,7 @@ use Leaf\Sprout\Command;
 
 class RunCommand extends Command
 {
-    protected $signature = 'run {script!: Command to run.}';
+    protected $signature = 'run {script : Command to run.}';
 
     protected $description = 'Run a script in your composer.json';
 

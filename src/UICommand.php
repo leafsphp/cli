@@ -12,7 +12,7 @@ class UICommand extends Command
 
     protected $description = 'Open up the Leaf CLI GUI';
 
-    protected function execute(): int
+    protected function handle(): int
     {
         $port = $this->option('port');
 
