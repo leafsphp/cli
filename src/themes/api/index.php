@@ -58,18 +58,6 @@ if (php_sapi_name() === 'cli-server') {
 
 /*
 |--------------------------------------------------------------------------
-| Attach blade view
-|--------------------------------------------------------------------------
-|
-| Templating has been disabled because you chose the MVC for APIs starter.
-| If you want to use blade in your application,
-| you can uncomment the line below.
-|
-*/
-// Leaf\Config::attachView(\Leaf\Blade::class);
-
-/*
-|--------------------------------------------------------------------------
 | Load Leaf configuration
 |--------------------------------------------------------------------------
 |
@@ -99,18 +87,6 @@ Leaf\Core::loadApplicationConfig();
 | **You don't need this line to use Leaf Auth**
 */
 // \Leaf\Database::initDb();
-
-/*
-|--------------------------------------------------------------------------
-| Load custom libraries
-|--------------------------------------------------------------------------
-|
-| You can load your custom libraries here. If you have
-| anything defined in your lib folder, you can load
-| them here. Simply uncomment the line below.
-|
-*/
-// \Leaf\Core::loadLibs();
 
 /*
 |--------------------------------------------------------------------------

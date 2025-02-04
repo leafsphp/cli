@@ -131,7 +131,22 @@ class CreateCommand extends Command
 
         if (sprout()->run(implode(' && ', $commands)) === 0) {
             if ($this->projectType === 'api') {
-                // 
+                if (\Leaf\FS\File::exists("$directory/vite.config.js")) {
+                    \Leaf\FS\File::delete("$directory/vite.config.js");
+                }
+                
+                if (\Leaf\FS\File::exists("$directory/package.json")) {
+                    \Leaf\FS\File::delete("$directory/package.json");
+                }
+
+                \Leaf\FS\Directory::delete("$directory/app/views");
+                \Leaf\FS\Directory::create("$directory/app/views");
+
+                \Leaf\FS\Directory::delete("$directory/app/routes");
+                \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/routes', "$directory/app/routes");
+
+                \Leaf\FS\Directory::delete("$directory/public/index.php");
+                \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/index.php', "$directory/public/index.php");
             }
 
             $this->writeln("\n🚀  Successfully created project <info>" . basename($directory) . '</info>');
