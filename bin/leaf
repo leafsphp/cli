@@ -20,7 +20,7 @@ $app = sprout()->createApp([
     'version' => ''
 ]);
 
-// $app->register(Leaf\Console\CreateCommand::class);
+$app->register(Leaf\Console\CreateCommand::class);
 // $app->register(Leaf\Console\UICommand::class);
 $app->register(Leaf\Console\UpdateCommand::class);
 $app->register(Leaf\Console\InstallCommand::class);
