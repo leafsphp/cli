@@ -29,6 +29,6 @@ $app->register(Leaf\Console\ServeCommand::class);
 $app->register(Leaf\Console\InteractCommand::class);
 $app->register(Leaf\Console\RunCommand::class);
 $app->register(Leaf\Console\ViewBuildCommand::class);
-// $app->register(Leaf\Console\ViewInstallCommand::class);
+$app->register(Leaf\Console\ViewInstallCommand::class);
 
 $app->run();

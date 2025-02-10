@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
     plugins: [
         leaf({
+            hotFile: 'hot',
             input: ['app/views/js/app.jsx'],
             refresh: true,
         }),
