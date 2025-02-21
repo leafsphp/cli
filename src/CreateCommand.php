@@ -229,7 +229,7 @@ class CreateCommand extends Command
                     $this->writeln("\n    <info>leaf run test</info>");
                 }
 
-                $this->writeln("\n🍁  Happy gardening!");
+                $this->writeln("\n🍁  How fast can you ship?");
             } else {
                 $this->writeln("\n❌  Could not scaffold extra options for <info>" . basename($directory) . '</info>');
                 $this->writeln('👉  Get started with the following commands:');
