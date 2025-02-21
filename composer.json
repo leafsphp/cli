@@ -41,7 +41,6 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.66",
         "leafs/alchemy": "^2.0"
