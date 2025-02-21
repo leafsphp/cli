@@ -33,8 +33,11 @@ class CreateCommand extends Command
         {--basic? : Create a raw leaf project}
         {--api? : Create a new Leaf MVC project for APIs}
         {--mvc? : Create a new Leaf MVC project}
+        {--custom? : Scaffold a personalized Leaf app}
         {--docker? : Scaffold a docker environment}
         {--force? : Forces install even if the directory already exists}';
+
+    protected $description = 'Create a new Leaf project';
 
     protected function handle(): int
     {
@@ -56,11 +59,19 @@ class CreateCommand extends Command
         $this->projectName = $this->argument('project-name');
         $this->projectType = $this->option('basic') ? 'basic' : ($this->option('api') ? 'api' : ($this->option('mvc') ? 'mvc' : null));
 
-        $selections = sprout()->prompt([
+        $this->writeln("\033[32m
+ _                __   _  _    ___  
+| |    ___  __ _ / _| | || |  / _ \ 
+| |   / _ \/ _` | |_  | || |_| | | |
+| |__|  __/ (_| |  _| |__   _| |_| |
+|_____\___|\__,_|_|      |_|(_)___/
+        \033[0m\n");
+
+        $scaffoldOptions = sprout()->prompt([
             [
                 'type' => $this->projectName ? null : 'text',
                 'name' => 'name',
-                'message' => 'What is your project name?',
+                'message' => 'Project name',
                 'default' => 'my-leaf-project',
                 'validate' => function ($value) {
                     if (empty($value)) {
@@ -73,18 +84,18 @@ class CreateCommand extends Command
             [
                 'type' => $this->projectType ? null : 'select',
                 'name' => 'type',
-                'message' => 'What type of project do you want?',
+                'message' => 'Select a preset',
                 'default' => 0,
                 'choices' => [
                     ['title' => 'Basic Leaf app', 'value' => 'basic'],
-                    ['title' => 'Leaf MVC app', 'value' => 'mvc'],
-                    ['title' => 'Leaf MVC app for APIs', 'value' => 'api'],
+                    ['title' => 'Full-stack MVC app', 'value' => 'mvc'],
+                    ['title' => 'Leaf MVC API app', 'value' => 'api'],
                 ],
-            ]
+            ],
         ]);
 
-        $this->projectName ??= $selections['name'];
-        $this->projectType ??= $selections['type'];
+        $this->projectName ??= $scaffoldOptions['name'];
+        $this->projectType ??= $scaffoldOptions['type'];
 
         $commands = [];
         $directory = $this->projectName !== '.' ? getcwd() . '/' . $this->projectName : getcwd();
@@ -113,7 +124,7 @@ class CreateCommand extends Command
             $commands[] = 'cd ' . basename($directory);
             $commands[] = 'composer install --ansi';
         } else {
-            $commands[] = 'composer create-project leafs/mvc ' . basename($directory) . ' --ansi';
+            $commands[] = 'composer create-project leafs/mvc:v4.x-dev ' . basename($directory) . ' --ansi';
             $commands[] = 'cd ' . basename($directory);
         }
 
@@ -134,7 +145,7 @@ class CreateCommand extends Command
                 if (\Leaf\FS\File::exists("$directory/vite.config.js")) {
                     \Leaf\FS\File::delete("$directory/vite.config.js");
                 }
-                
+
                 if (\Leaf\FS\File::exists("$directory/package.json")) {
                     \Leaf\FS\File::delete("$directory/package.json");
                 }
@@ -149,17 +160,84 @@ class CreateCommand extends Command
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/index.php', "$directory/public/index.php");
             }
 
-            $this->writeln("\n🚀  Successfully created project <info>" . basename($directory) . '</info>');
-            $this->writeln('👉  Get started with the following commands:');
-            $this->writeln("\n    <info>cd</info> " . basename($directory));
-            $this->writeln('    <info>leaf serve</info>');
+            $this->writeln("\n🚀 Successfully created project <info>" . basename($directory) . "</info>\n");
 
-            // if ($testing) {
-            //     $this->writeln("\n👉  You can run tests with:");
-            //     $this->writeln("\n    <info>leaf test</info>");
-            // }
+            $extraOptions = sprout()->prompt([
+                [
+                    'type' => $this->projectType !== 'basic' ? 'confirm' : null,
+                    'name' => 'auth',
+                    'message' => 'Scaffold auth flow?',
+                    'default' => true,
+                ],
+                [
+                    'type' => $this->projectType === 'mvc' ? 'select' : null,
+                    'name' => 'view',
+                    'message' => 'Select a view engine',
+                    'default' => 0,
+                    'choices' => [
+                        ['title' => 'Default', 'value' => 'blade only'],
+                        ['title' => 'Blade + Alpine', 'value' => '--tailwind'],
+                        ['title' => 'React JS', 'value' => '--react --tailwind'],
+                        ['title' => 'Vue JS', 'value' => '--vue --tailwind'],
+                        ['title' => 'Svelte', 'value' => '--svelte --tailwind'],
+                    ],
+                ],
+                [
+                    'type' => 'confirm',
+                    'name' => 'tests',
+                    'message' => 'Set up tests?',
+                    'default' => true,
+                ],
+                [
+                    'type' => 'confirm',
+                    'name' => 'docker',
+                    'message' => 'Set up docker?',
+                    'default' => true,
+                ],
+            ]);
 
-            $this->writeln("\n🍁  Happy gardening!");
+            $extraCommands = ['cd ' . basename($directory)];
+
+            if ($extraOptions['view'] ?? false) {
+                $extraCommands[] = 'php leaf view:install ' . $extraOptions['view'];
+            }
+
+            if ($extraOptions['auth'] ?? false) {
+                $extraCommands[] = 'php leaf scaffold:auth' . ($this->projectType === 'api' ? ' --api' : '');
+            }
+
+            if ($extraOptions['tests'] ?? false) {
+                $extraCommands[] = 'composer require --dev --ansi leafs/alchemy && ./vendor/bin/alchemy install --ansi';
+            }
+
+            $this->write("\n");
+
+            if ($extraOptions['docker']) {
+                \Leaf\FS\Directory::copy(__DIR__ . '/themes/docker', $directory, [
+                    'recursive' => true,
+                ]);
+            }
+
+            if (sprout()->process(implode(' && ', $extraCommands))->setTimeout(null)->run() === 0) {
+                $this->writeln("\n🚀  Application scaffolded successfully");
+                $this->writeln('👉  Get started with the following commands:');
+                $this->writeln("\n    <info>cd</info> " . basename($directory));
+                $this->writeln('    <info>leaf serve</info>');
+
+                if ($extraOptions['tests']) {
+                    $this->writeln("\n👉  You can run tests with:");
+                    $this->writeln("\n    <info>leaf run test</info>");
+                }
+
+                $this->writeln("\n🍁  Happy gardening!");
+            } else {
+                $this->writeln("\n❌  Could not scaffold extra options for <info>" . basename($directory) . '</info>');
+                $this->writeln('👉  Get started with the following commands:');
+                $this->writeln("\n    <info>cd</info> " . basename($directory));
+                $this->writeln('    <info>leaf serve</info>');
+
+                $this->writeln("\n🍁  Happy gardening!");
+            }
         }
 
         return 0;
