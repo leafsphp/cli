@@ -18,6 +18,8 @@ class ViewInstallCommand extends Command
         {--vue? : Install vue}
         {--pm=npm : Package manager to use}';
 
+    protected $description = 'Set up a new view engine';
+
     protected function handle(): int
     {
         if ($this->option('blade')) {
