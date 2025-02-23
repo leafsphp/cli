@@ -158,6 +158,14 @@ class CreateCommand extends Command
 
                 \Leaf\FS\Directory::delete("$directory/public/index.php");
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/index.php', "$directory/public/index.php");
+
+                \Leaf\FS\File::write("$directory/leaf", function ($content) {
+                    return str_replace(
+                        'Leaf\Core::loadConsole()',
+                        "Leaf\Core::mode('api');\nLeaf\Core::loadConsole()",
+                        $content
+                    );
+                });
             }
 
             $this->writeln("\n🚀 Successfully created project <info>" . basename($directory) . "</info>\n");
