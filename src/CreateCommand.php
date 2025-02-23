@@ -151,12 +151,10 @@ class CreateCommand extends Command
                 }
 
                 \Leaf\FS\Directory::delete("$directory/app/views");
-                \Leaf\FS\Directory::create("$directory/app/views");
-
                 \Leaf\FS\Directory::delete("$directory/app/routes");
-                \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/routes', "$directory/app/routes");
-
                 \Leaf\FS\Directory::delete("$directory/public/index.php");
+
+                \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/routes', "$directory/app/routes");
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/index.php', "$directory/public/index.php");
 
                 \Leaf\FS\File::write("$directory/leaf", function ($content) {
