@@ -202,7 +202,7 @@ class CreateCommand extends Command
                 ],
             ]);
 
-            $extraCommands = ["cd '$directory'"];
+            $extraCommands = [$this->projectName === '.' ? '' : "cd '$directory'"];
 
             if ($extraOptions['view'] ?? false) {
                 $extraCommands[] = 'php leaf view:install --' . $extraOptions['view'];
