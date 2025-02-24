@@ -121,11 +121,11 @@ class CreateCommand extends Command
                 return 1;
             }
 
-            $commands[] = 'cd ' . basename($directory);
+            $commands[] = "cd '$directory'";
             $commands[] = 'composer install --ansi';
         } else {
             $commands[] = "composer create-project leafs/mvc:v4.x-dev '$directory' --ansi";
-            $commands[] = 'cd ' . basename($directory);
+            $commands[] = "cd '$directory'";
         }
 
         if ($this->option('no-ansi')) {
@@ -202,7 +202,7 @@ class CreateCommand extends Command
                 ],
             ]);
 
-            $extraCommands = [$this->projectName === '.' ? '' : "cd '$directory'"];
+            $extraCommands = ["cd '$directory'"];
 
             if ($extraOptions['view'] ?? false) {
                 $extraCommands[] = 'php leaf view:install --' . $extraOptions['view'];
