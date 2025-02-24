@@ -172,7 +172,7 @@ class CreateCommand extends Command
                 [
                     'type' => $this->projectType !== 'basic' ? 'confirm' : null,
                     'name' => 'auth',
-                    'message' => 'Scaffold auth flow?',
+                    'message' => $this->projectType === 'api' ? 'Setup auth flow?' : 'Install application starter?',
                     'default' => true,
                 ],
                 [
@@ -182,10 +182,10 @@ class CreateCommand extends Command
                     'default' => 0,
                     'choices' => [
                         ['title' => 'Default', 'value' => 'blade only'],
-                        ['title' => 'Blade + Alpine', 'value' => '--tailwind'],
-                        ['title' => 'React JS', 'value' => '--react --tailwind'],
-                        ['title' => 'Vue JS', 'value' => '--vue --tailwind'],
-                        ['title' => 'Svelte', 'value' => '--svelte --tailwind'],
+                        ['title' => 'Blade + Alpine', 'value' => 'tailwind'],
+                        ['title' => 'React JS', 'value' => 'react'],
+                        ['title' => 'Vue JS', 'value' => 'vue'],
+                        ['title' => 'Svelte', 'value' => 'svelte'],
                     ],
                 ],
                 [
@@ -198,18 +198,18 @@ class CreateCommand extends Command
                     'type' => 'confirm',
                     'name' => 'docker',
                     'message' => 'Set up docker?',
-                    'default' => true,
+                    'default' => false,
                 ],
             ]);
 
             $extraCommands = ["cd '$directory'"];
 
             if ($extraOptions['view'] ?? false) {
-                $extraCommands[] = 'php leaf view:install ' . $extraOptions['view'];
+                $extraCommands[] = 'php leaf view:install --' . $extraOptions['view'];
             }
 
             if ($extraOptions['auth'] ?? false) {
-                $extraCommands[] = 'php leaf scaffold:auth' . ($this->projectType === 'api' ? ' --api' : '');
+                $extraCommands[] = "php leaf scaffold:auth" . ($this->projectType === 'api' ? ' --api' : '');
             }
 
             if ($extraOptions['tests'] ?? false) {
