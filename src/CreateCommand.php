@@ -124,19 +124,19 @@ class CreateCommand extends Command
             $commands[] = 'cd ' . basename($directory);
             $commands[] = 'composer install --ansi';
         } else {
-            $commands[] = 'composer create-project leafs/mvc:v4.x-dev ' . basename($directory) . ' --ansi';
+            $commands[] = "composer create-project leafs/mvc:v4.x-dev '$directory' --ansi";
             $commands[] = 'cd ' . basename($directory);
         }
 
         if ($this->option('no-ansi')) {
             $commands = array_map(function ($value) {
-                return $value . ' --no-ansi';
+                return "$value --no-ansi";
             }, $commands);
         }
 
         if ($this->option('quiet')) {
             $commands = array_map(function ($value) {
-                return $value . ' --quiet';
+                return "$value --quiet";
             }, $commands);
         }
 
@@ -202,7 +202,7 @@ class CreateCommand extends Command
                 ],
             ]);
 
-            $extraCommands = ['cd ' . basename($directory)];
+            $extraCommands = ["cd '$directory'"];
 
             if ($extraOptions['view'] ?? false) {
                 $extraCommands[] = 'php leaf view:install ' . $extraOptions['view'];
@@ -224,7 +224,7 @@ class CreateCommand extends Command
                 ]);
             }
 
-            if (sprout()->process(implode(' && ', $extraCommands))->setTimeout(null)->run() === 0) {
+            if (sprout()->process(implode(' && ', $extraCommands))->setTimeout(null)->run() === 0 || count($extraCommands) === 1) {
                 $this->writeln("\n🚀  Application scaffolded successfully");
                 $this->writeln('👉  Get started with the following commands:');
                 $this->writeln("\n    <info>cd</info> " . basename($directory));
