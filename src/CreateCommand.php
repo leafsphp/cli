@@ -33,9 +33,10 @@ class CreateCommand extends Command
         {--basic? : Create a raw leaf project}
         {--api? : Create a new Leaf MVC project for APIs}
         {--mvc? : Create a new Leaf MVC project}
-        {--custom? : Scaffold a personalized Leaf app}
         {--docker? : Scaffold a docker environment}
         {--force? : Forces install even if the directory already exists}';
+
+    // {--custom? : Scaffold a personalized Leaf app}
 
     protected $description = 'Create a new Leaf project';
 
