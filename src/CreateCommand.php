@@ -44,14 +44,10 @@ class CreateCommand extends Command
             ->setAliases(['init', 'new'])
             ->setDescription('Create a new Leaf PHP project')
             ->addArgument('project-name', InputArgument::OPTIONAL, 'The name of the project')
-            ->addOption('custom', 'c', InputOption::VALUE_NONE, 'Add custom options to your project')
             ->addOption('basic', null, InputOption::VALUE_NONE, 'Create a raw leaf project')
             ->addOption('api', null, InputOption::VALUE_NONE, 'Create a new Leaf API project')
             ->addOption('mvc', null, InputOption::VALUE_NONE, 'Create a new Leaf MVC project')
             ->addOption('docker', null, InputOption::VALUE_NONE, 'Scaffold a docker environment')
-            ->addOption('phpunit', null, InputOption::VALUE_NONE, 'Add testing with phpunit')
-            ->addOption('pestphp', null, InputOption::VALUE_NONE, 'Add testing with pest')
-            ->addOption('pest', null, InputOption::VALUE_NONE, 'Add testing with pest')
             ->addOption('no-tests', 'nt', InputOption::VALUE_NONE, 'Create app without tests')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Forces install even if the directory already exists');
     }

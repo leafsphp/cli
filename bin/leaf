@@ -19,15 +19,15 @@ $app = new Symfony\Component\Console\Application("
 
 $app->add(new Leaf\Console\CreateCommand);
 $app->add(new Leaf\Console\UpdateCommand);
-$app->add(new Leaf\Console\TestCommand);
-$app->add(new Leaf\Console\TestSetupCommand);
+// $app->add(new Leaf\Console\TestCommand);
+// $app->add(new Leaf\Console\TestSetupCommand);
 $app->add(new Leaf\Console\InstallCommand);
 $app->add(new Leaf\Console\UninstallCommand);
 $app->add(new Leaf\Console\ServeCommand);
-$app->add(new Leaf\Console\DeployCommand);
+// $app->add(new Leaf\Console\DeployCommand);
 $app->add(new Leaf\Console\InteractCommand);
 $app->add(new Leaf\Console\RunCommand);
-$app->add(new Leaf\Console\UICommand);
+// $app->add(new Leaf\Console\UICommand);
 $app->add(new Leaf\Console\ViewBuildCommand);
 $app->add(new Leaf\Console\ViewDevCommand);
 $app->add(new Leaf\Console\ViewInstallCommand);
