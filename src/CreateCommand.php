@@ -67,28 +67,29 @@ class CreateCommand extends Command
     {
         $leaf = Utils\Core::findLeaf();
         $composer = Utils\Core::findComposer();
-        $needsUpdate = Package::updateAvailable();
+        // $needsUpdate = Package::updateAvailable();
 
-        if ($needsUpdate) {
-            $output->writeln('<comment>Update found, updating to the latest stable version...</comment>');
-            $updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
+        $output->writeln('<comment>v4.0 Beta has been released. Run composer global require leafs/cli:v4.0-beta -W to try it out</comment>');
 
-            $updateProcess->run();
+        // if ($needsUpdate) {
+        //     // $updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
 
-            if ($updateProcess->isSuccessful()) {
-                $output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
+        //     // $updateProcess->run();
 
-                $createProcess = Process::fromShellCommandline('php ' . implode(' ', $_SERVER['argv']));
-                $createProcess->run(function ($type, $line) use ($output) {
-                    $output->write($line);
-                });
+        //     // if ($updateProcess->isSuccessful()) {
+        //     //     $output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
 
-                return 0;
-            } else {
-                $output->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
-                $output->writeln("⚙️  Creating app with current version...\n");
-            }
-        }
+        //     //     $createProcess = Process::fromShellCommandline('php ' . implode(' ', $_SERVER['argv']));
+        //     //     $createProcess->run(function ($type, $line) use ($output) {
+        //     //         $output->write($line);
+        //     //     });
+
+        //     //     return 0;
+        //     // } else {
+        //     //     $output->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
+        //     //     $output->writeln("⚙️  Creating app with current version...\n");
+        //     // }
+        // }
 
         $name = $this->getAppName($input, $output);
         $directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
