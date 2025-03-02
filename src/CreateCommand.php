@@ -61,144 +61,16 @@ class CreateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $leaf = Utils\Core::findLeaf();
-        $composer = Utils\Core::findComposer();
-        // $needsUpdate = Package::updateAvailable();
+        $output->writeln('<comment>v4.0 has been released. Updating to v4 now ...</comment>');
 
-        $output->writeln('<comment>v4.0 Beta has been released. Run composer global require leafs/cli:v4.0-beta -W to try it out</comment>');
+        $updateProcess = Process::fromShellCommandline('composer global require leafs/cli:v4.0 -W');
+        $updateProcess->run();
 
-        // if ($needsUpdate) {
-        //     // $updateProcess = Process::fromShellCommandline('php ' . dirname(__DIR__) . '/bin/leaf update');
-
-        //     // $updateProcess->run();
-
-        //     // if ($updateProcess->isSuccessful()) {
-        //     //     $output->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
-
-        //     //     $createProcess = Process::fromShellCommandline('php ' . implode(' ', $_SERVER['argv']));
-        //     //     $createProcess->run(function ($type, $line) use ($output) {
-        //     //         $output->write($line);
-        //     //     });
-
-        //     //     return 0;
-        //     // } else {
-        //     //     $output->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
-        //     //     $output->writeln("⚙️  Creating app with current version...\n");
-        //     // }
-        // }
-
-        $name = $this->getAppName($input, $output);
-        $directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
-
-        if (!$input->getOption('force')) {
-            $this->verifyApplicationDoesntExist($directory);
-        }
-
-        $preset = $this->getAppPreset($input, $output);
-
-        $output->writeln(
-            "\n⚙️  Creating \""
-            . basename($directory) . '" in <info>./'
-            . basename(dirname($directory)) .
-            "</info> using <info>$preset@v3</info>."
-        );
-
-        if ($preset === 'leaf') {
-            return $this->buildLeafApp($input, $output, $directory);
-        }
-
-        $commands = [
-            "$composer create-project leafs/mvc " . basename($directory),
-            'cd ' . basename($directory),
-        ];
-
-        if ($input->getOption('no-ansi')) {
-            $commands = array_map(function ($value) {
-                return $value . ' --no-ansi';
-            }, $commands);
-        }
-
-        if ($input->getOption('quiet')) {
-            $commands = array_map(function ($value) {
-                return $value . ' --quiet';
-            }, $commands);
-        }
-
-        if ($input->getOption('custom')) {
-            if ($preset === 'mvc') {
-                $viewEngine = $this->viewEngineSelection($input, $output);
-
-                if ($viewEngine === 'react/vue') {
-                    $frontendFramework = $this->frontendFrameworkSelection($input, $output);
-                    $commands[] = "$leaf view:install --$frontendFramework";
-                } else {
-                    if ($viewEngine === 'bare-ui') {
-                        $commands[] = "$leaf view:install --bare-ui";
-                    }
-
-                    $installVite = $this->installVite($input, $output);
-
-                    if (!$installVite) {
-                        if (PHP_OS_FAMILY === 'Windows') {
-                            $commands[] = "del $directory/vite.config.js $directory/package.json $directory/package-lock.json";
-                        } else {
-                            $commands[] = "rm -rf $directory/vite.config.js $directory/package.json $directory/package-lock.json";
-                        }
-                    } else {
-                        $commands[] = "$leaf view:install --vite";
-                    }
-                }
-            }
-        }
-
-        $testing = $this->getAppTestPreset($input, $output);
-
-        if ($testing) {
-            $commands[] = "$composer require leafs/alchemy --dev --ansi";
-            $commands[] = "./vendor/bin/alchemy setup --$testing";
-        }
-
-        $process = Process::fromShellCommandline(
-            implode(' && ', $commands),
-            dirname($directory),
-            null,
-            null,
-            null
-        );
-
-        echo "\n";
-
-        $process->run(function ($type, $line) use ($output) {
-            $output->write($line);
-        });
-
-        if ($process->isSuccessful()) {
-            if ($preset === 'api') {
-                $this->buildAPIApp($input, $output, $directory);
-            }
-
-            if ($this->getAppDockPreset($input, $output)) {
-                $dockerThemeFolder = __DIR__ . '/themes/docker';
-
-                if ($preset === 'mvc' || $preset === 'api') {
-                    $dockerThemeFolder = __DIR__ . '/themes/mvc/docker';
-                }
-
-                FS::superCopy($dockerThemeFolder, $directory);
-                $output->write("\n🚀  Docker environment scaffolded successfully");
-            }
-
-            $output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . '</info>');
-            $output->writeln('👉  Get started with the following commands:');
-            $output->writeln("\n    <info>cd</info> " . basename($directory));
-            $output->writeln('    <info>leaf serve</info>');
-
-            if ($testing) {
-                $output->writeln("\n👉  You can run tests with:");
-                $output->writeln("\n    <info>leaf test</info>");
-            }
-
-            $output->writeln("\n🍁  Happy gardening!");
+        if ($updateProcess->isSuccessful()) {
+            $output->writeln("<info>Leaf CLI updated successfully, run leaf create to build your app</info>\n");
+        } else {
+            $output->writeln("<error>❌ Leaf CLI update failed, please manually update using composer global require leafs/cli:v4.0</error>\n");
+            return 1;
         }
 
         return 0;
