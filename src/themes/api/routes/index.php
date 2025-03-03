@@ -30,6 +30,17 @@ app()->setErrorHandler(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Set middleware for all routes
+|--------------------------------------------------------------------------
+|
+| You can use app()->use() to load middleware for all
+| routes in your application.
+|
+*/
+// app()->use(ExampleMiddleware::class);
+
+/*
+|--------------------------------------------------------------------------
 | Your application routes
 |--------------------------------------------------------------------------
 |
