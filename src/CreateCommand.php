@@ -153,10 +153,8 @@ class CreateCommand extends Command
 
                 \Leaf\FS\Directory::delete("$directory/app/views");
                 \Leaf\FS\Directory::delete("$directory/app/routes");
-                \Leaf\FS\Directory::delete("$directory/public/index.php");
 
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/routes', "$directory/app/routes");
-                \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/index.php', "$directory/public/index.php");
 
                 \Leaf\FS\File::write("$directory/leaf", function ($content) {
                     return str_replace(
@@ -223,6 +221,16 @@ class CreateCommand extends Command
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/docker', $directory, [
                     'recursive' => true,
                 ]);
+            }
+
+            if ($this->projectType !== 'basic') {
+                \Leaf\FS\File::write("$directory/.env", function ($content) use ($directory) {
+                    return str_replace(
+                        ['LEAF_DB_NAME', 'LEAF_DB_USERNAME'],
+                        [basename($directory), 'root'],
+                        $content
+                    );
+                });
             }
 
             if (sprout()->process(implode(' && ', $extraCommands))->setTimeout(null)->run() === 0 || count($extraCommands) === 1) {
