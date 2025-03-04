@@ -16,6 +16,7 @@ class UpdateCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('update')
             ->setHelp('Update leaf cli')
             ->setDescription('Update leaf cli to the latest version');
     }

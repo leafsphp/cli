@@ -16,6 +16,7 @@ class TestCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('test')
             ->setHelp('Test your leaf application through leaf alchemy')
             ->setDescription('Test your leaf application through leaf alchemy');
     }

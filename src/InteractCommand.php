@@ -16,6 +16,7 @@ class InteractCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('interact')
             ->setDescription('Interact with your application')
             ->setHelp('Interact with your application');
     }
@@ -42,6 +43,6 @@ class InteractCommand extends Command
 
         $shell = new Shell();
 
-        return $output->write($shell->run()) ? 0 : 1;
+        return $shell->run() ? 0 : 1;
     }
 }

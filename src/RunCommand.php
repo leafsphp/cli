@@ -17,6 +17,7 @@ class RunCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('run')
             ->setHelp('Run a composer script')
             ->setDescription('Run a script in your composer.json')
             ->addArgument('scriptName', InputArgument::REQUIRED, 'Command to run.');

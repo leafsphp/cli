@@ -17,6 +17,7 @@ class TestSetupCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('test:setup')
             ->setHelp('Setup tests with Pest PHP or PHPUnit')
             ->setDescription('Add tests to your application')
             ->addOption('pest', null, InputOption::VALUE_NONE, 'Setup tests with Pest PHP (default)')

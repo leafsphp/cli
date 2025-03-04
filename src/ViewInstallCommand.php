@@ -16,6 +16,7 @@ class ViewInstallCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('view:install')
             ->setHelp('Run a composer script')
             ->setDescription('Run a script in your composer.json')
             ->addOption('blade', null, InputOption::VALUE_NONE, 'Install blade')

@@ -18,6 +18,7 @@ class InstallCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('install')
             ->setHelp('Install a new package')
             ->setDescription('Add a new package to your leaf app')
             ->addArgument('packages', InputArgument::IS_ARRAY, 'package(s) to install. Can also include a version constraint, e.g. foo/bar or foo/bar@1.0.0')

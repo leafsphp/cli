@@ -19,6 +19,7 @@ class ServeCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('serve')
             ->setHelp('Start the leaf app server')
             ->setDescription('Run your Leaf app')
             ->addArgument('filename', InputArgument::OPTIONAL, 'The PHP script to run')

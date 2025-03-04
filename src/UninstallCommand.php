@@ -17,6 +17,7 @@ class UninstallCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('uninstall')
             ->setHelp('The uninstall command removes a package from the current
   list of installed packages')
             ->setDescription('Uninstall a  package')

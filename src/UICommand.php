@@ -17,6 +17,7 @@ class UICommand extends Command
     protected function configure()
     {
         $this
+            ->setName('ui')
             ->setAliases(['gui'])
             ->setHelp('Open up the Leaf CLI GUI')
             ->setDescription('Start the Leaf CLI GUI process')

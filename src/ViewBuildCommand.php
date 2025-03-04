@@ -16,6 +16,7 @@ class ViewBuildCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('view:build')
             ->setHelp('Run your frontend dev command')
             ->setDescription('Run your frontend dev server')
             ->addOption('pm', 'pm', InputOption::VALUE_OPTIONAL, 'Package manager to use', 'npm');
