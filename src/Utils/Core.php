@@ -11,7 +11,7 @@ class Core
     /**
      * Run a shell process with the output.
      */
-    public static function run(string $command, $output, string $cwd = null)
+    public static function run(string $command, $output, ?string $cwd = null)
     {
         $process = Process::fromShellCommandline(
             $command,
