@@ -99,7 +99,7 @@ class CreateCommand extends Command
         $this->projectType ??= $scaffoldOptions['type'];
 
         $commands = [];
-        $directory = $this->projectName !== '.' ? getcwd() . '/' . $this->projectName : getcwd();
+        $directory = path($this->projectName !== '.' ? getcwd() . '/' . $this->projectName : getcwd())->normalize();
 
         if (!$this->option('force')) {
             $this->verifyApplicationDoesntExist($directory);
@@ -122,11 +122,11 @@ class CreateCommand extends Command
                 return 1;
             }
 
-            $commands[] = "cd '$directory'";
+            $commands[] = "cd \"$directory\"";
             $commands[] = 'composer install --ansi';
         } else {
-            $commands[] = "composer create-project leafs/mvc:v4.x-dev '$directory' --ansi";
-            $commands[] = "cd '$directory'";
+            $commands[] = "composer create-project leafs/mvc:v4.x-dev \"$directory\" --ansi";
+            $commands[] = "cd \"$directory\"";
         }
 
         if ($this->option('no-ansi')) {
