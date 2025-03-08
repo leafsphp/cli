@@ -201,7 +201,7 @@ class CreateCommand extends Command
                 ],
             ]);
 
-            $extraCommands = ["cd '$directory'"];
+            $extraCommands = ["cd \"$directory\""];
 
             if (isset($extraOptions['view']) && $extraOptions['view'] !== 'blade only') {
                 $extraCommands[] = 'php leaf view:install --' . $extraOptions['view'];
