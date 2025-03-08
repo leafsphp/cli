@@ -23,7 +23,7 @@
     "require": {
         "ext-json": "*",
         "leafs/fs": "^2.0",
-        "leafs/sprout": "^0.2",
+        "leafs/sprout": "^0.3",
         "psy/psysh": "*"
     },
     "bin": [
