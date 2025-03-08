@@ -45,14 +45,14 @@ class CreateCommand extends Command
         $needsUpdate = Package::updateAvailable();
 
         if ($needsUpdate) {
-            $this->writeln('<comment>Update found, updating to the latest stable version...</comment>');
+            $this->writeln('Update found, updating to the latest stable version...');
 
             if (sprout()->run('php ' . dirname(__DIR__) . '/bin/leaf update')) {
-                $this->writeln("<info>Leaf CLI updated successfully, building your app...</info>\n");
+                $this->writeln("Leaf CLI updated successfully, building your app...\n");
 
                 return sprout()->run('php ' . implode(' ', (array) $_SERVER['argv']));
             } else {
-                $this->writeln("<error>❌ Leaf CLI update failed, please try again later</error>\n");
+                $this->writeln("❌ Leaf CLI update failed, please try again later\n");
                 $this->writeln("⚙️  Creating app with current version...\n");
             }
         }
@@ -107,9 +107,9 @@ class CreateCommand extends Command
 
         $this->writeln(
             "\n⚙️  Creating \""
-            . basename($directory) . '" in <info>./'
+            . basename($directory) . '" in ./'
             . basename(dirname($directory)) .
-            "</info> using preset <info>{$this->projectType}</info>."
+            " using preset {$this->projectType}."
         );
 
         if ($this->projectType === 'basic') {
@@ -165,7 +165,7 @@ class CreateCommand extends Command
                 });
             }
 
-            $this->writeln("\n🚀 Successfully created project <info>" . basename($directory) . "</info>\n");
+            $this->writeln("\n🚀 Successfully created project " . basename($directory) . "\n");
 
             $extraOptions = sprout()->prompt([
                 [
@@ -236,20 +236,20 @@ class CreateCommand extends Command
             if (sprout()->process(implode(' && ', $extraCommands))->setTimeout(null)->run() === 0 || count($extraCommands) === 1) {
                 $this->writeln("\n🚀  Application scaffolded successfully");
                 $this->writeln('👉  Get started with the following commands:');
-                $this->writeln("\n    <info>cd</info> " . basename($directory));
-                $this->writeln('    <info>leaf serve</info>');
+                $this->writeln("\n    cd " . basename($directory));
+                $this->writeln('    leaf serve');
 
                 if ($extraOptions['tests']) {
                     $this->writeln("\n👉  You can run tests with:");
-                    $this->writeln("\n    <info>leaf run test</info>");
+                    $this->writeln("\n    leaf run test");
                 }
 
                 $this->writeln("\n🍁  How fast can you ship?");
             } else {
-                $this->writeln("\n❌  Could not scaffold extra options for <info>" . basename($directory) . '</info>');
+                $this->writeln("\n❌  Could not scaffold extra options for " . basename($directory));
                 $this->writeln('👉  Get started with the following commands:');
-                $this->writeln("\n    <info>cd</info> " . basename($directory));
-                $this->writeln('    <info>leaf serve</info>');
+                $this->writeln("\n   cd " . basename($directory));
+                $this->writeln('    leaf serve');
 
                 $this->writeln("\n🍁  Happy gardening!");
             }
