@@ -141,7 +141,7 @@ class CreateCommand extends Command
             }, $commands);
         }
 
-        if (sprout()->run(implode(' && ', $commands)) === 0) {
+        if (sprout()->process(implode(' && ', $commands))->setTimeout(null)->run() === 0) {
             if ($this->projectType === 'api') {
                 if (\Leaf\FS\File::exists("$directory/vite.config.js")) {
                     \Leaf\FS\File::delete("$directory/vite.config.js");
