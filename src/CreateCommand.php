@@ -125,7 +125,7 @@ class CreateCommand extends Command
             $commands[] = "cd \"$directory\"";
             $commands[] = 'composer install --ansi';
         } else {
-            $commands[] = "composer create-project leafs/mvc:v4.x-dev \"$directory\" --ansi";
+            $commands[] = "composer create-project leafs/mvc \"$directory\" --ansi";
             $commands[] = "cd \"$directory\"";
         }
 
