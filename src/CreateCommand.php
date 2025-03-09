@@ -61,98 +61,16 @@ class CreateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // $output->writeln('<comment>v4.0 has been released. Updating to v4 now ...</comment>');
+        $output->writeln('<comment>v4.0 has been released. Updating to v4 now ...</comment>');
 
-        // $updateProcess = Process::fromShellCommandline('composer global require leafs/cli:v4.0 -W');
-        // $updateProcess->run();
+        $updateProcess = Process::fromShellCommandline('composer global require leafs/cli:v4.0 -W');
+        $updateProcess->run();
 
-        // if ($updateProcess->isSuccessful()) {
-        //     $output->writeln("<info>Leaf CLI updated successfully, run leaf create to build your app</info>\n");
-        // } else {
-        //     $output->writeln("<error>❌ Leaf CLI update failed, please manually update using composer global require leafs/cli:v4.0</error>\n");
-        //     return 1;
-        // }
-
-        // return 0;
-
-        $leaf = Utils\Core::findLeaf();
-        $composer = Utils\Core::findComposer();
-
-        $output->writeln('<comment>v4.0 Beta has been released. Run composer global require leafs/cli:v4.0-beta -W to try it out</comment>');
-
-        $name = $this->getAppName($input, $output);
-        $directory = $name !== '.' ? getcwd() . '/' . $name : getcwd();
-
-        if (!$input->getOption('force')) {
-            $this->verifyApplicationDoesntExist($directory);
-        }
-
-        $preset = $this->getAppPreset($input, $output);
-
-        $output->writeln(
-            "\n⚙️  Creating \""
-            . basename($directory) . '" in <info>./'
-            . basename(dirname($directory)) .
-            "</info> using <info>$preset@v3</info>."
-        );
-
-        if ($preset === 'leaf') {
-            return $this->buildLeafApp($input, $output, $directory);
-        }
-
-        $commands = [
-            "$composer create-project leafs/mvc " . basename($directory),
-            'cd ' . basename($directory),
-        ];
-
-        if ($input->getOption('no-ansi')) {
-            $commands = array_map(function ($value) {
-                return $value . ' --no-ansi';
-            }, $commands);
-        }
-
-        if ($input->getOption('quiet')) {
-            $commands = array_map(function ($value) {
-                return $value . ' --quiet';
-            }, $commands);
-        }
-
-        $process = Process::fromShellCommandline(
-            implode(' && ', $commands),
-            dirname($directory),
-            null,
-            null,
-            null
-        );
-
-        echo "\n";
-
-        $process->run(function ($type, $line) use ($output) {
-            $output->write($line);
-        });
-
-        if ($process->isSuccessful()) {
-            if ($preset === 'api') {
-                $this->buildAPIApp($input, $output, $directory);
-            }
-
-            if ($this->getAppDockPreset($input, $output)) {
-                $dockerThemeFolder = __DIR__ . '/themes/docker';
-
-                if ($preset === 'mvc' || $preset === 'api') {
-                    $dockerThemeFolder = __DIR__ . '/themes/mvc/docker';
-                }
-
-                FS::superCopy($dockerThemeFolder, $directory);
-                $output->write("\n🚀  Docker environment scaffolded successfully");
-            }
-
-            $output->writeln("\n🚀  Successfully created project <info>" . basename($directory) . '</info>');
-            $output->writeln('👉  Get started with the following commands:');
-            $output->writeln("\n    <info>cd</info> " . basename($directory));
-            $output->writeln('    <info>leaf serve</info>');
-
-            $output->writeln("\n🍁  Happy gardening!");
+        if ($updateProcess->isSuccessful()) {
+            $output->writeln("<info>Leaf CLI updated successfully, run leaf create to build your app</info>\n");
+        } else {
+            $output->writeln("<error>❌ Leaf CLI update failed, please manually update using composer global require leafs/cli:v4.0 -W</error>\n");
+            return 1;
         }
 
         return 0;
