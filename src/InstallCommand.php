@@ -24,7 +24,7 @@ class InstallCommand extends Command
                 }
 
                 $package = str_replace('@', ':', $package);
-                $package = $this->option('dev') ? "$package --dev" : $package;
+                $package = ($this->option('dev') === "true") ? "$package --dev" : $package;
 
                 $parsedPackages[] = $package;
             }
