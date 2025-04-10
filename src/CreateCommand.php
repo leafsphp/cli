@@ -180,7 +180,6 @@ class CreateCommand extends Command
                     'message' => 'Select a view engine',
                     'default' => 0,
                     'choices' => [
-                        ['title' => 'Default', 'value' => 'blade only'],
                         ['title' => 'Blade + Alpine', 'value' => 'tailwind'],
                         ['title' => 'React JS', 'value' => 'react'],
                         ['title' => 'Vue JS', 'value' => 'vue'],
@@ -203,7 +202,7 @@ class CreateCommand extends Command
 
             $extraCommands = ["cd \"$directory\""];
 
-            if (isset($extraOptions['view']) && $extraOptions['view'] !== 'blade only') {
+            if (isset($extraOptions['view'])) {
                 $extraCommands[] = 'php leaf view:install --' . $extraOptions['view'];
             }
 
@@ -227,7 +226,7 @@ class CreateCommand extends Command
                 \Leaf\FS\File::write("$directory/.env", function ($content) use ($directory) {
                     return str_replace(
                         ['LEAF_DB_NAME', 'LEAF_DB_USERNAME'],
-                        [basename($directory), 'root'],
+                        [str_replace('-', '_', basename($directory)), 'root'],
                         $content
                     );
                 });
