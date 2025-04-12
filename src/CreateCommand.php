@@ -180,7 +180,14 @@ class CreateCommand extends Command
                     'message' => 'Select a view engine',
                     'default' => 0,
                     'choices' => [
-                        ['title' => 'Blade + Alpine', 'value' => 'tailwind'],
+                        [
+                            'title' => 'Default',
+                            'value' => 'default',
+                            'disabled' => function ($answers) {
+                                return $answers['auth'] ?? false;
+                            }
+                        ],
+                        ['title' => 'Blade + Tailwind', 'value' => 'tailwind'],
                         ['title' => 'React JS', 'value' => 'react'],
                         ['title' => 'Vue JS', 'value' => 'vue'],
                         ['title' => 'Svelte', 'value' => 'svelte'],
@@ -202,7 +209,7 @@ class CreateCommand extends Command
 
             $extraCommands = ["cd \"$directory\""];
 
-            if (isset($extraOptions['view'])) {
+            if (isset($extraOptions['view']) && $extraOptions['view'] !== 'default') {
                 $extraCommands[] = 'php leaf view:install --' . $extraOptions['view'];
             }
 
