@@ -2,7 +2,7 @@
     "name": "leafs/cli",
     "description": "A simple command line tool for installing and interacting with your leaf apps",
     "homepage": "https://cli.leafphp.dev",
-    "version": "v4.1.1",
+    "version": "v4.1.2",
     "keywords": [
         "leaf",
         "php",
@@ -22,7 +22,7 @@
     ],
     "require": {
         "ext-json": "*",
-        "leafs/fs": "^2.0",
+        "leafs/fs": "^4.1",
         "leafs/sprout": "^0.4.0",
         "psy/psysh": "*"
     },
@@ -44,7 +44,7 @@
     "prefer-stable": true,
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.66",
-        "leafs/alchemy": "^2.0"
+        "leafs/alchemy": "^4.0"
     },
     "scripts": {
         "alchemy": "./vendor/bin/alchemy setup",
