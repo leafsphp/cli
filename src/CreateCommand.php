@@ -153,6 +153,7 @@ class CreateCommand extends Command
 
                 \Leaf\FS\Directory::delete("$directory/app/views", ['recursive' => true]);
                 \Leaf\FS\Directory::delete("$directory/app/routes", ['recursive' => true]);
+                \Leaf\FS\Directory::delete("$directory/public/assets", ['recursive' => true]);
 
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/routes', "$directory/app/routes");
 
