@@ -151,8 +151,8 @@ class CreateCommand extends Command
                     \Leaf\FS\File::delete("$directory/package.json");
                 }
 
-                \Leaf\FS\Directory::delete("$directory/app/views");
-                \Leaf\FS\Directory::delete("$directory/app/routes");
+                \Leaf\FS\Directory::delete("$directory/app/views", ['recursive' => true]);
+                \Leaf\FS\Directory::delete("$directory/app/routes", ['recursive' => true]);
 
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/api/routes', "$directory/app/routes");
 
@@ -214,7 +214,7 @@ class CreateCommand extends Command
             }
 
             if ($extraOptions['auth'] ?? false) {
-                $extraCommands[] = "php leaf scaffold:auth" . ($this->projectType === 'api' ? ' --api' : '');
+                $extraCommands[] = "php leaf scaffold:auth";
             }
 
             if ($extraOptions['tests'] ?? false) {
