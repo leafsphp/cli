@@ -222,6 +222,10 @@ class CreateCommand extends Command
                 $extraCommands[] = 'composer require --dev --ansi leafs/alchemy && ./vendor/bin/alchemy install --ansi';
             }
 
+            if ($this->projectType === 'api') {
+                $extraCommands[] = 'composer require leafs/cors --ansi';
+            }
+
             $this->write("\n");
 
             if ($extraOptions['docker']) {
