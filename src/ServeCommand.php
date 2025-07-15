@@ -17,10 +17,6 @@ class ServeCommand extends Command
 
     protected function handle(): int
     {
-        if ($this->isMVCApp()) {
-            return (int) sprout()->run("php leaf serve --port={$this->option('port')} --ansi", null);
-        }
-
         if (!sprout()->composer()->json()) {
             $this->writeln('<error>No composer.json found in the current directory.</error>');
             return 1;
@@ -33,6 +29,10 @@ class ServeCommand extends Command
                 $this->writeln('<error>❌  Failed to install dependencies.</error>');
                 return 1;
             }
+        }
+
+        if ($this->isMVCApp()) {
+            return (int) sprout()->run("php leaf serve --port={$this->option('port')} --ansi", null);
         }
 
         $port = $this->option('port');
