@@ -32,7 +32,7 @@ class DeployCommand extends Command
             $this->writeln('<info>Building for Leaf MVC...</info>');
         }
 
-        $provider = $this->option('to');
+        $provider = strtolower($this->option('to'));
 
         if ($provider === 'fly' || $provider === 'fly.io') {
             $this->writeln('<info>Setting up Fly.io deployment...</info>');
