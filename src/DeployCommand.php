@@ -51,7 +51,7 @@ class DeployCommand extends Command
     protected function setupFlyDeployment()
     {
         $appDir = getcwd();
-        $appName = strtolower(basename($appDir));
+        $appName = $this->namify(basename($appDir), 'fly');
 
         if (!\Leaf\FS\File::exists("$appDir/fly.toml")) {
             $this->writeln('<info>Writing fly deploy files...</info>');
@@ -64,8 +64,9 @@ class DeployCommand extends Command
                 )
             ) {
                 $this->writeln('<info>Deployment files setup!</info>');
-                $appName = $this->getEnvValue('APP_NAME', "$appDir/.env");
+
                 $appRegion = $this->getEnvValue('APP_PROD_REGION', "$appDir/.env");
+                $appName = $this->namify($this->getEnvValue('APP_NAME', "$appDir/.env"), 'fly');
 
                 \Leaf\FS\File::create(
                     "$appDir/storage/deployments.yml",
@@ -148,6 +149,17 @@ class DeployCommand extends Command
         }
 
         return null;
+    }
+
+    protected function namify($name, $provider)
+    {
+        switch (strtolower($provider)) {
+            case 'fly':
+            case 'fly.io':
+                return strtolower(str_replace(['_', ' '], '-', $name));
+            default:
+                return strtolower($name);
+        }
     }
 
     protected function isMVCApp()
