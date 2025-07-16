@@ -1,0 +1,25 @@
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = 'LEAF-APP-NAME'
+primary_region = 'LEAF-APP-REGION' # https://fly.io/docs/reference/regions/
+
+[build]
+
+[env]
+  # Only non-sensitive environment variables should be set here.
+  APP_DEBUG = 'false'
+  APP_ENV = 'production'
+  APP_NAME = 'LEAF-APP-NAME'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  # min_machines_running = 1 # Uncomment to ensure at least one machine is always running
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

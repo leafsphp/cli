@@ -30,5 +30,6 @@ $app->register(Leaf\Console\InteractCommand::class);
 $app->register(Leaf\Console\RunCommand::class);
 $app->register(Leaf\Console\ViewBuildCommand::class);
 $app->register(Leaf\Console\ViewInstallCommand::class);
+$app->register(Leaf\Console\DeployCommand::class);
 
 $app->run();
