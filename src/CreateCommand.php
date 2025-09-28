@@ -91,6 +91,7 @@ class CreateCommand extends Command
                     ['title' => 'Basic Leaf app', 'value' => 'basic'],
                     ['title' => 'Full-stack MVC app', 'value' => 'mvc'],
                     ['title' => 'Leaf MVC API app', 'value' => 'api'],
+                    ['title' => 'Console app', 'value' => 'console'],
                 ],
             ],
         ]);
@@ -124,6 +125,9 @@ class CreateCommand extends Command
 
             $commands[] = "cd \"$directory\"";
             $commands[] = 'composer install --ansi';
+        } else if ($this->projectType === 'console') {
+            $commands[] = "composer create-project leafs/sprout-app \"$directory\" --ansi";
+            $commands[] = "cd \"$directory\"";
         } else {
             $commands[] = "composer create-project leafs/mvc \"$directory\" --ansi";
             $commands[] = "cd \"$directory\"";
@@ -142,6 +146,19 @@ class CreateCommand extends Command
         }
 
         if (sprout()->process(implode(' && ', $commands))->setTimeout(null)->run() === 0) {
+            if ($this->projectType === 'console') {
+                \Leaf\FS\File::move("$directory/bin/sprout", "$directory/bin/" . basename($directory));
+
+                $this->writeln("\n🚀 Successfully created project " . basename($directory) . "\n");
+                $this->writeln('👉  Get started with the following commands:');
+                $this->writeln("\n    cd " . basename($directory));
+                $this->writeln("    php ./bin/" . basename($directory));
+
+                $this->writeln("\n🍁  Happy gardening!\n");
+
+                return 0;
+            }
+
             if ($this->projectType === 'api') {
                 if (\Leaf\FS\File::exists("$directory/vite.config.js")) {
                     \Leaf\FS\File::delete("$directory/vite.config.js");
