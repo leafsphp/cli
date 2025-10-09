@@ -33,10 +33,10 @@ $app->register(Leaf\Console\ViewInstallCommand::class);
 $app->register(Leaf\Console\DeployCommand::class);
 
 $app->on('command.notFound', function ($event) use ($app) {
-    $command = $event->getCommandName();
+    $data = array_slice($event->getCommandArgv(), 1);
 
-    if (\Leaf\FS\File::exists(getcwd() . "/leaf")) {
-        $exitCode = (int) sprout()->run("php leaf $command", null);
+    if (\Leaf\FS\File::exists(getcwd() . '/leaf')) {
+        $exitCode = (int) sprout()->run('php leaf ' . implode(' ', $data), null);
         $event->setExitCode($exitCode);
         $event->stopPropagation();
     }
