@@ -91,7 +91,7 @@ class CreateCommand extends Command
                     ['title' => 'Basic Leaf app', 'value' => 'basic'],
                     ['title' => 'Full-stack MVC app', 'value' => 'mvc'],
                     ['title' => 'Leaf MVC API app', 'value' => 'api'],
-                    ['title' => 'Console app', 'value' => 'console'],
+                    ['title' => 'Console app via Seedling', 'value' => 'console'],
                 ],
             ],
         ]);
@@ -126,7 +126,7 @@ class CreateCommand extends Command
             $commands[] = "cd \"$directory\"";
             $commands[] = 'composer install --ansi';
         } else if ($this->projectType === 'console') {
-            $commands[] = "composer create-project leafs/sprout-app \"$directory\" --ansi";
+            $commands[] = "composer create-project leafs/seedling \"$directory\" --ansi";
             $commands[] = "cd \"$directory\"";
         } else {
             $commands[] = "composer create-project leafs/mvc \"$directory\" --ansi";
@@ -152,7 +152,7 @@ class CreateCommand extends Command
                 $this->writeln("\n🚀 Successfully created project " . basename($directory) . "\n");
                 $this->writeln('👉  Get started with the following commands:');
                 $this->writeln("\n    cd " . basename($directory));
-                $this->writeln("    php ./bin/" . basename($directory));
+                $this->writeln("    php leaf greet");
 
                 $this->writeln("\n🍁  Happy gardening!\n");
 
