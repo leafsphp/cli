@@ -31,6 +31,8 @@ $app->register(Leaf\Console\RunCommand::class);
 $app->register(Leaf\Console\ViewBuildCommand::class);
 $app->register(Leaf\Console\ViewInstallCommand::class);
 $app->register(Leaf\Console\DeployCommand::class);
+$app->register(Leaf\Console\ContextCommand::class);
+$app->register(Leaf\Console\UpCommand::class);
 
 $app->on('command.notFound', function ($event) use ($app) {
     $data = array_slice($event->getCommandArgv(), 1);
