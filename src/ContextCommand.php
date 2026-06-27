@@ -92,9 +92,14 @@ class ContextCommand extends Command
             }
         }
 
-        $appType = 'basic';
+        $appType = 'lite';
+        $directories = '';
+
         if (is_dir("$directory/app/controllers") || is_dir("$directory/app/routes")) {
             $appType = is_dir("$directory/app/views") ? 'mvc' : 'api';
+            $directories = implode(', ', array_filter(scandir($directory), function ($item) use ($directory) {
+                return $item !== '.' && $item !== '..' && is_dir("$directory/$item");
+            }));
         }
 
         $modulesList = !empty($modules) ? implode(', ', $modules) : 'leafs/leaf';
@@ -106,7 +111,7 @@ Leaf Modules: {$modulesList}
 
 ## Structure
 - Base Directory: {$directory}
-- Key Folders: app/, public/, vendor/
+- Key Folders: {$directories}
 MARKDOWN;
     }
 }
