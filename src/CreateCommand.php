@@ -30,9 +30,11 @@ class CreateCommand extends Command
 
     protected $signature = 'create
         {project-name? : The name of the project}
-        {--basic? : Create a raw leaf project}
+        {--lite? : Create a raw lite leaf project}
+        {--basic? : Create a raw lite leaf project (alias for --lite)}
         {--api? : Create a new Leaf MVC project for APIs}
         {--mvc? : Create a new Leaf MVC project}
+        {--console? : Create a new Leaf console project}
         {--docker? : Scaffold a docker environment}
         {--force? : Forces install even if the directory already exists}';
 
@@ -58,14 +60,14 @@ class CreateCommand extends Command
         }
 
         $this->projectName = $this->argument('project-name');
-        $this->projectType = $this->option('basic') ? 'basic' : ($this->option('api') ? 'api' : ($this->option('mvc') ? 'mvc' : null));
+        $this->projectType = ($this->option('lite') || $this->option('basic')) ? 'lite' : ($this->option('api') ? 'api' : ($this->option('mvc') ? 'mvc' : ($this->option('console') ? 'console' : null)));
 
         $this->writeln("\033[32m
- _                __   _  _    ___  
-| |    ___  __ _ / _| | || |  / _ \ 
-| |   / _ \/ _` | |_  | || |_| | | |
-| |__|  __/ (_| |  _| |__   _| |_| |
-|_____\___|\__,_|_|      |_|(_)___/
+ _                __    ____ 
+| |    ___  __ _ / _|  | ___|
+| |   / _ \/ _` | |_   |___ \
+| |__|  __/ (_| |  _|   ___) |
+|_____\___|\__,_|_|    |____/
         \033[0m\n");
 
         $scaffoldOptions = sprout()->prompt([
@@ -88,7 +90,7 @@ class CreateCommand extends Command
                 'message' => 'Select a preset',
                 'default' => 0,
                 'choices' => [
-                    ['title' => 'Basic Leaf app', 'value' => 'basic'],
+                    ['title' => 'Lite Leaf app', 'value' => 'lite'],
                     ['title' => 'Full-stack MVC app', 'value' => 'mvc'],
                     ['title' => 'Leaf MVC API app', 'value' => 'api'],
                     ['title' => 'Console app via Seedling', 'value' => 'console'],
@@ -113,7 +115,7 @@ class CreateCommand extends Command
             " using preset {$this->projectType}."
         );
 
-        if ($this->projectType === 'basic') {
+        if ($this->projectType === 'lite') {
             if (
                 !FS\Directory::copy(__DIR__ . '/themes/leaf3', $directory, [
                     'recursive' => true,
@@ -187,7 +189,7 @@ class CreateCommand extends Command
 
             $extraOptions = sprout()->prompt([
                 [
-                    'type' => $this->projectType !== 'basic' ? 'confirm' : null,
+                    'type' => $this->projectType !== 'lite' ? 'confirm' : null,
                     'name' => 'auth',
                     'message' => $this->projectType === 'api' ? 'Setup auth flow?' : 'Install application starter?',
                     'default' => true,
@@ -251,7 +253,7 @@ class CreateCommand extends Command
                 ]);
             }
 
-            if ($this->projectType !== 'basic') {
+            if ($this->projectType !== 'lite') {
                 \Leaf\FS\File::write("$directory/.env", function ($content) use ($directory) {
                     return str_replace(
                         ['LEAF_DB_NAME', 'LEAF_DB_USERNAME'],
