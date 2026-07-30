@@ -36,7 +36,9 @@ class Package
      */
     public static function ltsInfo()
     {
-        $data = file_get_contents('https://repo.packagist.org/p2/leafs/cli.json');
+        $data = @file_get_contents('https://repo.packagist.org/p2/leafs/cli.json', false, stream_context_create([
+            'http' => ['timeout' => 3],
+        ]));
 
         if (!$data) {
             return static::info();
@@ -62,13 +64,9 @@ class Package
      */
     public static function updateAvailable()
     {
-        $currentVersion = static::version();
-        $latestVersion = static::ltsVersion();
+        $currentVersion = ltrim(static::version(), 'v');
+        $latestVersion = ltrim(static::ltsVersion(), 'v');
 
-        if ($currentVersion > $latestVersion) {
-            return false;
-        }
-
-        return ($currentVersion !== $latestVersion);
+        return version_compare($currentVersion, $latestVersion, '<');
     }
 }
