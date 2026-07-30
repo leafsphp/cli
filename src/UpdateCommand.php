@@ -19,6 +19,7 @@ class UpdateCommand extends Command
 
             if (sprout()->composer(true)->install('leafs/cli --ansi')->isSuccessful()) {
                 $this->writeln('<info>Leaf CLI installed successfully!</info>');
+
                 return 0;
             }
         }

@@ -19,7 +19,7 @@ class InstallCommand extends Command
 
         if (count($packages)) {
             foreach ($packages as $package) {
-                if (strpos($package, '/') == false) {
+                if (strpos($package, '/') === false) {
                     $package = "leafs/$package";
                 }
 
@@ -36,6 +36,6 @@ class InstallCommand extends Command
             return 0;
         }
 
-        return (int) sprout()->composer()->install()->isSuccessful();
+        return sprout()->composer()->install()->isSuccessful() ? 0 : 1;
     }
 }

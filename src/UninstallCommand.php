@@ -19,11 +19,12 @@ class UninstallCommand extends Command
 
         if (!sprout()->composer()->json()) {
             $this->writeln('<error>No composer.json found in the current directory.</error>');
+
             return 1;
         }
 
         foreach ($packages as $package) {
-            if (strpos($package, '/') == false) {
+            if (strpos($package, '/') === false) {
                 $package = "leafs/$package";
             }
 

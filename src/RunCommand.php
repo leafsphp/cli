@@ -16,12 +16,13 @@ class RunCommand extends Command
     {
         if (!sprout()->composer()->json()) {
             $this->writeln('<error>No composer.json found in the current directory.</error>');
+
             return 1;
         }
 
-        return (int) sprout()
+        return sprout()
             ->composer()
             ->runScript($this->argument('script'))
-            ->isSuccessful();
+            ->isSuccessful() ? 0 : 1;
     }
 }

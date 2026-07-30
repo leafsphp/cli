@@ -25,7 +25,7 @@ class InteractCommand extends Command
         }
 
         if (!file_exists('vendor/autoload.php') && !file_exists('Config/bootstrap.php') && (file_exists('index.php') && file_exists('leaf'))) {
-            $this->writeln('<info>Required files not found, starting shell running in retard mode...</info>');
+            $this->writeln('<info>App files not found, starting a bare shell...</info>');
         }
 
         return (new Shell())->run();

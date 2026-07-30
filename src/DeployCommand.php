@@ -16,6 +16,7 @@ class DeployCommand extends Command
     {
         if (!sprout()->composer()->json()) {
             $this->writeln('<error>No composer.json found in the current directory.</error>');
+
             return 1;
         }
 
@@ -24,6 +25,7 @@ class DeployCommand extends Command
 
             if (!sprout()->composer()->install()->isSuccessful()) {
                 $this->writeln('<error>❌  Failed to install dependencies.</error>');
+
                 return 1;
             }
         }
@@ -39,6 +41,7 @@ class DeployCommand extends Command
 
             if (!$this->setupFlyDeployment()) {
                 $this->writeln('<error>❌  Failed to set up Fly.io deployment.</error>');
+
                 return 1;
             }
         } else {
@@ -65,8 +68,8 @@ class DeployCommand extends Command
             ) {
                 $this->writeln('<info>Deployment files setup!</info>');
 
-                $appRegion = $this->getEnvValue('APP_PROD_REGION', "$appDir/.env");
-                $appName = $this->namify($this->getEnvValue('APP_NAME', "$appDir/.env"), 'fly');
+                $appRegion = $this->getEnvValue('APP_PROD_REGION', "$appDir/.env") ?: 'iad';
+                $appName = $this->namify($this->getEnvValue('APP_NAME', "$appDir/.env") ?: basename($appDir), 'fly');
 
                 \Leaf\FS\File::create(
                     "$appDir/storage/deployments.yml",
@@ -88,6 +91,7 @@ class DeployCommand extends Command
                 return true;
             } else {
                 $this->writeln('<error>❌  Failed to write deployment files.</error>');
+
                 return false;
             }
         }
@@ -102,6 +106,9 @@ class DeployCommand extends Command
             $appRegion = trim($regionMatch[1] ?? '');
 
             if (strpos(\Leaf\FS\File::read("$appDir/storage/deployments.yml"), 'deployed: false') !== false) {
+                $appRegion = escapeshellarg($appRegion ?: 'iad');
+                $appName = escapeshellarg($appName ?: $this->namify(basename($appDir), 'fly'));
+
                 if (
                     sprout()
                         ->process("fly launch --now --auto-confirm --copy-config --region $appRegion --name $appName")

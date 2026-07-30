@@ -34,11 +34,13 @@ class UpCommand extends Command
 
         if (!file_exists("{$this->directory}/composer.json")) {
             $this->writeln('<error>No composer.json found. Run this command from the root of a Leaf project.</error>');
+
             return 1;
         }
 
         if ($this->isMvcProject()) {
             $this->writeln('<info>✅  Your project is already using Leaf MVC structure. Nothing to scale.</info>');
+
             return 0;
         }
 
@@ -96,7 +98,7 @@ extract_routes: true
 scaffold_controller: true
 
 # ── AI context ───────────────────────────────────────────────────────────────
-# When true, .leaf/context.md is generated (or updated) with an MVC summary.
+# When true, .leaf/CONTEXT.md is generated (or updated) with an MVC summary.
 generate_ai_context: true
 
 # ── Composer packages ─────────────────────────────────────────────────────────
@@ -164,11 +166,12 @@ YAML;
                     'name' => 'proceed',
                     'message' => 'Proceed with migration?',
                     'default' => true,
-                ]
+                ],
             ]);
 
             if (!($confirmed['proceed'] ?? false)) {
                 $this->writeln('<comment>Migration cancelled.</comment>');
+
                 return 0;
             }
         }
@@ -235,7 +238,7 @@ YAML;
         $packages = $config['install_packages'] ?? [];
 
         if (!empty($packages) && !$isDry) {
-            $pkgList = implode(' ', array_map(fn($p) => "leafs/$p", $packages));
+            $pkgList = implode(' ', array_map(fn ($p) => "leafs/$p", $packages));
             $this->writeln("  <info>+</info>  Installing packages: $pkgList");
             sprout()->process("composer require $pkgList --ansi")->setTimeout(null)->run();
         }
@@ -304,6 +307,7 @@ YAML;
 
             if (preg_match('/app\(\)-\s*>run\s*\(\s*\)/i', $trimmed)) {
                 $appRunLine = $line;
+
                 continue;
             }
 
@@ -317,6 +321,7 @@ YAML;
                     $buffer = '';
                     $inRoute = false;
                 }
+
                 continue;
             }
 
@@ -348,8 +353,8 @@ PHP;
             file_put_contents($indexFile, trim($newIndex) . "\n");
         }
 
-        $this->writeln("  <info>→</info>  Extracted routes to: app/routes/index.php");
-        $this->writeln("  <info>✓</info>  Rewrote index.php to load routes");
+        $this->writeln('  <info>→</info>  Extracted routes to: app/routes/index.php');
+        $this->writeln('  <info>✓</info>  Rewrote index.php to load routes');
     }
 
     /**
@@ -388,16 +393,21 @@ PHP;
             file_put_contents($controllerFile, trim($stub) . "\n");
         }
 
-        $this->writeln("  <info>+</info>  Scaffolded: app/controllers/HomeController.php");
+        $this->writeln('  <info>+</info>  Scaffolded: app/controllers/HomeController.php');
     }
 
     /**
-     * Generate or update .leaf/context.md with MVC summary.
+     * Generate or update .leaf/CONTEXT.md with MVC summary.
      */
     protected function generateAiContext(string $dir, bool $isDry): void
     {
         $leafDir = "$dir/.leaf";
-        $contextFile = "$leafDir/context.md";
+        $contextFile = "$leafDir/CONTEXT.md";
+
+        // respect an existing lowercase context file from older setups
+        if (!is_file($contextFile) && is_file("$leafDir/context.md")) {
+            $contextFile = "$leafDir/context.md";
+        }
 
         $appName = basename($dir);
         $modules = $this->detectLeafModules();
@@ -463,12 +473,12 @@ MARKDOWN;
             if (!file_exists($contextFile)) {
                 file_put_contents($contextFile, trim($context) . "\n");
 
-                $this->writeln("  <info>+</info>  Generated: .leaf/context.md");
+                $this->writeln('  <info>+</info>  Generated: .leaf/CONTEXT.md');
             } else {
-                $this->writeln("  <comment>~</comment>  Preserved existing: .leaf/context.md");
+                $this->writeln('  <comment>~</comment>  Preserved existing: ' . str_replace("$dir/", '', $contextFile));
             }
         } else {
-            $this->writeln("  <info>+</info>  Would generate: .leaf/context.md");
+            $this->writeln('  <info>+</info>  Would generate: .leaf/CONTEXT.md');
         }
     }
 
@@ -478,6 +488,7 @@ MARKDOWN;
     protected function isMvcProject(): bool
     {
         $dir = $this->directory;
+
         return is_dir("$dir/app/controllers")
             && is_dir("$dir/app/routes")
             && (file_exists("$dir/leaf") || file_exists("$dir/leaf.php"));

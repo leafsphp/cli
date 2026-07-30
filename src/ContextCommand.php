@@ -9,7 +9,7 @@ use Leaf\Sprout\Command;
 class ContextCommand extends Command
 {
     protected $signature = 'context
-        {--raw? : Print raw .leaf/context.md without compacting it}
+        {--raw? : Print raw .leaf/CONTEXT.md without compacting it}
         {--path= : Project directory to inspect}';
 
     protected $description = 'Print compact project context for external AI assistants';
@@ -19,7 +19,8 @@ class ContextCommand extends Command
         $directory = $this->findProjectRoot($this->option('path') ?: getcwd());
 
         if (!$directory) {
-            $this->writeln('<error>No Leaf project found. Run this command from a project with composer.json or .leaf/context.md.</error>');
+            $this->writeln('<error>No Leaf project found. Run this command from a project with composer.json or .leaf/CONTEXT.md.</error>');
+
             return 1;
         }
 
@@ -30,19 +31,23 @@ class ContextCommand extends Command
 
             if ($content === false) {
                 $this->writeln("<error>Could not read $contextFile.</error>");
+
                 return 1;
             }
 
             if ($this->option('raw')) {
                 $this->writeln(rtrim($content));
+
                 return 0;
             }
 
             $this->writeln($this->buildExternalHandoff($directory, $contextFile, $content));
+
             return 0;
         }
 
         $this->writeln($this->generateContextMap($directory));
+
         return 0;
     }
 
@@ -71,7 +76,7 @@ class ContextCommand extends Command
 
     protected function findContextFile(string $directory): ?string
     {
-        foreach (['context.md', 'CONTEXT.md'] as $file) {
+        foreach (['CONTEXT.md', 'context.md'] as $file) {
             $path = "$directory/.leaf/$file";
 
             if (is_file($path)) {
@@ -126,11 +131,13 @@ MARKDOWN);
                 $inFence = !$inFence;
                 $filtered[] = rtrim($line);
                 $blankLines = 0;
+
                 continue;
             }
 
             if ($inFence) {
                 $filtered[] = rtrim($line);
+
                 continue;
             }
 
@@ -162,7 +169,7 @@ MARKDOWN);
     }
 
     /**
-     * Generate a compact handoff for projects without .leaf/context.md.
+     * Generate a compact handoff for projects without .leaf/CONTEXT.md.
      */
     protected function generateContextMap(string $directory): string
     {
@@ -180,7 +187,7 @@ MARKDOWN);
 Project: {$projectName}
 Source: generated from project files
 
-No `.leaf/context.md` file was found, so this is a compact fallback map for an external assistant. Agents running inside the project should prefer the shared `.leaf/context.md` file when it exists and keep it synced with useful project knowledge.
+No `.leaf/CONTEXT.md` file was found, so this is a compact fallback map for an external assistant. Agents running inside the project should prefer the shared `.leaf/CONTEXT.md` file when it exists and keep it synced with useful project knowledge.
 
 ## Project
 - App type: {$appType}
@@ -199,7 +206,7 @@ No `.leaf/context.md` file was found, so this is a compact fallback map for an e
 ## Notes for the assistant
 - Treat this as a read-only handoff, not the shared project memory.
 - Ask the user for missing files when a change depends on code not represented here.
-- If the project later gains `.leaf/context.md`, use `leaf context` again for a better external handoff.
+- If the project later gains `.leaf/CONTEXT.md`, use `leaf context` again for a better external handoff.
 MARKDOWN);
     }
 
@@ -407,6 +414,6 @@ MARKDOWN);
             return $fallback;
         }
 
-        return implode("\n", array_map(fn($item) => "- `$item`", $items));
+        return implode("\n", array_map(fn ($item) => "- `$item`", $items));
     }
 }

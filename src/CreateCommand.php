@@ -49,10 +49,10 @@ class CreateCommand extends Command
         if ($needsUpdate) {
             $this->writeln('Update found, updating to the latest stable version...');
 
-            if (sprout()->run('php ' . dirname(__DIR__) . '/bin/leaf update')) {
+            if (sprout()->run('php ' . dirname(__DIR__) . '/bin/leaf update') === 0) {
                 $this->writeln("Leaf CLI updated successfully, building your app...\n");
 
-                return sprout()->run('php ' . implode(' ', (array) $_SERVER['argv']));
+                return sprout()->run('php ' . implode(' ', array_map('escapeshellarg', (array) $_SERVER['argv'])));
             } else {
                 $this->writeln("❌ Leaf CLI update failed, please try again later\n");
                 $this->writeln("⚙️  Creating app with current version...\n");
@@ -82,7 +82,7 @@ class CreateCommand extends Command
                     }
 
                     return true;
-                }
+                },
             ],
             [
                 'type' => $this->projectType ? null : 'select',
@@ -122,12 +122,13 @@ class CreateCommand extends Command
                 ])
             ) {
                 $this->writeln('<error>❌  Failed to create project</error>');
+
                 return 1;
             }
 
             $commands[] = "cd \"$directory\"";
             $commands[] = 'composer install --ansi';
-        } else if ($this->projectType === 'console') {
+        } elseif ($this->projectType === 'console') {
             $commands[] = "composer create-project leafs/seedling \"$directory\" --ansi";
             $commands[] = "cd \"$directory\"";
         } else {
@@ -137,13 +138,13 @@ class CreateCommand extends Command
 
         if ($this->option('no-ansi')) {
             $commands = array_map(function ($value) {
-                return "$value --no-ansi";
+                return strpos($value, 'cd ') === 0 ? $value : "$value --no-ansi";
             }, $commands);
         }
 
         if ($this->option('quiet')) {
             $commands = array_map(function ($value) {
-                return "$value --quiet";
+                return strpos($value, 'cd ') === 0 ? $value : "$value --quiet";
             }, $commands);
         }
 
@@ -154,7 +155,7 @@ class CreateCommand extends Command
                 $this->writeln("\n🚀 Successfully created project " . basename($directory) . "\n");
                 $this->writeln('👉  Get started with the following commands:');
                 $this->writeln("\n    cd " . basename($directory));
-                $this->writeln("    php leaf greet");
+                $this->writeln('    php bin/' . basename($directory) . ' greet');
 
                 $this->writeln("\n🍁  Happy gardening!\n");
 
@@ -205,7 +206,7 @@ class CreateCommand extends Command
                             'value' => 'default',
                             'disabled' => function ($answers) {
                                 return $answers['auth'] ?? false;
-                            }
+                            },
                         ],
                         ['title' => 'Blade + Tailwind', 'value' => 'tailwind'],
                         ['title' => 'React JS', 'value' => 'react'],
@@ -220,7 +221,7 @@ class CreateCommand extends Command
                     'default' => true,
                 ],
                 [
-                    'type' => 'confirm',
+                    'type' => $this->option('docker') ? null : 'confirm',
                     'name' => 'docker',
                     'message' => 'Set up docker?',
                     'default' => false,
@@ -234,11 +235,11 @@ class CreateCommand extends Command
             }
 
             if ($extraOptions['auth'] ?? false) {
-                $extraCommands[] = "php leaf scaffold:auth";
+                $extraCommands[] = 'php leaf scaffold:auth';
             }
 
             if ($extraOptions['tests'] ?? false) {
-                $extraCommands[] = 'composer require --dev --ansi leafs/alchemy && ./vendor/bin/alchemy install --ansi';
+                $extraCommands[] = 'composer require --dev --ansi leafs/alchemy && php vendor/bin/alchemy install --ansi';
             }
 
             if ($this->projectType === 'api') {
@@ -247,10 +248,22 @@ class CreateCommand extends Command
 
             $this->write("\n");
 
-            if ($extraOptions['docker']) {
+            if (($extraOptions['docker'] ?? false) || $this->option('docker')) {
                 \Leaf\FS\Directory::copy(__DIR__ . '/themes/docker', $directory, [
                     'recursive' => true,
                 ]);
+
+                if ($this->projectType !== 'lite') {
+                    // MVC/API apps serve from public/, and the app root must
+                    // never be the docroot (it holds .env, app/, vendor/)
+                    \Leaf\FS\File::write("$directory/docker/000-default.conf", function ($content) {
+                        return str_replace(
+                            ['DocumentRoot /var/www', '<Directory /var/www>'],
+                            ['DocumentRoot /var/www/public', '<Directory /var/www/public>'],
+                            $content
+                        );
+                    });
+                }
             }
 
             if ($this->projectType !== 'lite') {
@@ -283,9 +296,13 @@ class CreateCommand extends Command
 
                 $this->writeln("\n🍁  Happy gardening!");
             }
+
+            return 0;
         }
 
-        return 0;
+        $this->writeln('<error>❌  Failed to create project</error>');
+
+        return 1;
     }
 
     /**

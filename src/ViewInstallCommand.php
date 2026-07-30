@@ -82,18 +82,20 @@ class ViewInstallCommand extends Command
         $isMVCApp = $this->isMVCApp();
 
         if ($isMVCApp) {
-            $this->writeln("❌  <error>Blade is already installed in this project</error>");
+            $this->writeln('❌  <error>Blade is already installed in this project</error>');
+
             return 1;
         }
 
         $this->writeln("📦  <info>Installing blade...</info>\n");
 
         if (
-            sprout()->composer()->install('leafs/blade')->run() || !\Leaf\FS\Directory::copy(__DIR__ . '/themes/blade --ansi', $directory !== 0, [
+            !sprout()->composer()->install('leafs/blade')->isSuccessful() || !\Leaf\FS\Directory::copy(__DIR__ . '/themes/blade', $directory, [
                 'recursive' => true,
             ])
         ) {
             $this->writeln('❌  <error>Failed to install blade</error>');
+
             return 1;
         }
 
@@ -112,18 +114,20 @@ class ViewInstallCommand extends Command
         $isMVCApp = $this->isMVCApp();
 
         if ($isMVCApp) {
-            $this->writeln("❌  <error>Blade detected, skipping...</error>");
+            $this->writeln('❌  <error>Blade detected, skipping...</error>');
+
             return 1;
         }
 
         $this->writeln("📦  <info>Installing bare-ui...</info>\n");
 
         if (
-            sprout()->composer()->install('leafs/bareui')->run() || !\Leaf\FS\Directory::copy(__DIR__ . '/themes/bareui --ansi', $directory !== 0, [
+            !sprout()->composer()->install('leafs/bareui')->isSuccessful() || !\Leaf\FS\Directory::copy(__DIR__ . '/themes/bareui', $directory, [
                 'recursive' => true,
             ])
         ) {
             $this->writeln('❌  <error>Failed to install bareui</error>');
+
             return 1;
         }
 
@@ -146,16 +150,18 @@ class ViewInstallCommand extends Command
 
         $this->writeln("📦  <info>Installing react...</info>\n");
 
-        if (sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-react @inertiajs/react react@18 react-dom@18')->run() !== 0) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-react @inertiajs/react react@18 react-dom@18')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install react</error>');
+
             return 1;
         }
 
         $this->writeln("\n✅  <info>React installed successfully</info>");
         $this->writeln("🧱  <info>Setting up Leaf React server bridge...</info>\n");
 
-        if (sprout()->composer()->install('leafs/inertia leafs/blade leafs/vite --ansi')->run() !== 0) {
+        if (!sprout()->composer()->install('leafs/inertia leafs/blade leafs/vite')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to setup Leaf React server bridge</error>');
+
             return 1;
         }
 
@@ -171,7 +177,7 @@ class ViewInstallCommand extends Command
 
         if (\Leaf\FS\File::exists("$directory/vite.config.js")) {
             \Leaf\FS\File::write("$directory/vite.config.js", function ($content) {
-                if (strpos($content, "@vitejs/plugin-react") === false) {
+                if (strpos($content, '@vitejs/plugin-react') === false) {
                     $content = str_replace(
                         ["import leaf from '@leafphp/vite-plugin';", 'import leaf from "@leafphp/vite-plugin";'],
                         "import leaf from '@leafphp/vite-plugin';\nimport react from '@vitejs/plugin-react';",
@@ -179,8 +185,8 @@ class ViewInstallCommand extends Command
                     );
                 }
 
-                if (strpos($content, "react()") === false) {
-                    $content = str_replace("leaf({", "react(),\nleaf({", $content);
+                if (strpos($content, 'react()') === false) {
+                    $content = str_replace('leaf({', "react(),\nleaf({", $content);
                 }
 
                 return $content;
@@ -208,16 +214,18 @@ class ViewInstallCommand extends Command
 
         $this->writeln("📦  <info>Installing svelte...</info>\n");
 
-        if (sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin svelte @sveltejs/vite-plugin-svelte @inertiajs/svelte')->run() !== 0) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin svelte @sveltejs/vite-plugin-svelte @inertiajs/svelte')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install svelte</error>');
+
             return 1;
         }
 
         $this->writeln("\n✅  <info>Svelte installed successfully</info>");
         $this->writeln("🧱  <info>Setting up Leaf Svelte server bridge...</info>\n");
 
-        if (sprout()->composer()->install('leafs/inertia leafs/blade leafs/vite --ansi')->run() !== 0) {
+        if (!sprout()->composer()->install('leafs/inertia leafs/blade leafs/vite')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to setup Leaf svelte server bridge</error>');
+
             return 1;
         }
 
@@ -233,7 +241,7 @@ class ViewInstallCommand extends Command
 
         if (\Leaf\FS\File::exists("$directory/vite.config.js")) {
             \Leaf\FS\File::write("$directory/vite.config.js", function ($content) {
-                if (strpos($content, "@sveltejs/vite-plugin-svelte") === false) {
+                if (strpos($content, '@sveltejs/vite-plugin-svelte') === false) {
                     $content = str_replace(
                         ["import leaf from '@leafphp/vite-plugin';", 'import leaf from "@leafphp/vite-plugin";'],
                         "import leaf from '@leafphp/vite-plugin';\nimport { svelte } from '@sveltejs/vite-plugin-svelte'",
@@ -241,8 +249,8 @@ class ViewInstallCommand extends Command
                     );
                 }
 
-                if (strpos($content, "svelte()") === false) {
-                    $content = str_replace("leaf({", "svelte(),\nleaf({", $content);
+                if (strpos($content, 'svelte()') === false) {
+                    $content = str_replace('leaf({', "svelte(),\nleaf({", $content);
                 }
 
                 return $content;
@@ -265,21 +273,23 @@ class ViewInstallCommand extends Command
         $directory = getcwd();
 
         if ($this->isMVCApp()) {
-            return (int) sprout()->run("php $directory/leaf view:install --svelte --ansi");
+            return (int) sprout()->run("php $directory/leaf view:install --tailwind --ansi");
         }
 
         $this->writeln("📦  <info>Installing tailwind...</info>\n");
 
-        if (sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin tailwindcss @tailwindcss/vite')->run() !== 0) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin tailwindcss @tailwindcss/vite')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install tailwind</error>');
+
             return 1;
         }
 
         $this->writeln("\n✅  <info>Tailwind installed successfully</info>");
         $this->writeln("🧱  <info>Setting up Leaf Tailwind server bridge...</info>\n");
 
-        if (sprout()->composer()->install('leafs/vite --ansi')->run() !== 0) {
+        if (!sprout()->composer()->install('leafs/vite')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to setup Leaf Tailwind server bridge</error>');
+
             return 1;
         }
 
@@ -337,21 +347,23 @@ class ViewInstallCommand extends Command
         $directory = getcwd();
 
         if ($this->isMVCApp()) {
-            return (int) sprout()->run("php $directory/leaf view:install --svelte --ansi");
+            return (int) sprout()->run("php $directory/leaf view:install --vite --ansi");
         }
 
         $this->writeln("📦  <info>Installing vite...</info>\n");
 
-        if (sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin vite')->run() !== 0) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin vite')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install vite</error>');
+
             return 1;
         }
 
         $this->writeln("\n✅  <info>Vite installed successfully</info>");
         $this->writeln("🧱  <info>Setting up Leaf Vite server bridge...</info>\n");
 
-        if (sprout()->composer()->install('leafs/vite --ansi')->run() !== 0) {
+        if (!sprout()->composer()->install('leafs/vite')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to setup Leaf Vite server bridge</error>');
+
             return 1;
         }
 
@@ -375,21 +387,23 @@ class ViewInstallCommand extends Command
         $directory = getcwd();
 
         if ($this->isMVCApp()) {
-            return (int) sprout()->run("php $directory/leaf view:install --svelte --ansi");
+            return (int) sprout()->run("php $directory/leaf view:install --vue --ansi");
         }
 
         $this->writeln("📦  <info>Installing Vue...</info>\n");
 
-        if (sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-vue @inertiajs/vue3@^1.0 vue')->run() !== 0) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-vue @inertiajs/vue3@^1.0 vue')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install Vue</error>');
+
             return 1;
         }
 
         $this->writeln("\n✅  <info>Vue installed successfully</info>");
         $this->writeln("🧱  <info>Setting up Leaf Vue server bridge...</info>\n");
 
-        if (sprout()->composer()->install('leafs/inertia leafs/blade leafs/vite --ansi')->run() !== 0) {
+        if (!sprout()->composer()->install('leafs/inertia leafs/blade leafs/vite')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to setup Leaf Vue server bridge</error>');
+
             return 1;
         }
 
@@ -405,7 +419,7 @@ class ViewInstallCommand extends Command
 
         if (\Leaf\FS\File::exists("$directory/vite.config.js")) {
             \Leaf\FS\File::write("$directory/vite.config.js", function ($content) {
-                if (strpos($content, "@vitejs/plugin-vue") === false) {
+                if (strpos($content, '@vitejs/plugin-vue') === false) {
                     $content = str_replace(
                         ["import leaf from '@leafphp/vite-plugin';", 'import leaf from "@leafphp/vite-plugin";'],
                         "import leaf from '@leafphp/vite-plugin';\nimport vue from '@vitejs/plugin-vue';",
@@ -413,8 +427,8 @@ class ViewInstallCommand extends Command
                     );
                 }
 
-                if (strpos($content, "vue(") === false) {
-                    $content = str_replace("leaf({", "vue({
+                if (strpos($content, 'vue(') === false) {
+                    $content = str_replace('leaf({', "vue({
             template: {
                 transformAssetUrls: {
                     base: null,
@@ -456,6 +470,7 @@ class ViewInstallCommand extends Command
             foreach ($packages as $package) {
                 if ($package['name'] === 'leafs/blade') {
                     $isBladeProject = true;
+
                     break;
                 }
             }
