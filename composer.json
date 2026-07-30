@@ -23,7 +23,7 @@
     "require": {
         "php": "^8.2",
         "ext-json": "*",
-        "leafs/fs": "^4.1",
+        "leafs/fs": "*",
         "leafs/sprout": "*",
         "psy/psysh": "*"
     },
