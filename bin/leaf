@@ -44,4 +44,4 @@ $app->on('command.notFound', function ($event) use ($app) {
     }
 });
 
-$app->run();
+exit((int) ($app->run(false) ?? 0));
