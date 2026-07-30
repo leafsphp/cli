@@ -152,6 +152,10 @@ class CreateCommand extends Command
             if ($this->projectType === 'console') {
                 \Leaf\FS\File::move("$directory/bin/sprout", "$directory/bin/" . basename($directory));
 
+                \Leaf\FS\File::write("$directory/composer.json", function ($content) use ($directory) {
+                    return str_replace('"bin/sprout"', '"bin/' . basename($directory) . '"', $content);
+                });
+
                 $this->writeln("\n🚀 Successfully created project " . basename($directory) . "\n");
                 $this->writeln('👉  Get started with the following commands:');
                 $this->writeln("\n    cd " . basename($directory));
