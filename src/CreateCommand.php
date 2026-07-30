@@ -155,7 +155,7 @@ class CreateCommand extends Command
                 $this->writeln("\n🚀 Successfully created project " . basename($directory) . "\n");
                 $this->writeln('👉  Get started with the following commands:');
                 $this->writeln("\n    cd " . basename($directory));
-                $this->writeln('    php bin/' . basename($directory) . ' greet');
+                $this->writeln('    php leaf greet');
 
                 $this->writeln("\n🍁  Happy gardening!\n");
 
