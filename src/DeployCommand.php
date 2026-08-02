@@ -68,13 +68,7 @@ class DeployCommand extends Command
         if (!\Leaf\FS\File::exists("$appDir/fly.toml")) {
             $this->writeln('<info>Writing fly deploy files...</info>');
 
-            if (
-                !\Leaf\FS\Directory::copy(
-                    __DIR__ . '/themes/fly',
-                    $appDir,
-                    ['recursive' => true]
-                )
-            ) {
+            if (!$this->writeDeployFiles($appDir)) {
                 $this->writeln('<error>❌  Failed to write deployment files.</error>');
 
                 return 1;
@@ -98,6 +92,13 @@ class DeployCommand extends Command
             if (preg_match('/^app\s*=\s*[\'"](.+)[\'"]/m', $flyConfig, $appNameMatch)) {
                 $appName = trim($appNameMatch[1]);
             }
+        }
+
+        // older versions of this command tracked deploy state in a local
+        // file; fly itself is the source of truth now
+        if (\Leaf\FS\File::exists("$appDir/storage/deployments.yml")) {
+            \Leaf\FS\File::delete("$appDir/storage/deployments.yml");
+            $this->writeln('<comment>Removed storage/deployments.yml (no longer used; deploy state now comes from Fly directly).</comment>');
         }
 
         // fly itself knows whether this app exists; no local state file
@@ -152,13 +153,7 @@ class DeployCommand extends Command
         if (!\Leaf\FS\File::exists("$appDir/Dockerfile")) {
             $this->writeln('<info>Writing deploy files...</info>');
 
-            if (
-                !\Leaf\FS\Directory::copy(
-                    __DIR__ . '/themes/fly',
-                    $appDir,
-                    ['recursive' => true]
-                )
-            ) {
+            if (!$this->writeDeployFiles($appDir)) {
                 $this->writeln('<error>❌  Failed to write deployment files.</error>');
 
                 return 1;
@@ -170,7 +165,7 @@ class DeployCommand extends Command
         }
 
         if (!\Leaf\FS\File::exists("$appDir/render.yaml")) {
-            \Leaf\FS\File::create("$appDir/render.yaml", $this->renderBlueprint($appName));
+            \Leaf\FS\File::create("$appDir/render.yaml", $this->renderBlueprint($appName, $this->option('region') ?: null));
         }
 
         $this->writeln('<info>Render deploy files ready (Dockerfile + render.yaml).</info>');
@@ -192,14 +187,17 @@ class DeployCommand extends Command
         return 0;
     }
 
-    protected function renderBlueprint(string $appName): string
+    protected function renderBlueprint(string $appName, ?string $region = null): string
     {
+        // render regions: oregon, virginia, ohio, frankfurt, singapore
+        $regionLine = $region ? "\n    region: $region" : '';
+
         return <<<YAML
 services:
   - type: web
     name: $appName
     runtime: docker
-    plan: free
+    plan: free$regionLine
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     envVars:
@@ -212,6 +210,66 @@ YAML;
     }
 
     // -------------------- shared --------------------
+
+    /**
+     * Copy the deployment files into the app, adjusting them for the
+     * shape of the app being deployed
+     */
+    protected function writeDeployFiles(string $appDir): bool
+    {
+        if (
+            !\Leaf\FS\Directory::copy(
+                __DIR__ . '/themes/fly',
+                $appDir,
+                ['recursive' => true]
+            )
+        ) {
+            return false;
+        }
+
+        if ($this->isLiteApp($appDir)) {
+            $this->serveFromAppRoot($appDir);
+        }
+
+        return true;
+    }
+
+    /**
+     * A lite app keeps index.php at the project root instead of in public/
+     */
+    protected function isLiteApp(string $appDir): bool
+    {
+        return !is_dir("$appDir/public") && file_exists("$appDir/index.php");
+    }
+
+    /**
+     * Point the web server at the project root for lite apps, and keep
+     * everything that isn't meant to be public out of reach
+     */
+    protected function serveFromAppRoot(string $appDir)
+    {
+        $nginxConfig = "$appDir/.fly/nginx/sites-available/default";
+
+        if (!\Leaf\FS\File::exists($nginxConfig)) {
+            return;
+        }
+
+        \Leaf\FS\File::write($nginxConfig, function ($content) {
+            return str_replace(
+                "root /var/www/html/public;",
+                "root /var/www/html;\n\n" .
+                    "    # the app root is the docroot here, so keep app internals\n" .
+                    "    # out of the browser's reach\n" .
+                    "    location ~ ^/(vendor|storage)/ {\n" .
+                    "        deny all;\n" .
+                    "    }\n\n" .
+                    "    location ~ ^/(composer\.(json|lock)|package(-lock)?\.json)$ {\n" .
+                    "        deny all;\n" .
+                    "    }",
+                $content
+            );
+        });
+    }
 
     /**
      * Production needs the secrets from .env, but they are never part of

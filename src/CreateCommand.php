@@ -243,7 +243,7 @@ class CreateCommand extends Command
             }
 
             if ($extraOptions['tests'] ?? false) {
-                $extraCommands[] = 'composer require --dev --ansi leafs/alchemy && php vendor/bin/alchemy install --ansi';
+                $extraCommands[] = 'composer require --dev --ansi leafs/alchemy && php vendor/bin/alchemy config:install --ansi';
             }
 
             if ($this->projectType === 'api') {

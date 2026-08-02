@@ -68,6 +68,10 @@ WORKDIR /app
 COPY . .
 COPY --from=base /var/www/html/vendor /app/vendor
 
+# single-file Leaf apps have no public/ directory; the final stage still
+# copies this path, so make sure it always exists
+RUN mkdir -p /app/public
+
 RUN if [ -f "yarn.lock" ]; then \
       yarn install --frozen-lockfile && yarn build; \
     elif [ -f "pnpm-lock.yaml" ]; then \
@@ -85,7 +89,7 @@ COPY --from=node_modules_go_brrr /app/public /var/www/html/public-npm
 RUN rsync -ar /var/www/html/public-npm/ /var/www/html/public/ && \
     rm -rf /var/www/html/public-npm && \
     chown -R www-data:www-data /var/www/html/public && \
-    php leaf link && rm -rf public/hot
+    if [ -f "leaf" ]; then php leaf link; fi && rm -rf public/hot
 
 EXPOSE 8080
 

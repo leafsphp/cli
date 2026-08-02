@@ -23,13 +23,12 @@ class InstallCommand extends Command
                     $package = "leafs/$package";
                 }
 
-                $package = str_replace('@', ':', $package);
-                $package = ($this->option('dev') === true) ? "$package --dev" : $package;
-
-                $parsedPackages[] = $package;
+                $parsedPackages[] = str_replace('@', ':', $package);
             }
 
-            if (!sprout()->composer()->install(implode(' ', $parsedPackages) . ' --ansi')->isSuccessful()) {
+            $flags = $this->option('dev') ? ' --dev --ansi' : ' --ansi';
+
+            if (!sprout()->composer()->install(implode(' ', $parsedPackages) . $flags)->isSuccessful()) {
                 return 1;
             }
 

@@ -15,13 +15,12 @@ $app = sprout()->createApp([
  _              __    ___ _    ___ 
 | |   ___ __ _ / _|  / __| |  |_ \033[1;33m$currentVersion\033[0m
 | |__/ -_) _` |  _| | (__| |__ | | 
-|____\___\__,_|_|    \___|____|___|                       
+|____\___\__,_|_|    \___|____|___|
     ",
     'version' => ''
 ]);
 
 $app->register(Leaf\Console\CreateCommand::class);
-// $app->register(Leaf\Console\UICommand::class);
 $app->register(Leaf\Console\UpdateCommand::class);
 $app->register(Leaf\Console\InstallCommand::class);
 $app->register(Leaf\Console\UninstallCommand::class);
