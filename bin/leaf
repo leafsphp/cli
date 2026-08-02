@@ -37,7 +37,11 @@ $app->on('command.notFound', function ($event) use ($app) {
     $data = array_slice($event->getCommandArgv(), 1);
 
     if (\Leaf\FS\File::exists(getcwd() . '/leaf')) {
-        $exitCode = (int) sprout()->run('php leaf ' . implode(' ', $data), null);
+        $exitCode = (int) sprout()->run(
+            'php leaf ' . implode(' ', $data),
+            null
+        );
+
         $event->setExitCode($exitCode);
         $event->stopPropagation();
     }
