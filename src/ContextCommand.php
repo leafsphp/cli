@@ -25,30 +25,112 @@ class ContextCommand extends Command
         }
 
         $contextFile = $this->findContextFile($directory);
+        $memory = null;
 
         if ($contextFile) {
-            $content = file_get_contents($contextFile);
+            $memory = file_get_contents($contextFile);
 
-            if ($content === false) {
+            if ($memory === false) {
                 $this->writeln("<error>Could not read $contextFile.</error>");
 
                 return 1;
             }
 
             if ($this->option('raw')) {
-                $this->writeln(rtrim($content));
+                $this->writeln(rtrim($memory));
 
                 return 0;
             }
+        } elseif ($this->option('raw')) {
+            $this->writeln('<error>No .leaf/CONTEXT.md file found to print.</error>');
 
-            $this->writeln($this->buildExternalHandoff($directory, $contextFile, $content));
-
-            return 0;
+            return 1;
         }
 
-        $this->writeln($this->generateContextMap($directory));
+        $this->writeln($this->buildHandoff($directory, $memory, $contextFile));
 
         return 0;
+    }
+
+    /**
+     * The handoff is fundamentally different from .leaf/CONTEXT.md. The
+     * shared context file holds what code cannot say: goals, decisions,
+     * reasoning. This command generates the mechanical map the file
+     * deliberately leaves out — routes, modules, models, structure —
+     * by scanning the project, then appends the shared memory so an
+     * external assistant receives both halves in one paste.
+     */
+    protected function buildHandoff(string $directory, ?string $memory, ?string $contextFile): string
+    {
+        $projectName = $this->projectName($directory);
+        $appType = $this->detectAppType($directory);
+        $modules = $this->detectLeafModules($directory);
+        $entryPoints = $this->detectEntryPoints($directory);
+        $frontend = $this->detectFrontendStack($directory);
+        $folders = $this->detectImportantFolders($directory);
+        $routes = $this->extractRoutes($directory);
+        $models = $this->detectModels($directory);
+        $schemas = $this->detectSchemaFiles($directory);
+        $envKeys = $this->detectEnvKeys($directory);
+
+        $sections = [];
+
+        $sections[] = trim(<<<MARKDOWN
+# Leaf Context Handoff
+
+Project: {$projectName}
+App type: {$appType}
+
+Generated from the project by `leaf context`. The mechanical map below is scanned from the code; the shared memory section (when present) carries the project's goals and decisions. Together they replace direct project access for an external assistant.
+MARKDOWN);
+
+        $sections[] = trim(<<<MARKDOWN
+## Project map
+
+- Entry points: {$this->formatList($entryPoints, 'none detected')}
+- Leaf modules: {$this->formatList($modules, 'none detected')}
+- Frontend stack: {$this->formatList($frontend, 'not detected')}
+- Folders: {$this->formatList($folders, 'no conventional app folders detected')}
+MARKDOWN);
+
+        $sections[] = "## Routes\n\n" . ($routes !== ''
+            ? $routes
+            : '- No routes detected. Route files may use patterns this scan does not recognize — ask the user to share them.');
+
+        if (!empty($models) || !empty($schemas)) {
+            $sections[] = trim(<<<MARKDOWN
+## Data layer
+
+- Models: {$this->formatList($models, 'none')}
+- Schema files: {$this->formatList($schemas, 'none')}
+MARKDOWN);
+        }
+
+        if (!empty($envKeys)) {
+            $sections[] = "## Environment keys (names only, values never leave the machine)\n\n" . implode(', ', $envKeys);
+        }
+
+        if ($memory !== null && $contextFile !== null) {
+            $source = $this->relativePath($directory, $contextFile);
+            $body = $this->compactMarkdown($memory);
+
+            $sections[] = trim(<<<MARKDOWN
+## Shared memory ({$source})
+
+{$body}
+MARKDOWN);
+        } else {
+            $sections[] = '## Shared memory' . "\n\n" . 'No `.leaf/CONTEXT.md` found. Agents working inside this project should create one in the leaf.context v1 format and record goals and decisions there.';
+        }
+
+        $sections[] = trim(<<<MARKDOWN
+## Notes for the assistant
+
+- Treat this handoff as read-only. Agents running inside the project should read `.leaf/CONTEXT.md` directly, inspect the filesystem, and write useful knowledge back to the shared context when they finish.
+- Ask the user for any file a change depends on that is not represented here.
+MARKDOWN);
+
+        return implode("\n\n---\n\n", $sections);
     }
 
     protected function findProjectRoot(string $path): ?string
@@ -87,24 +169,196 @@ class ContextCommand extends Command
         return null;
     }
 
-    protected function buildExternalHandoff(string $directory, string $contextFile, string $content): string
+    /**
+     * Scan route files and pull out actual route registrations, in file
+     * order so group/mount context reads naturally.
+     */
+    protected function extractRoutes(string $directory): string
     {
-        $projectName = $this->projectName($directory);
-        $source = $this->relativePath($directory, $contextFile);
-        $body = $this->compactMarkdown($content);
+        $files = [];
 
-        return trim(<<<MARKDOWN
-# Leaf External Context Handoff
+        foreach (glob("$directory/app/routes/*.php") ?: [] as $file) {
+            $files[] = $file;
+        }
 
-Project: {$projectName}
-Source: {$source}
+        foreach (['routes/index.php', 'routes/web.php', 'routes/api.php', 'index.php'] as $candidate) {
+            if (is_file("$directory/$candidate")) {
+                $files[] = "$directory/$candidate";
+            }
+        }
 
-Use this with an external assistant that cannot access the project. Agents running inside the project should read `{$source}` directly, inspect the filesystem, and write useful project knowledge back to the shared context when they finish.
+        $output = [];
 
----
+        foreach (array_unique($files) as $file) {
+            $content = file_get_contents($file) ?: '';
+            $lines = $this->extractRoutesFromSource($content);
 
-{$body}
-MARKDOWN);
+            if (empty($lines)) {
+                continue;
+            }
+
+            $output[] = '`' . $this->relativePath($directory, $file) . '`';
+
+            foreach ($lines as $line) {
+                $output[] = "- $line";
+            }
+
+            $output[] = '';
+        }
+
+        return trim(implode("\n", $output));
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function extractRoutesFromSource(string $content): array
+    {
+        $routes = [];
+        $pattern = '/app\(\)\s*->\s*(get|post|put|patch|delete|options|all|match|view|redirect|resource|apiResource|group|mount)\s*\(\s*([\'"])((?:\\\\.|(?!\2).)*)\2\s*(,)?/';
+
+        if (!preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
+            return $routes;
+        }
+
+        foreach ($matches as $index => $match) {
+            $method = strtolower($match[1][0]);
+            $firstArg = $match[3][0];
+
+            // the tail is only this call's remaining arguments: clamp it at
+            // the next registration so handlers never bleed across routes
+            $tailStart = $match[0][1] + strlen($match[0][0]);
+            $tailEnd = isset($matches[$index + 1]) ? $matches[$index + 1][0][1] : $tailStart + 160;
+            $tail = substr($content, $tailStart, min(160, max(0, $tailEnd - $tailStart)));
+
+            switch ($method) {
+                case 'group':
+                case 'mount':
+                    $routes[] = "GROUP {$firstArg} — routes below this line sit under the prefix";
+                    break;
+
+                case 'match':
+                    // first arg is the method list, the path comes next
+                    if (preg_match('/^\s*([\'"])((?:\\\\.|(?!\1).)*)\1/', $tail, $pathMatch)) {
+                        $routes[] = strtoupper($firstArg) . " {$pathMatch[2]} → " . $this->describeHandler(substr($tail, strlen($pathMatch[0])));
+                    }
+                    break;
+
+                case 'view':
+                    $routes[] = "GET {$firstArg} → " . $this->describeSecondString($tail, 'view');
+                    break;
+
+                case 'redirect':
+                    $routes[] = "GET {$firstArg} → " . $this->describeSecondString($tail, 'redirect');
+                    break;
+
+                case 'resource':
+                case 'apiresource':
+                    $label = $method === 'resource' ? 'RESOURCE' : 'API RESOURCE';
+                    $routes[] = "{$label} {$firstArg} → " . $this->describeSecondString($tail, 'controller');
+                    break;
+
+                default:
+                    $routes[] = strtoupper($method) . " {$firstArg} → " . $this->describeHandler($tail);
+            }
+        }
+
+        return $routes;
+    }
+
+    protected function describeHandler(string $tail): string
+    {
+        $handler = 'closure';
+
+        if (preg_match('/([\'"])([A-Za-z0-9_\\\\]+@[A-Za-z0-9_]+)\1/', $tail, $match)) {
+            $handler = $match[2];
+        }
+
+        if (preg_match('/[\'"]middleware[\'"]\s*=>\s*([\'"])((?:\\\\.|(?!\1).)*)\1/', $tail, $match)) {
+            $handler .= " [middleware: {$match[2]}]";
+        }
+
+        if (preg_match('/[\'"]name[\'"]\s*=>\s*([\'"])((?:\\\\.|(?!\1).)*)\1/', $tail, $match)) {
+            $handler .= " [name: {$match[2]}]";
+        }
+
+        return $handler;
+    }
+
+    protected function describeSecondString(string $tail, string $label): string
+    {
+        if (preg_match('/^\s*,?\s*([\'"])((?:\\\\.|(?!\1).)*)\1/', $tail, $match)) {
+            return "{$label}:{$match[2]}";
+        }
+
+        return $label;
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function detectModels(string $directory): array
+    {
+        $models = [];
+
+        foreach (glob("$directory/app/models/*.php") ?: [] as $file) {
+            $name = basename($file, '.php');
+
+            // the generated base class is scaffolding, not a model
+            if ($name === 'Model') {
+                continue;
+            }
+
+            $models[] = $name;
+        }
+
+        sort($models);
+
+        return $models;
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function detectSchemaFiles(string $directory): array
+    {
+        $schemas = [];
+
+        foreach (glob("$directory/app/database/*.yml") ?: [] as $file) {
+            $schemas[] = basename($file);
+        }
+
+        sort($schemas);
+
+        return $schemas;
+    }
+
+    /**
+     * Env key NAMES only. Values never appear in a handoff.
+     *
+     * @return string[]
+     */
+    protected function detectEnvKeys(string $directory): array
+    {
+        $keys = [];
+
+        foreach (['.env.example', '.env'] as $candidate) {
+            $file = "$directory/$candidate";
+
+            if (!is_file($file)) {
+                continue;
+            }
+
+            foreach (explode("\n", file_get_contents($file) ?: '') as $line) {
+                if (preg_match('/^([A-Z][A-Z0-9_]*)\s*=/', trim($line), $match)) {
+                    $keys[] = $match[1];
+                }
+            }
+
+            break; // prefer .env.example; fall back to .env only when it is missing
+        }
+
+        return array_values(array_unique($keys));
     }
 
     /**
@@ -144,9 +398,11 @@ MARKDOWN);
             if ($trimmed === '') {
                 $blankLines++;
 
-                if ($blankLines <= 1) {
-                    $filtered[] = '';
+                if ($blankLines > 1) {
+                    continue;
                 }
+
+                $filtered[] = '';
 
                 continue;
             }
@@ -160,54 +416,21 @@ MARKDOWN);
 
     protected function isPlaceholderLine(string $line): bool
     {
+        // official leaf.context v1 rule: a line wrapped in underscores is a
+        // template placeholder (optionally sitting inside a list bullet)
+        $bare = preg_replace('/^[*-]\s+/', '', $line) ?? $line;
+
+        if (preg_match('/^_[^_].*_$/', $bare) === 1) {
+            return true;
+        }
+
+        // legacy bracket placeholders from pre-v1 context files
         $line = strtolower($line);
 
         return str_starts_with($line, '[track your recent changes')
             || str_starts_with($line, '[remove this line')
             || str_starts_with($line, '[add decisions')
             || str_starts_with($line, '[add notes');
-    }
-
-    /**
-     * Generate a compact handoff for projects without .leaf/CONTEXT.md.
-     */
-    protected function generateContextMap(string $directory): string
-    {
-        $projectName = $this->projectName($directory);
-        $appType = $this->detectAppType($directory);
-        $modules = $this->detectLeafModules($directory);
-        $entryPoints = $this->detectEntryPoints($directory);
-        $routes = $this->detectRouteFiles($directory);
-        $folders = $this->detectImportantFolders($directory);
-        $frontend = $this->detectFrontendStack($directory);
-
-        return trim(<<<MARKDOWN
-# Leaf External Context Handoff
-
-Project: {$projectName}
-Source: generated from project files
-
-No `.leaf/CONTEXT.md` file was found, so this is a compact fallback map for an external assistant. Agents running inside the project should prefer the shared `.leaf/CONTEXT.md` file when it exists and keep it synced with useful project knowledge.
-
-## Project
-- App type: {$appType}
-- Leaf modules: {$this->formatList($modules, 'none detected')}
-- Frontend stack: {$this->formatList($frontend, 'not detected')}
-
-## Entry points
-{$this->formatBullets($entryPoints, '- No common Leaf entry point detected')}
-
-## Routes
-{$this->formatBullets($routes, '- No conventional route files detected')}
-
-## Important folders
-{$this->formatBullets($folders, '- No conventional app folders detected')}
-
-## Notes for the assistant
-- Treat this as a read-only handoff, not the shared project memory.
-- Ask the user for missing files when a change depends on code not represented here.
-- If the project later gains `.leaf/CONTEXT.md`, use `leaf context` again for a better external handoff.
-MARKDOWN);
     }
 
     protected function projectName(string $directory): string
@@ -275,33 +498,6 @@ MARKDOWN);
     /**
      * @return string[]
      */
-    protected function detectRouteFiles(string $directory): array
-    {
-        $routes = $this->existingPaths($directory, [
-            'app/routes/index.php',
-            'app/routes/_app.php',
-            'app/routes/_frontend.php',
-            'routes/index.php',
-            'routes/web.php',
-            'routes/api.php',
-        ]);
-
-        foreach (glob("$directory/app/routes/*.php") ?: [] as $file) {
-            $routes[] = $this->relativePath($directory, $file);
-        }
-
-        $indexFile = "$directory/index.php";
-
-        if (is_file($indexFile) && preg_match('/app\(\)->(get|post|put|patch|delete|any)\s*\(/i', file_get_contents($indexFile) ?: '')) {
-            $routes[] = 'index.php (inline routes)';
-        }
-
-        return array_values(array_unique($routes));
-    }
-
-    /**
-     * @return string[]
-     */
     protected function detectImportantFolders(string $directory): array
     {
         return $this->existingPaths($directory, [
@@ -310,11 +506,9 @@ MARKDOWN);
             'app/models',
             'app/views',
             'app/routes',
-            'app/database/migrations',
-            'app/database/seeds',
+            'app/database',
             'config',
             'public',
-            'public/assets',
             'storage',
             'tests',
         ]);
@@ -406,14 +600,5 @@ MARKDOWN);
     protected function formatList(array $items, string $fallback): string
     {
         return !empty($items) ? implode(', ', $items) : $fallback;
-    }
-
-    protected function formatBullets(array $items, string $fallback): string
-    {
-        if (empty($items)) {
-            return $fallback;
-        }
-
-        return implode("\n", array_map(fn ($item) => "- `$item`", $items));
     }
 }
