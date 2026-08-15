@@ -58,7 +58,9 @@ class Package
     {
         $package = static::ltsInfo();
 
-        return $package->version;
+        // the offline fallback is the local composer.json, which carries
+        // no version field — treat that as "no update available"
+        return $package->version ?? static::version();
     }
 
     /**
