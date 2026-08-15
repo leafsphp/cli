@@ -55,7 +55,10 @@ test('a closure route does not inherit the next route\'s handler', function () {
     // with UsersController or auth.required from later registrations
     $rootLine = collect_lines($output, 'GET /');
 
-    expect($rootLine)->not->toContain('UsersController')
+    // positive assertion first, so an empty output fails loudly instead
+    // of letting the not-contains checks pass vacuously
+    expect($rootLine)->toContain('GET /')
+        ->and($rootLine)->not->toContain('UsersController')
         ->and($rootLine)->not->toContain('auth.required');
 });
 

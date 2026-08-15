@@ -19,8 +19,13 @@ function sandboxSetup(): void
     $sandbox = $base . '/leaf-cli-test-' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 10);
 
     mkdir("$sandbox/bin", 0777, true);
+
+    // shim composer on every platform: bash script for unix shells,
+    // batch file for cmd.exe (resolved via PATHEXT)
     file_put_contents("$sandbox/bin/composer", "#!/bin/bash\necho \"COMPOSER CALLED WITH: \$@\"\n");
     chmod("$sandbox/bin/composer", 0755);
+    file_put_contents("$sandbox/bin/composer.bat", "@echo COMPOSER CALLED WITH: %*\r\n");
+
     chdir($sandbox);
 
     $GLOBALS['__cliSandbox'] = $sandbox;
@@ -58,9 +63,17 @@ function removeDirRecursive(string $dir): void
 function leaf(string $args): array
 {
     $bin = dirname(__DIR__) . '/bin/leaf';
-    $path = $GLOBALS['__cliSandbox'] . '/bin:' . getenv('PATH');
 
-    exec('PATH=' . escapeshellarg($path) . ' ' . escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . " $args 2>&1", $output, $exit);
+    // `PATH=x cmd` prefixes are bash-only; mutate the inherited environment
+    // instead so the shim wins on every platform, and restore it after
+    $originalPath = getenv('PATH');
+    putenv('PATH=' . $GLOBALS['__cliSandbox'] . DIRECTORY_SEPARATOR . 'bin' . PATH_SEPARATOR . $originalPath);
+
+    try {
+        exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . " $args 2>&1", $output, $exit);
+    } finally {
+        putenv("PATH=$originalPath");
+    }
 
     return [$exit, implode("\n", $output)];
 }
