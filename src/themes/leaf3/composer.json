@@ -1,7 +1,5 @@
 {
     "require": {
-        "leafs/leaf": "v5.x-dev"
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+        "leafs/leaf": "5.0-alpha"
+    }
 }

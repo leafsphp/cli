@@ -21,13 +21,16 @@ class UpCommand extends Command
         {--force? : Apply migration without interactive confirmation}
         {--dry-run? : Show what would be changed without modifying any files}';
 
-    protected $description = 'Scale your Leaf app into MVC structure';
+    protected $description = 'Scale your Leaf app into MVC structure (beta)';
 
     /** @var string */
     protected string $directory = '';
 
     protected function handle(): int
     {
+        $this->writeln('<comment>leaf up is in beta. Commit your work first, and report anything it gets wrong at https://github.com/leafsphp/cli/issues/new</comment>');
+        $this->writeln('');
+
         $this->directory = getcwd();
         $leafDir = "{$this->directory}/.leaf";
         $migrationFile = "$leafDir/migration.yml";

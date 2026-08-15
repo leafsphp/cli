@@ -23,8 +23,8 @@
     "require": {
         "php": "^8.2",
         "ext-json": "*",
-        "leafs/fs": "*",
-        "leafs/sprout": "*",
+        "leafs/fs": "^5.0",
+        "leafs/sprout": "^5.0",
         "psy/psysh": "*"
     },
     "bin": [
@@ -44,8 +44,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.66",
-        "leafs/alchemy": "v5.x-dev"
+        "friendsofphp/php-cs-fixer": "*",
+        "leafs/alchemy": "^5.0"
     },
     "scripts": {
         "test": "@php vendor/bin/alchemy test",

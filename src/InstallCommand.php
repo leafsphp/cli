@@ -26,7 +26,8 @@ class InstallCommand extends Command
                 $parsedPackages[] = str_replace('@', ':', $package);
             }
 
-            $flags = $this->option('dev') ? ' --dev --ansi' : ' --ansi';
+            // sprout's composer helper adds --ansi itself
+            $flags = $this->option('dev') ? ' --dev' : '';
 
             if (!sprout()->composer()->install(implode(' ', $parsedPackages) . $flags)->isSuccessful()) {
                 return 1;
