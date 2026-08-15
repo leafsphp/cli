@@ -150,7 +150,7 @@ class ViewInstallCommand extends Command
 
         $this->writeln("📦  <info>Installing react...</info>\n");
 
-        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-react @inertiajs/react react@18 react-dom@18')->isSuccessful()) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-react@^5.0 @inertiajs/react react@18 react-dom@18')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install react</error>');
 
             return 1;
@@ -214,7 +214,7 @@ class ViewInstallCommand extends Command
 
         $this->writeln("📦  <info>Installing svelte...</info>\n");
 
-        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin svelte @sveltejs/vite-plugin-svelte @inertiajs/svelte')->isSuccessful()) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin svelte @sveltejs/vite-plugin-svelte@^6.0 @inertiajs/svelte')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install svelte</error>');
 
             return 1;
@@ -352,7 +352,7 @@ class ViewInstallCommand extends Command
 
         $this->writeln("📦  <info>Installing vite...</info>\n");
 
-        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin vite')->isSuccessful()) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin vite@^7.0')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install vite</error>');
 
             return 1;
@@ -392,7 +392,7 @@ class ViewInstallCommand extends Command
 
         $this->writeln("📦  <info>Installing Vue...</info>\n");
 
-        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-vue @inertiajs/vue3@^1.0 vue')->isSuccessful()) {
+        if (!sprout()->npm($this->option('pm'))->install('@leafphp/vite-plugin @vitejs/plugin-vue@^6.0 @inertiajs/vue3@^1.0 vue')->isSuccessful()) {
             $this->writeln('❌  <error>Failed to install Vue</error>');
 
             return 1;

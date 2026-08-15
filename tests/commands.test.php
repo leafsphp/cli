@@ -101,6 +101,23 @@ test('the lite theme requires stable leaf', function () {
     expect($theme['require']['leafs/leaf'])->toStartWith('^');
 });
 
+test('view:install pins every vite-adjacent npm package', function () {
+    $source = file_get_contents(dirname(__DIR__) . '/src/ViewInstallCommand.php');
+
+    // unpinned @vitejs/* and vite resolve to whatever npm's latest is —
+    // when vite 8 shipped, latest plugin-react moved to a peer range
+    // @leafphp/vite-plugin doesn't allow, and every install ERESOLVE'd
+    preg_match_all('/->install\(\'([^\']+)\'\)/', $source, $matches);
+
+    foreach ($matches[1] as $packageList) {
+        foreach (explode(' ', $packageList) as $package) {
+            if (preg_match('/^(@vitejs\/|@sveltejs\/|vite$)/', $package)) {
+                expect($package)->toContain('@^');
+            }
+        }
+    }
+});
+
 test('lite apps are born AI-ready', function () {
     leaf('create my-app --lite');
 
