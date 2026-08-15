@@ -1,5 +1,5 @@
 {
     "require": {
-        "leafs/leaf": "5.0-alpha"
+        "leafs/leaf": "^5.0"
     }
 }

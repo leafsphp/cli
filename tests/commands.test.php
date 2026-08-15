@@ -92,3 +92,11 @@ test('the banner prints the version exactly once', function () {
 
     expect(substr_count($banner, trim($version)))->toBe(1);
 });
+
+test('the lite theme requires stable leaf', function () {
+    $theme = json_decode(file_get_contents(dirname(__DIR__) . '/src/themes/leaf3/composer.json'), true);
+
+    // the lite preset copies this file into new projects — an exact or
+    // pre-release pin here breaks `leaf create --lite` for everyone
+    expect($theme['require']['leafs/leaf'])->toStartWith('^');
+});
