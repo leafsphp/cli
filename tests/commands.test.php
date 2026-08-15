@@ -101,6 +101,15 @@ test('the lite theme requires stable leaf', function () {
     expect($theme['require']['leafs/leaf'])->toStartWith('^');
 });
 
+test('the post-update re-exec keeps the terminal', function () {
+    $source = file_get_contents(dirname(__DIR__) . '/src/CreateCommand.php');
+
+    // a piped re-exec (sprout()->run) can't prompt — the fresh cli then
+    // answers every question with its default and scaffolds the wrong app
+    expect($source)->toContain("passthru('php ' . implode")
+        ->and($source)->not->toContain("return sprout()->run('php ' . implode");
+});
+
 test('view:install pins every vite-adjacent npm package', function () {
     $source = file_get_contents(dirname(__DIR__) . '/src/ViewInstallCommand.php');
 

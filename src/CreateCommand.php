@@ -52,7 +52,9 @@ class CreateCommand extends Command
             if (sprout()->run('php ' . dirname(__DIR__) . '/bin/leaf update') === 0) {
                 $this->writeln("Leaf CLI updated successfully, building your app...\n");
 
-                return sprout()->run('php ' . implode(' ', array_map('escapeshellarg', (array) $_SERVER['argv'])));
+                passthru('php ' . implode(' ', array_map('escapeshellarg', (array) $_SERVER['argv'])), $exitCode);
+
+                return $exitCode;
             } else {
                 $this->writeln("❌ Leaf CLI update failed, please try again later\n");
                 $this->writeln("⚙️  Creating app with current version...\n");
