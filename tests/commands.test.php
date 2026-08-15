@@ -100,3 +100,14 @@ test('the lite theme requires stable leaf', function () {
     // pre-release pin here breaks `leaf create --lite` for everyone
     expect($theme['require']['leafs/leaf'])->toStartWith('^');
 });
+
+test('lite apps are born AI-ready', function () {
+    leaf('create my-app --lite');
+
+    // composer install fails against the shim, but the theme copy happens
+    // first — the AI context files must be in place
+    expect(file_exists(getcwd() . '/my-app/AGENTS.md'))->toBeTrue()
+        ->and(file_exists(getcwd() . '/my-app/.leaf/CONTEXT.md'))->toBeTrue()
+        ->and(file_get_contents(getcwd() . '/my-app/.leaf/CONTEXT.md'))->toContain('<!-- leaf.context v1 -->')
+        ->and(file_exists(getcwd() . '/my-app/.htaccess'))->toBeTrue();
+});
