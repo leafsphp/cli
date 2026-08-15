@@ -120,7 +120,7 @@ test('view:install pins every vite-adjacent npm package', function () {
 
     foreach ($matches[1] as $packageList) {
         foreach (explode(' ', $packageList) as $package) {
-            if (preg_match('/^(@vitejs\/|@sveltejs\/|vite$)/', $package)) {
+            if (preg_match('/^(@vitejs\/|@sveltejs\/|@inertiajs\/|vite$)/', $package)) {
                 expect($package)->toContain('@^');
             }
         }
