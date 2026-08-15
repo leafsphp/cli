@@ -10,9 +10,7 @@
 | you set will be called when a 404 error is encountered
 |
 */
-app()->set404(function () {
-    response()->json('Resource not found', 404, true);
-});
+app()->set404(fn () => response()->json('Resource not found', 404, true));
 
 /*
 |--------------------------------------------------------------------------
@@ -24,9 +22,7 @@ app()->set404(function () {
 | you set will be called when a 500 error is encountered
 |
 */
-app()->setErrorHandler(function () {
-    response()->json('An error occured, our team has been notified', 500, true);
-});
+app()->setErrorHandler(fn () => response()->json('An error occured, our team has been notified', 500, true));
 
 /*
 |--------------------------------------------------------------------------

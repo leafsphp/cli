@@ -2,8 +2,6 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-app()->get('/', function () {
-    response()->page('./welcome.html');
-});
+app()->get('/', fn () => response()->page('./welcome.html'));
 
 app()->run();
