@@ -7,8 +7,11 @@ if (file_exists(dirname(__DIR__, 3) . "/autoload.php")) {
     require dirname(__DIR__) . "/vendor/autoload.php";
 }
 
-$leafCli = json_decode(file_get_contents(dirname(__DIR__) . "/composer.json"));
-$currentVersion = $leafCli->version;
+// composer.json carries no version key (packagist derives it from tags),
+// so ask composer's runtime for the installed version instead
+$currentVersion = \Composer\InstalledVersions::isInstalled('leafs/cli')
+    ? \Composer\InstalledVersions::getPrettyVersion('leafs/cli')
+    : 'dev';
 
 $app = sprout()->createApp([
     'name' => "
@@ -17,7 +20,7 @@ $app = sprout()->createApp([
 | |__/ -_) _` |  _| | (__| |__ | | 
 |____\___\__,_|_|    \___|____|___|
     ",
-    'version' => ''
+    'version' => $currentVersion
 ]);
 
 $app->register(Leaf\Console\CreateCommand::class);

@@ -77,3 +77,18 @@ test('up refuses to run outside a project and mentions beta', function () {
         ->and($output)->toContain('github.com/leafsphp/cli/issues')
         ->and($output)->toContain('No composer.json found');
 });
+
+test('--version prints the version and nothing else', function () {
+    [$exit, $output] = leaf('--version');
+
+    expect($exit)->toBe(0)
+        ->and(trim($output))->not->toBe('')
+        ->and($output)->not->toContain('Available commands');
+});
+
+test('the banner prints the version exactly once', function () {
+    [, $version] = leaf('--version');
+    [, $banner] = leaf('');
+
+    expect(substr_count($banner, trim($version)))->toBe(1);
+});

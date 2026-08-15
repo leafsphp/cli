@@ -26,9 +26,11 @@ class Package
      */
     public static function version()
     {
-        $meta = static::info();
+        if (\Composer\InstalledVersions::isInstalled('leafs/cli')) {
+            return \Composer\InstalledVersions::getPrettyVersion('leafs/cli');
+        }
 
-        return $meta->version;
+        return static::info()->version ?? 'dev';
     }
 
     /**
@@ -64,8 +66,15 @@ class Package
      */
     public static function updateAvailable()
     {
-        $currentVersion = ltrim(static::version(), 'v');
-        $latestVersion = ltrim(static::ltsVersion(), 'v');
+        $currentVersion = ltrim((string) static::version(), 'v');
+
+        // dev checkouts (contributors, CI) never self-update — this also
+        // keeps the check off the network for test runs
+        if ($currentVersion === '' || strpos($currentVersion, 'dev') !== false) {
+            return false;
+        }
+
+        $latestVersion = ltrim((string) static::ltsVersion(), 'v');
 
         return version_compare($currentVersion, $latestVersion, '<');
     }

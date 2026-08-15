@@ -2,7 +2,6 @@
     "name": "leafs/cli",
     "description": "A simple command line tool for installing and interacting with your leaf apps",
     "homepage": "https://cli.leafphp.dev",
-    "version": "v5.0-dev",
     "keywords": [
         "leaf",
         "php",
