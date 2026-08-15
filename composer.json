@@ -45,7 +45,8 @@
     "prefer-stable": true,
     "require-dev": {
         "friendsofphp/php-cs-fixer": "*",
-        "leafs/alchemy": "^5.0"
+        "leafs/alchemy": "^5.0",
+        "pestphp/pest": "*"
     },
     "scripts": {
         "test": "@php vendor/bin/alchemy test",

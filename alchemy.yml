@@ -2,7 +2,16 @@ app:
   - bin
   - src
 
+tests:
+  engine: pest
+  parallel: false # tests spawn real cli processes; keep them sequential
+  paths:
+    - tests
+  files:
+    - '*.test.php'
+
 lint:
+  ignore_tests: true
   preset: PSR12
   rules:
     single_quote: true
@@ -34,6 +43,7 @@ lint:
 actions:
   run:
     - lint
+    - tests
   os:
     - ubuntu-latest
     - macos-latest

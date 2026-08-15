@@ -44,14 +44,16 @@ class DeployCommand extends Command
 
     protected function deployToFly(): int
     {
-        if (sprout()->process('fly version')->run(function () {}) !== 0) {
+        if (sprout()->process('fly version')->run(function () {
+        }) !== 0) {
             $this->writeln('<error>The fly CLI is not installed.</error>');
             $this->writeln('Install it from https://fly.io/docs/flyctl/install/ then run this command again.');
 
             return 1;
         }
 
-        if (sprout()->process('fly auth whoami')->run(function () {}) !== 0) {
+        if (sprout()->process('fly auth whoami')->run(function () {
+        }) !== 0) {
             $this->writeln('<error>You are not logged in to Fly.io.</error>');
             $this->writeln('Run <info>fly auth login</info> then run this command again.');
 
@@ -105,7 +107,8 @@ class DeployCommand extends Command
         // to go stale when a teammate clones the repo
         $appExists = sprout()
             ->process('fly status --app ' . escapeshellarg($appName))
-            ->run(function () {}) === 0;
+            ->run(function () {
+            }) === 0;
 
         $exitCode = $appExists
             ? sprout()
@@ -175,7 +178,8 @@ class DeployCommand extends Command
         $this->writeln('  2. Open <info>https://dashboard.render.com</info> → New → Blueprint');
         $this->writeln('  3. Connect this repository. Render reads render.yaml and sets everything up');
 
-        if (sprout()->process('git remote get-url origin')->run(function () {}) !== 0) {
+        if (sprout()->process('git remote get-url origin')->run(function () {
+        }) !== 0) {
             $this->writeln('');
             $this->writeln('<comment>This project has no git remote yet. Create a repository first, e.g. on https://github.com/new</comment>');
         }
@@ -256,7 +260,7 @@ YAML;
 
         \Leaf\FS\File::write($nginxConfig, function ($content) {
             return str_replace(
-                "root /var/www/html/public;",
+                'root /var/www/html/public;',
                 "root /var/www/html;\n\n" .
                     "    # the app root is the docroot here, so keep app internals\n" .
                     "    # out of the browser's reach\n" .
@@ -265,7 +269,7 @@ YAML;
                     "    }\n\n" .
                     "    location ~ ^/(composer\.(json|lock)|package(-lock)?\.json)$ {\n" .
                     "        deny all;\n" .
-                    "    }",
+                    '    }',
                 $content
             );
         });

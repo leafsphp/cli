@@ -239,6 +239,7 @@ MARKDOWN);
                 case 'group':
                 case 'mount':
                     $routes[] = "GROUP {$firstArg} — routes below this line sit under the prefix";
+
                     break;
 
                 case 'match':
@@ -246,20 +247,24 @@ MARKDOWN);
                     if (preg_match('/^\s*([\'"])((?:\\\\.|(?!\1).)*)\1/', $tail, $pathMatch)) {
                         $routes[] = strtoupper($firstArg) . " {$pathMatch[2]} → " . $this->describeHandler(substr($tail, strlen($pathMatch[0])));
                     }
+
                     break;
 
                 case 'view':
                     $routes[] = "GET {$firstArg} → " . $this->describeSecondString($tail, 'view');
+
                     break;
 
                 case 'redirect':
                     $routes[] = "GET {$firstArg} → " . $this->describeSecondString($tail, 'redirect');
+
                     break;
 
                 case 'resource':
                 case 'apiresource':
                     $label = $method === 'resource' ? 'RESOURCE' : 'API RESOURCE';
                     $routes[] = "{$label} {$firstArg} → " . $this->describeSecondString($tail, 'controller');
+
                     break;
 
                 default:
