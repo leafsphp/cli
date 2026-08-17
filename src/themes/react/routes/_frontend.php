@@ -1,5 +1,4 @@
 <?php
 
-app()->get('/hello', function () {
-    inertia('Hello');
-});
+app()->get('/hello', fn () => response()->inertia('hello'));
+app()->get('/login', fn () => response()->inertia('login'));

@@ -47,7 +47,17 @@ $app->on('command.notFound', function ($event) use ($app) {
 
         $event->setExitCode($exitCode);
         $event->stopPropagation();
+
+        return;
     }
+
+    // no project console to forward to — without this, an unknown
+    // command outside a project exits 0 in total silence, which reads
+    // as success to scripts and agents
+    echo 'Command not found: ' . ($data[0] ?? '') . "\n";
+    echo "Run `leaf list` to see available commands. Project commands (db:*, g:*, scaffold:*, key:generate) only work inside a Leaf MVC app.\n";
+
+    $event->setExitCode(1);
 });
 
 exit((int) ($app->run(false) ?? 0));

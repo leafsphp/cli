@@ -1,4 +1,4 @@
-const Hello = ({ auth, welcome }) => {
+const Login = ({ auth, welcome }) => {
     return (
         <div>
             <h1>Login</h1>
@@ -7,4 +7,4 @@ const Hello = ({ auth, welcome }) => {
     )
 }
 
-export default Hello;
+export default Login;

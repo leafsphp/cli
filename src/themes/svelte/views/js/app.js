@@ -6,13 +6,13 @@ const appName = import.meta.env.VITE_APP_NAME || "Leaf PHP";
 createInertiaApp({
 	title: (title) => `${title} - ${appName}`,
 	resolve: (name) =>
-		resolvePageComponent(`./Pages/${name}.svelte`,
-			import.meta.glob('./Pages/**/*.svelte', { eager: true })
+		resolvePageComponent(`./pages/${name}.svelte`,
+			import.meta.glob('./pages/**/*.svelte', { eager: true })
 		),
 	//or with persistent layouts
 	// {// setting the default page layout
-	// 	const pages = import.meta.glob('./Pages/**/*.svelte', { eager: true })
-	// 	let page = pages[`./Pages/${name}.svelte`]
+	// 	const pages = import.meta.glob('./pages/**/*.svelte', { eager: true })
+	// 	let page = pages[`./pages/${name}.svelte`]
 	// 	return { default: page.default, layout: page.layout || Layout }
 	// },
 	setup({ el, App, props, plugin }) {

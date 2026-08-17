@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title inertia>Document</title>
-    <?php echo vite(['/js/app.js', "/js/Pages/{$page['component']}.vue"]); ?>
+    <?php echo vite(['/js/app.js', "/js/pages/{$page['component']}.vue"]); ?>
     <?php
         if (!isset($__inertiaSsrDispatched)) {
             $__inertiaSsrDispatched = true;
