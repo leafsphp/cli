@@ -5,7 +5,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 export default defineConfig({
 	plugins: [
 		leaf({
-			input: ['app/views/js/app.js', 'app/views/css/app.css'],
+			input: ['views/js/app.js'],
 			refresh: true,
 		}),
 		svelte(),

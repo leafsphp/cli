@@ -6,7 +6,7 @@ export default defineConfig({
     plugins: [
         leaf({
             hotFile: 'hot',
-            input: ['app/views/js/app.jsx'],
+            input: ['views/js/app.jsx'],
             refresh: true,
         }),
         react(),

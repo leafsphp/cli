@@ -127,6 +127,25 @@ test('view:install pins every vite-adjacent npm package', function () {
     }
 });
 
+test('lite theme vite inputs point at files the theme ships', function () {
+    // view:install copies each theme into the project root, so every
+    // entry in the theme's vite.config.js input must resolve relative
+    // to the theme dir itself — an app/views/* path builds nothing
+    foreach (['react', 'svelte', 'vue'] as $theme) {
+        $themeDir = dirname(__DIR__) . "/src/themes/$theme";
+        $config = file_get_contents("$themeDir/vite.config.js");
+
+        preg_match('/input:\s*\[([^\]]*)\]/', $config, $inputList);
+        preg_match_all('/[\'"]([^\'"]+)[\'"]/', $inputList[1] ?? '', $inputs);
+
+        expect($inputs[1])->not->toBeEmpty();
+
+        foreach ($inputs[1] as $input) {
+            expect(file_exists("$themeDir/$input"))->toBeTrue("$theme vite input '$input' does not exist in the copied theme");
+        }
+    }
+});
+
 test('lite apps are born AI-ready', function () {
     leaf('create my-app --lite');
 

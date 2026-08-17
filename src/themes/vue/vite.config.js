@@ -5,7 +5,7 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
 	plugins: [
 		leaf({
-			input: ["app/views/js/app.jsx"],
+			input: ["views/js/app.js"],
 			refresh: true,
 		}),
 		vue({

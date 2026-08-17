@@ -169,6 +169,8 @@ class ViewInstallCommand extends Command
             'recursive' => true,
         ]);
 
+        $this->setupLiteFrontend($directory);
+
         $package = json_decode(file_get_contents("$directory/package.json"), true);
         $package['type'] = 'module';
         $package['scripts']['dev'] = 'vite';
@@ -232,6 +234,8 @@ class ViewInstallCommand extends Command
         \Leaf\FS\Directory::copy(__DIR__ . '/themes/svelte', $directory, [
             'recursive' => true,
         ]);
+
+        $this->setupLiteFrontend($directory);
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
         $package['type'] = 'module';
@@ -407,9 +411,11 @@ class ViewInstallCommand extends Command
             return 1;
         }
 
-        \Leaf\FS\Directory::copy(__DIR__ . '/themes/tailwind', $directory, [
+        \Leaf\FS\Directory::copy(__DIR__ . '/themes/vue', $directory, [
             'recursive' => true,
         ]);
+
+        $this->setupLiteFrontend($directory);
 
         $package = json_decode(file_get_contents("$directory/package.json"), true);
         $package['type'] = 'module';
@@ -451,6 +457,57 @@ class ViewInstallCommand extends Command
     }
 
     // ------------------------ utils ------------------------ //
+
+    /**
+     * Wire up index.php for a lite (non-MVC) frontend install: point the
+     * view engine at the copied views/ directory, cache compiled views in
+     * storage/cache, and load the demo routes file the theme ships with.
+     * Idempotent — safe to run on repeated installs.
+     */
+    protected function setupLiteFrontend(string $directory)
+    {
+        $indexFile = "$directory/index.php";
+
+        $viewConfig = <<<'PHP'
+app()->config([
+    'views.path' => 'views',
+    'views.cache' => __DIR__ . '/storage/cache',
+]);
+PHP;
+
+        $routesRequire = "require __DIR__ . '/routes/_frontend.php';";
+
+        if (!file_exists($indexFile)) {
+            file_put_contents(
+                $indexFile,
+                "<?php\n\nrequire __DIR__ . '/vendor/autoload.php';\n\n$viewConfig\n\n$routesRequire\n\napp()->run();\n"
+            );
+
+            return;
+        }
+
+        \Leaf\FS\File::write($indexFile, function ($content) use ($viewConfig, $routesRequire) {
+            $additions = '';
+
+            if (strpos($content, "'views.path'") === false && strpos($content, '"views.path"') === false) {
+                $additions .= "$viewConfig\n\n";
+            }
+
+            if (strpos($content, 'routes/_frontend.php') === false) {
+                $additions .= "$routesRequire\n\n";
+            }
+
+            if ($additions === '') {
+                return $content;
+            }
+
+            if (strpos($content, 'app()->run();') !== false) {
+                return str_replace('app()->run();', "$additions" . 'app()->run();', $content);
+            }
+
+            return rtrim($content) . "\n\n" . rtrim($additions) . "\n";
+        });
+    }
     protected function isMVCApp()
     {
         $directory = getcwd();
