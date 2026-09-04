@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Leaf\Console;
 
 use Leaf\Console\Utils\Package;
-use RuntimeException;
 use Leaf\FS;
 use Leaf\Sprout\Command;
 
@@ -106,8 +105,12 @@ class CreateCommand extends Command
         $commands = [];
         $directory = path($this->projectName !== '.' ? getcwd() . '/' . $this->projectName : getcwd())->normalize();
 
-        if (!$this->option('force')) {
-            $this->verifyApplicationDoesntExist($directory);
+        if (!$this->option('force') && $this->applicationExists($directory)) {
+            $this->writeln('');
+            $this->error('"' . basename($directory) . '" already exists in ./' . basename(dirname($directory)));
+            $this->writeln('Choose a different name, or re-run with <info>--force</info> to build in the existing folder.');
+
+            return 1;
         }
 
         $this->writeln(
@@ -312,15 +315,10 @@ class CreateCommand extends Command
     }
 
     /**
-     * Verify that the application does not already exist.
-     *
-     * @param string $directory
-     * @return void
+     * Check whether something already exists at the target directory.
      */
-    protected function verifyApplicationDoesntExist(string $directory)
+    protected function applicationExists(string $directory): bool
     {
-        if ((is_dir($directory) || is_file($directory)) && $directory != getcwd()) {
-            throw new RuntimeException('Application already exists!');
-        }
+        return (is_dir($directory) || is_file($directory)) && $directory != getcwd();
     }
 }
