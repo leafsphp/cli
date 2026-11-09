@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Leaf\Console;
 
+use Leaf\Console\Utils\Upgrade;
 use Leaf\Sprout\Command;
 
 class UpdateCommand extends Command
@@ -19,6 +20,10 @@ class UpdateCommand extends Command
 
             if (sprout()->composer(true)->install('leafs/cli --ansi')->isSuccessful()) {
                 $this->writeln('<info>Leaf CLI installed successfully!</info>');
+
+                if ($nudge = Upgrade::nudge()) {
+                    $this->writeln($nudge);
+                }
 
                 return 0;
             }
