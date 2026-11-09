@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Leaf\Console;
 
+use Leaf\Console\Utils\Upgrade;
 use Leaf\Sprout\Command;
 
 class InstallCommand extends Command
@@ -33,9 +34,25 @@ class InstallCommand extends Command
                 return 1;
             }
 
-            return 0;
+            return $this->finish();
         }
 
-        return sprout()->composer()->install()->isSuccessful() ? 0 : 1;
+        if (!sprout()->composer()->install()->isSuccessful()) {
+            return 1;
+        }
+
+        return $this->finish();
+    }
+
+    /**
+     * Print one plain line if the app is behind on Leaf majors.
+     */
+    protected function finish(): int
+    {
+        if ($nudge = Upgrade::nudge()) {
+            $this->writeln($nudge);
+        }
+
+        return 0;
     }
 }
